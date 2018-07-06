@@ -1,0 +1,10 @@
+*.psproj
+SPListReplicator.psprojs
+
+# ignore files for VS and VS Code and PowerShell Studio
+.vs/*
+.vscode/*
+*.pssproj
+*.sln
+*.TempPoint.*
+*.psprojs
