@@ -94,9 +94,11 @@ Function Get-SPRListData {
                 }
                 
                 # listName, viewName, XmlNode query, XmlNode viewFields, rowLimit, XmlNode queryOptions, string webID
+                Write-PSFMessage -Level Verbose -Message "Performing GetListItems"
                 $listdata = ($service.GetListItems($listName, $null, $xmlquery, $viewFields, $RowLimit, $queryOptions, $null)).data.row
                 
                 if ($listdata.ows_ID) {
+                    Write-PSFMessage -Level Verbose -Message "Massaging results"
                     # Get name attribute values (guids) for list and view
                     $ndlistview = $service.GetListAndView($listname, $null)
                     $listidname = $ndlistview.ChildNodes.Item(0).Name
@@ -109,10 +111,13 @@ Function Get-SPRListData {
                     $batchelement.SetAttribute("listversion", "1")
                     $batchelement.SetAttribute("viewname", $viewidname)
                     
+                    Write-PSFMessage -Level Verbose -Message "Adding extra fields"
                     $listdata | Add-Member -MemberType NoteProperty -Name Service -Value $service
                     $listdata | Add-Member -MemberType NoteProperty -Name ListName -Value $ListName
                     $listdata | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement
-                    $listdata | Select-DefaultView -ExcludeProperty BatchElement, OuterXml, InnerXml, HasAttributes, PreviousText, BaseURI, HasChildNodes, LastChild, FirstChild, ChildNodes, SchemaInfo, InnerText, NextSibling, PreviousSibling, Item, Name, LocalName, NamespaceURI, Prefix, NodeType, ParentNode, OwnerDocument, Attributes
+                    
+                    Write-PSFMessage -Level Verbose -Message "Selecting data"
+                    $listdata | Select-Object -ExcludeProperty OuterXml, InnerXml, HasAttributes, PreviousText, BaseURI, HasChildNodes, LastChild, FirstChild, ChildNodes, SchemaInfo, InnerText, NextSibling, PreviousSibling, Item, Name, LocalName, NamespaceURI, Prefix, NodeType, ParentNode, OwnerDocument, Attributes
                 }
             }
             catch {
