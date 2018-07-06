@@ -49,6 +49,9 @@ $object = @()
     $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
 Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' -InputObject $object
 
+Export-SPRListData -Uri intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
+Import-SPRListData -Uri sharepoint2016  -ListName 'My List' -Path C:\temp\mylist.xml
+
 Clear-SPRListData -Uri sharepoint2016 -ListName 'My List' -Confirm:$false
 
 -->
