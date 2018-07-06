@@ -70,13 +70,16 @@
     Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Uri"
     try {
         if ($Credential) {
-            New-WebServiceProxy -Uri $Uri -Namespace SpWs -Credential $Credential -ErrorAction Stop
+            $proxy = New-WebServiceProxy -Uri $Uri -Namespace SpWs -Credential $Credential -ErrorAction Stop
         }
         else {
-            New-WebServiceProxy -Uri $Uri -Namespace SpWs -UseDefaultCredential -ErrorAction Stop
+            $proxy = New-WebServiceProxy -Uri $Uri -Namespace SpWs -UseDefaultCredential -ErrorAction Stop
         }
+        
+        Add-Member -InputObject $proxy -MemberType NoteProperty -Name Uri -Value $Uri
+        Add-Member -InputObject $proxy -MemberType ScriptMethod -Name ToString -Value { $this.Uri } -Force -PassThru
     }
     catch {
-        Stop-PSFFunction -Message "Failure" -ErrorRecord $_
+        Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
     }
 }
