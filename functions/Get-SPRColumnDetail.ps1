@@ -55,20 +55,14 @@
                 $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
             }
             else {
-                Stop-PSFFunction -Message "You must specify Uri and ListName or pipe in the results of Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName or pipe in the results of Get-SPRList"
                 return
             }
         }
         foreach ($list in $InputObject) {
             foreach ($column in $list.Fields.Field) {
-                [pscustomobject]@{
-                    ListName = $list.ListName
-                    DisplayName = $column.DisplayName
-                    StaticName = $column.StaticName
-                    Name     = $column.Name
-                    Type     = $column.Type
-                    ReadOnly = $column.ReadOnly
-                } | Select-DefaultView -ExcludeProperty ReadOnly, StaticName
+                Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.ListName
+                Select-DefaultView -InputObject $column -Property ListName, DisplayName, Name, Type
             }
         }
     }
