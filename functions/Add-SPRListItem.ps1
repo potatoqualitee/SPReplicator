@@ -81,6 +81,7 @@
                         $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                     }
                     
+                    $fieldname = $fieldname.Replace('ows_', '')
                     Write-PSFMessage -Level Verbose -Message "Adding $fieldname to row"
                     $collection += "<Field Name='$fieldname'>$value</Field>"
                 }
