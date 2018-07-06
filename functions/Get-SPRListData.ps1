@@ -14,7 +14,10 @@ Function Get-SPRListData {
     
 .PARAMETER RowLimit
     Limit the number of rows returned. The entire list is returned by default.
-  
+ 
+.PARAMETER Id
+    Return only rows with specific IDs
+ 
 .PARAMETER Credential
     Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
  
@@ -40,6 +43,11 @@ Function Get-SPRListData {
     Get-SPRListData -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
 
     Gets data from My List and logs into the webapp as ad\user.
+    
+.EXAMPLE    
+    Get-SPRListData -Uri sharepoint2016 -ListName 'My List' -Id 100, 101, 105
+    
+    Gets list items with ID 100, 101 and 105
 #>
     [CmdletBinding()]
     param (
@@ -51,6 +59,7 @@ Function Get-SPRListData {
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
+        [int[]]$Id,
         [switch]$EnableException
     )
     process {
@@ -59,20 +68,35 @@ Function Get-SPRListData {
                 $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
             }
             else {
-                Stop-PSFFunction -Message "You must specify Uri and ListName or pipe in the results of Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName or pipe in the results of Get-SPRList"
                 return
             }
         }
         
         foreach ($list in $InputObject) {
             try {
-                # Get the list (usually $list)
                 $service = $list.Service
                 $listname = $list.ListName
                 
-                $listdata = ($service.GetListItems($listName, $null, $query, $viewFields, $RowLimit, $queryOptions, $null)).data.row
+                $xmlDoc = $list.XmlDoc
+                $xmlquery = $list.XmlQuery
+                $viewFields = $list.ViewFields
+                $queryOptions = $list.QueryOptions
+                $batchelement = $list.BatchElement
                 
-                if ($listdata.Count -gt 0) {
+                if ($Id) {
+                    $combotext = @()
+                    foreach ($number in $id) {
+                        $combotext += "<Value Type='Counter'>$number</Value>"
+                    }
+                    $combotext = $combotext -join ""
+                    $xmlquery.InnerXml = "<Where><In><FieldRef Name='ID'/><Values>$combotext</Values></In></Where>"
+                }
+                
+                # listName, viewName, XmlNode query, XmlNode viewFields, rowLimit, XmlNode queryOptions, string webID
+                $listdata = ($service.GetListItems($listName, $null, $xmlquery, $viewFields, $RowLimit, $queryOptions, $null)).data.row
+                
+                if ($listdata.ows_ID) {
                     # Get name attribute values (guids) for list and view
                     $ndlistview = $service.GetListAndView($listname, $null)
                     $listidname = $ndlistview.ChildNodes.Item(0).Name
@@ -87,11 +111,12 @@ Function Get-SPRListData {
                     
                     $listdata | Add-Member -MemberType NoteProperty -Name Service -Value $service
                     $listdata | Add-Member -MemberType NoteProperty -Name ListName -Value $ListName
-                    $listdata | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement -Passthru
+                    $listdata | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement
+                    $listdata | Select-DefaultView -ExcludeProperty BatchElement
                 }
             }
             catch {
-                Stop-PSFFunction -Message "Failure" -ErrorRecord $_
+                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
             }
         }
     }
