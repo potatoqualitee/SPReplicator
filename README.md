@@ -33,7 +33,7 @@ Deletes all items from a SharePoint list using a Web service proxy object.
 ## Add-SPRListItem
 Adds items to a SharePoint list using a Web service proxy object.
 
-![image](https://user-images.githubusercontent.com/8278033/42355970-957acffe-806b-11e8-8efe-74d11edf257d.png)
+![image](https://user-images.githubusercontent.com/8278033/42388506-6d84b5ca-80e1-11e8-9ed7-7bbfede791a1.png)
 
 <!---
 Get-SPRService -Uri sharepoint2016
