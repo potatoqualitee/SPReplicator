@@ -1,4 +1,4 @@
-﻿Function Clear-SPRListData {   
+﻿Function Clear-SPRListData {
 <#
 .SYNOPSIS
     Deletes all items from a SharePoint list using a Web service proxy object.
@@ -69,13 +69,15 @@
                 $InputObject = Get-SPRListData -Uri $Uri -Credential $Credential -ListName $ListName
             }
             else {
-                Stop-PSFFunction -Message "You must specify Uri and ListName or pipe in the results of Get-SPRService"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName or pipe in the results of Get-SPRService"
                 return
             }
         }
         
-        if (-not $InputObject[0].ows_ID) {
-            $InputObject = $InputObject | Get-SPRListData
+        if ($InputObject) {
+            if (-not $InputObject[0].ows_ID) {
+                $InputObject = $InputObject | Get-SPRListData
+            }
         }
         
         foreach ($list in $InputObject) {
@@ -87,7 +89,7 @@
                     $listname = $list.ListName
                 }
                 else {
-                    Stop-PSFFunction -Message "Invalid list data"
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Invalid list data"
                     return
                 }
             }
@@ -102,20 +104,18 @@
     }
     end {
         if (-not $list) {
-            Stop-PSFFunction -Message "No records to delete"
+            Stop-PSFFunction -EnableException:$EnableException -Message "No records to delete"
+            return
         }
-        else {
         $list.BatchElement.InnerXml = $xml -join ""
-            
-            if ($Pscmdlet.ShouldProcess($listname, "Removing batch")) {
-                try {
-                    # Do batch
-                    $results = ($list.Service.UpdateListItems($listName, $list.BatchElement)).Result
-                    Invoke-ParseResultSet -ResultSet $results
-                }
-                catch {
-                    Stop-PSFFunction -Message "Failure" -ErrorRecord $_
-                }
+        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Removing Batch")) {
+            try {
+                # Do batch
+                $results = ($list.Service.UpdateListItems($listName, $list.BatchElement)).Result
+                Invoke-ParseResultSet -ResultSet $results
+            }
+            catch {
+                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
             }
         }
     }

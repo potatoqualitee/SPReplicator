@@ -59,7 +59,7 @@
                 $InputObject = Get-SPRService -Uri $Uri -Credential $Credential
             }
             else {
-                Stop-PSFFunction -Message "You must specify Uri or pipe in the results of Get-SPRService"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or pipe in the results of Get-SPRService"
                 return
             }
         }
@@ -68,7 +68,7 @@
             try {
                 if ($ListName -notin $service.GetListCollection().List.Title) {
                     $url = [System.Uri]$service.Url
-                    Stop-PSFFunction -Message "List $ListName cannot be found on $($url.Host)" -Continue
+                    Stop-PSFFunction -EnableException:$EnableException -Message "List $ListName cannot be found on $($url.Host)" -Continue
                 }
                 
                 $xmlDoc = New-Object System.Xml.XmlDocument
@@ -80,10 +80,15 @@
                 $list = $service.GetList($listName)
                 $list | Add-Member -MemberType NoteProperty -Name Service -Value $service
                 $list | Add-Member -MemberType NoteProperty -Name ListName -Value $ListName
-                $list | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement -PassThru
+                $list | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement
+                $list | Add-Member -MemberType NoteProperty -Name XmlDoc -Value $xmldoc
+                $list | Add-Member -MemberType NoteProperty -Name ViewFields -Value $viewFields
+                $list | Add-Member -MemberType NoteProperty -Name QueryOptions -Value $queryOptions
+                $list | Add-Member -MemberType NoteProperty -Name XmlQuery -Value $query
+                $list | Select-DefaultView -ExcludeProperty BatchElement, XmlDoc, ViewFields, QueryOptions, XmlQuery
             }
             catch {
-                Stop-PSFFunction -Message "Failure" -ErrorRecord $_
+                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
             }
         }
     }
