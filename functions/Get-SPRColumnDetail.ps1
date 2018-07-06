@@ -38,7 +38,7 @@
 
     Gets column information from My List on intranet.ad.local by logging into the webapp as ad\user.
 #>
-    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
+    [CmdletBinding()]
     param (
         [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
         [string]$Uri,
@@ -63,10 +63,12 @@
             foreach ($column in $list.Fields.Field) {
                 [pscustomobject]@{
                     ListName = $list.ListName
-                    DisplayName = $column.DisplayName # StaticName = $column.StaticName
+                    DisplayName = $column.DisplayName
+                    StaticName = $column.StaticName
                     Name     = $column.Name
-                    Type = $column.Type
-                }
+                    Type     = $column.Type
+                    ReadOnly = $column.ReadOnly
+                } | Select-DefaultView -ExcludeProperty ReadOnly, StaticName
             }
         }
     }
