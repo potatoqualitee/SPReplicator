@@ -1,4 +1,4 @@
-# SPListReplicator
+# SPReplicator
 PowerShell module to replicate SharePoint list data
 
 ## Get-SPRService
