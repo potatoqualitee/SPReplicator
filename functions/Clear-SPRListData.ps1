@@ -111,20 +111,7 @@
                 try {
                     # Do batch
                     $results = ($list.Service.UpdateListItems($listName, $list.BatchElement)).Result
-                    
-                    foreach ($result in $results) {
-                        $id, $method = $result.ID.Split(",")
-                        $errorword = switch ($result.ErrorCode) {
-                            '0x00000000' { "Success" }
-                            else { 'Failure' }
-                        }
-                        [pscustomobject]@{
-                            ID        = $id
-                            Method    = $method
-                            Result    = $errorword
-                            ErrorCode = $result.ErrorCode
-                        }
-                    }
+                    Invoke-ParseResultSet -ResultSet $results
                 }
                 catch {
                     Stop-PSFFunction -Message "Failure" -ErrorRecord $_
