@@ -61,7 +61,9 @@
         }
         foreach ($list in $InputObject) {
             foreach ($column in $list.Fields.Field) {
+                $title = $column.Name
                 Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.ListName
+                Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
                 Select-DefaultView -InputObject $column -Property ListName, DisplayName, Name, Type
             }
         }
