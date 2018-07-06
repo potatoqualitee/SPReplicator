@@ -34,3 +34,21 @@ Deletes all items from a SharePoint list using a Web service proxy object.
 Adds items to a SharePoint list using a Web service proxy object.
 
 ![image](https://user-images.githubusercontent.com/8278033/42355970-957acffe-806b-11e8-8efe-74d11edf257d.png)
+
+<!---
+Get-SPRService -Uri sharepoint2016
+Get-SPRList -Uri sharepoint2016 -ListName 'My List'
+Get-SPRListData -Uri sharepoint2016 -ListName 'My List'
+Get-SPRListData -Uri sharepoint2016 -ListName 'My List' -Id 91
+Get-SPRColumnDetail -Uri sharepoint2016 -ListName 'My List'
+
+
+$object = @()
+    $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
+    $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
+    $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
+Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' -InputObject $object
+
+Clear-SPRListData -Uri sharepoint2016 -ListName 'My List' -Confirm:$false
+
+-->
