@@ -3,7 +3,8 @@
         $Id, $method, $null = $result.ID.Split(",")
         $errorword = switch ($result.ErrorCode) {
             '0x00000000' { "Success" }
-            else { 'Failure' }
+            '0x81020014'{ "Column name mismatch" }
+            default { 'Failure' }
         }
         
         $row = ([xml]$result.OuterXml).Result.row
