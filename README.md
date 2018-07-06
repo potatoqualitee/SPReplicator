@@ -35,6 +35,16 @@ Adds items to a SharePoint list using a Web service proxy object.
 
 ![image](https://user-images.githubusercontent.com/8278033/42388506-6d84b5ca-80e1-11e8-9ed7-7bbfede791a1.png)
 
+## Export-SPRListData
+Exports all items to a file from a SharePoint list using a Web service proxy object.
+
+![image](https://user-images.githubusercontent.com/8278033/42403716-d47ab30a-811e-11e8-9a33-7254d90a6f4b.png)
+
+## Import-SPRListData
+Imports all items from a file into a SharePoint list using a Web service proxy object.
+
+![image](https://user-images.githubusercontent.com/8278033/42403894-6b91e0d2-8120-11e8-8659-34a7bb942b4a.png)
+
 <!---
 Get-SPRService -Uri sharepoint2016
 Get-SPRList -Uri sharepoint2016 -ListName 'My List'

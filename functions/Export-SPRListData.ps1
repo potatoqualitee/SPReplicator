@@ -1,10 +1,10 @@
 ﻿Function Export-SPRListData {
 <#
 .SYNOPSIS
-    Exports all items from a SharePoint list using a Web service proxy object.
+    Exports all items to a file from a SharePoint list using a Web service proxy object.
     
 .DESCRIPTION
-     Exports all items from a SharePoint list using a Web service proxy object.
+     Exports all items to a file from a SharePoint list using a Web service proxy object.
     
 .PARAMETER Uri
     The address to the web application. You can also pass a hostname and it'll figure it out.
