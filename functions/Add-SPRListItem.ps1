@@ -31,13 +31,13 @@
 
 .EXAMPLE
     $csv = Import-Csv -Path C:\temp\listitems.csv
-    Add-SPRListData -Uri intranet.ad.local -ListName 'My List' -InputObject $mycsv
+    Add-SPRListItem -Uri intranet.ad.local -ListName 'My List' -InputObject $mycsv
 
     Imports data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
     
 .EXAMPLE
     $csv = Import-Csv -Path C:\temp\listitems.csv
-    Add-SPRListData -Uri intranet.ad.local -ListName 'My List' -InputObject $mycsv
+    Add-SPRListItem -Uri intranet.ad.local -ListName 'My List' -InputObject $mycsv
 
     Imports data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
     
@@ -46,7 +46,7 @@
     $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
     $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
     $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-    Add-SPRListData -Uri intranet.ad.local -ListName 'My List' -InputObject $mycsv
+    Add-SPRListData -Uri intranet.ad.local -ListName 'My List' -InputObject $object
 
     Imports data from a custom object $object into the My List SharePoint list, so long as there are matching columns (Title and TestColumn).
 #>
@@ -104,14 +104,14 @@
     end {
         $list.BatchElement.InnerXml = $xml -join ""
         
-        if ($Pscmdlet.ShouldProcess($listname, "Adding batch")) {
+        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding Batch")) {
             try {
                 # Do batch
                 $results = ($list.Service.UpdateListItems($listName, $list.BatchElement)).Result
                 Invoke-ParseResultSet -ResultSet $results
             }
             catch {
-                Stop-PSFFunction -Message "Failure" -ErrorRecord $_
+                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
             }
         }
     }
