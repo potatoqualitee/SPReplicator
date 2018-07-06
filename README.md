@@ -20,7 +20,7 @@ Returns data from a SharePoint list using a Web service proxy object.
  
 ![image](https://user-images.githubusercontent.com/8278033/42355607-a08c5e3c-8069-11e8-92a4-b9273d648cf9.png)
 
-## Get-SPRList
+## Get-SPRColumnDetail
 Returns information (Name, DisplayName, Data type) about columns in a SharePoint list using a Web service proxy object.
 
 ![image](https://user-images.githubusercontent.com/8278033/42355638-cad24f08-8069-11e8-9fe2-c7ae147f1db9.png)
