@@ -73,5 +73,6 @@
         
         $data = $collection | Select-Object -Property $columns.OwsName
         Export-Clixml -InputObject $data -Path $Path
+        Get-ChildItem -Path $Path
     }
 }
