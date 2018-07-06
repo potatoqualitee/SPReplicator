@@ -112,7 +112,7 @@ Function Get-SPRListData {
                     $listdata | Add-Member -MemberType NoteProperty -Name Service -Value $service
                     $listdata | Add-Member -MemberType NoteProperty -Name ListName -Value $ListName
                     $listdata | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement
-                    $listdata | Select-DefaultView -ExcludeProperty BatchElement
+                    $listdata | Select-DefaultView -ExcludeProperty BatchElement, OuterXml, InnerXml, HasAttributes, PreviousText, BaseURI, HasChildNodes, LastChild, FirstChild, ChildNodes, SchemaInfo, InnerText, NextSibling, PreviousSibling, Item, Name, LocalName, NamespaceURI, Prefix, NodeType, ParentNode, OwnerDocument, Attributes
                 }
             }
             catch {
