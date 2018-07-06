@@ -1,28 +1,42 @@
 function Select-DefaultView {
     <#
-
-    This command enables us to send full on objects to the pipeline without the user seeing it
-
-    See it in action in Get-DbaSnapshot and Remove-DbaDatabaseSnapshot
-
-    a lot of this is from boe, thanks boe!
+.SYNOPSIS
+    Makes it easier to alias columns to select and rename for export.
+    
+.DESCRIPTION
+    Makes it easier to alias columns to select and rename for export.
+    
+    This command also enables the ability to change the default view without destroying objects.
+    
+    A lot of this is from boe, thanks boe!
     https://learn-powershell.net/2013/08/03/quick-hits-set-the-default-property-display-in-powershell-on-custom-objects/
 
+.PARAMETER IntputObject
+    Allows piping
+ 
+.PARAMETER TypeName
     TypeName creates a new type so that we can use ps1xml to modify the output
-    #>
+    
+.PARAMETER Property
+    Only includes specific properties
+    
+.PARAMETER ExcludeProperty
+    Excludes other properties
+    
+EXAMPLE
+    Export-SPRListData -Uri intranet.ad.local -ListName 'My List' | Select-SPRObject -Property Title
 
+    Exports only the title column
+#>    
     [CmdletBinding()]
     param (
-        [parameter(ValueFromPipeline = $true)]
+        [parameter(Mandatory, ValueFromPipeline)]
         [object]$InputObject,
         [string[]]$Property,
         [string[]]$ExcludeProperty,
         [string]$TypeName
     )
     process {
-
-        #if ($null -eq $InputObject) { return }
-        
         if ($TypeName) {
             $InputObject.PSObject.TypeNames.Insert(0, "spreplicator.$TypeName")
         }
