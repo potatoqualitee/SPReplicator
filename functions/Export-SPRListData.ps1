@@ -68,11 +68,16 @@
         $collection += $InputObject
     }
     end {
-        $columns = Get-SPRColumnDetail -Uri $collection[0].Service.Uri -ListName $collection[0].ListName |
-        Where-Object { -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -ne 'Computed' }
-        
-        $data = $collection | Select-Object -Property $columns.OwsName
-        Export-Clixml -InputObject $data -Path $Path
-        Get-ChildItem -Path $Path
+        try {
+            $columns = Get-SPRColumnDetail -Uri $collection[0].Service.Uri -ListName $collection[0].ListName |
+            Where-Object { -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -ne 'Computed' }
+            
+            $data = $collection | Select-Object -Property $columns.OwsName
+            Export-Clixml -InputObject $data -Path $Path -ErrorAction Stop
+            Get-ChildItem -Path $Path -ErrorAction Stop
+        }
+        catch {
+            Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+        }
     }
 }
