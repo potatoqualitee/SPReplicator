@@ -53,7 +53,7 @@
     # ScriptsToProcess = @()
     
     # Type files (.ps1xml) to be loaded when importing this module
-    # TypesToProcess = @()
+    TypesToProcess    = @("xml\SPReplicator.Types.ps1xml")
     
     # Format files (.ps1xml) to be loaded when importing this module
     # FormatsToProcess = @()
@@ -70,7 +70,9 @@
         'Add-SPRListItem',
         'Get-SPRColumnDetail',
         'Export-SPRListData',
-        'Import-SPRListData'
+        'Import-SPRListData',
+        'Get-SPRListTemplate',
+        'New-SPRList'
     )
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

@@ -56,36 +56,31 @@
     process {
         if (-not $InputObject) {
             if ($Uri) {
-                $InputObject = Get-SPRService -Uri $Uri -Credential $Credential
+                $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
+            }
+            elseif ($global:server) {
+                $InputObject = $global:server
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or pipe in the results of Get-SPRService"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or run Connect-SPRSite"
                 return
             }
         }
         
-        foreach ($service in $InputObject) {
+        foreach ($server in $InputObject) {
             try {
-                if ($ListName -notin $service.GetListCollection().List.Title) {
-                    $url = [System.Uri]$service.Url
-                    Stop-PSFFunction -EnableException:$EnableException -Message "List $ListName cannot be found on $($url.Host)" -Continue
+                
+                $lists = $server.Web.Lists
+                $list = $lists.GetByTitle($ListName)
+                $server.Load($lists)
+                $server.Load($list)
+                $server.ExecuteQuery()
+                
+                if ($ListName -notin $lists.Title) {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "List $ListName cannot be found on $($server.Url)" -Continue
                 }
                 
-                $xmlDoc = New-Object System.Xml.XmlDocument
-                $query = $xmlDoc.CreateElement("Query")
-                $viewFields = $xmlDoc.CreateElement("ViewFields")
-                $queryOptions = $xmlDoc.CreateElement("QueryOptions")
-                $batchelement = $xmldoc.CreateElement("Batch")
-                
-                $list = $service.GetList($listName)
-                $list | Add-Member -MemberType NoteProperty -Name Service -Value $service
-                $list | Add-Member -MemberType NoteProperty -Name ListName -Value $ListName
-                $list | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement
-                $list | Add-Member -MemberType NoteProperty -Name XmlDoc -Value $xmldoc
-                $list | Add-Member -MemberType NoteProperty -Name ViewFields -Value $viewFields
-                $list | Add-Member -MemberType NoteProperty -Name QueryOptions -Value $queryOptions
-                $list | Add-Member -MemberType NoteProperty -Name XmlQuery -Value $query
-                $list | Select-DefaultView -ExcludeProperty BatchElement, XmlDoc, ViewFields, QueryOptions, XmlQuery
+                Select-DefaultView -InputObject $list -Property Id, Title, Description, BaseType, Created, ItemCount
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
