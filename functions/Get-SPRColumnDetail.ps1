@@ -51,20 +51,26 @@
     )
     process {
         if (-not $InputObject) {
-            if ($Uri -and $ListName) {
-                $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+            if ($Uri) {
+                $InputObject = Get-SprList -Uri $Uri -Credential $Credential -ListName $ListName
+            }
+            elseif ($global:server) {
+                $InputObject = $global:server | Get-SprList -ListName $ListName
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName or pipe in the results of Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
                 return
             }
         }
+        
         foreach ($list in $InputObject) {
-            foreach ($column in $list.Fields.Field) {
-                $title = $column.Name
-                Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.ListName
+            $list.Context.Load($list.Fields)
+            $list.Context.ExecuteQuery()
+            foreach ($column in $list.Fields) {
+                $title = $column.Title
+                Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.Title
                 Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
-                Select-DefaultView -InputObject $column -Property ListName, DisplayName, Name, Type
+                Select-DefaultView -InputObject $column -Property ListName, 'Title as DisplayName', 'StaticName as Name', 'TypeDisplayName as Type'
             }
         }
     }

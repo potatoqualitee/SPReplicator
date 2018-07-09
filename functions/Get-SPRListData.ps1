@@ -68,7 +68,7 @@ Function Get-SPRListData {
                 $InputObject = Get-SprList -Uri $Uri -Credential $Credential -ListName $ListName
             }
             elseif ($global:server) {
-                $InputObject = $global:server | Get-SprList -ListName $ListName
+                $InputObject = $global:server | Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
@@ -78,24 +78,35 @@ Function Get-SPRListData {
         
         foreach ($list in $InputObject) {
             try {
-                Write-PSFMessage -Level Verbose -Message "Performing GetListItems"
-                $listItems = $list.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
+                Write-PSFMessage -Level Verbose -Message "Performing GetItems"
+                if ($Id) {
+                    foreach ($number in $Id) {
+                        $listItems = $list.GetItemById($number)
+                    }
+                }
+                else {
+                    $listItems = $list.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
+                }
+                
                 $list.Context.Load($listItems)
                 $list.Context.ExecuteQuery()
-                
+                $fields = $listItems | Select-Object -First 1 -ExpandProperty FieldValues
                 $baseobject = [pscustomobject]@{ }
-                foreach ($column in $listItems[0].FieldValues.Keys) {
+                
+                foreach ($column in $fields.Keys) {
                     Add-Member -InputObject $baseobject -NotePropertyName $column -NotePropertyValue $null
                 }
                 Add-Member -InputObject $baseobject -NotePropertyName ListObject -NotePropertyValue $null
+                Add-Member -InputObject $baseobject -NotePropertyName ListItem -NotePropertyValue $null
                 
                 foreach ($item in $listItems) {
                     $object = $baseobject.PSObject.Copy()
-                    $object.ListObject = $item
+                    $object.ListObject = $list
+                    $object.ListItem = $item
                     foreach ($fieldName in $item.FieldValues.Keys) {
                         $object.$fieldName = $item.FieldValues[$fieldName]
                     }
-                    $object
+                    Select-DefaultView -InputObject $object -ExcludeProperty _HasCopyDestinations, _CopySource, owshiddenversion, WorkflowVersion, _UIVersion, _UIVersionString, _ModerationStatus, _ModerationComments, InstanceID, WorkflowInstanceID, Last_x0020_Modified, Created_x0020_Date, FSObjType, SortBehavior, FileLeafRef, UniqueId, SyncClientId, ProgId, ScopeId, File_x0020_Type, MetaInfo, _Level, _IsCurrentVersion, ItemChildCount, FolderChildCount, Restricted, AppAuthor, AppEditor
                 }
             }
             catch {

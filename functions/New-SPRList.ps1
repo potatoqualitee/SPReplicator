@@ -97,6 +97,7 @@
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                return
             }
         }
     }

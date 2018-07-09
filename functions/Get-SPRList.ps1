@@ -24,7 +24,7 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
     
 .PARAMETER IntputObject
-    Allows piping from Get-SPRService 
+    Allows piping from Connect-SPRSite
     
 .EXAMPLE
     Get-SPRList -Uri intranet.ad.local -ListName 'My List'
@@ -32,7 +32,7 @@
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
     
 .EXAMPLE
-    Get-SPRService -Uri intranet.ad.local | Get-SPRList -ListName 'My List'
+    Connect-SPRSite -Uri intranet.ad.local | Get-SPRList -ListName 'My List'
 
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
     
@@ -46,7 +46,7 @@
         [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
         [string]$Uri,
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string[]]$ListName,
         [int]$RowLimit = 0,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
@@ -68,22 +68,23 @@
         }
         
         foreach ($server in $InputObject) {
-            try {
-                
-                $lists = $server.Web.Lists
-                $list = $lists.GetByTitle($ListName)
-                $server.Load($lists)
-                $server.Load($list)
-                $server.ExecuteQuery()
-                
-                if ($ListName -notin $lists.Title) {
-                    Stop-PSFFunction -EnableException:$EnableException -Message "List $ListName cannot be found on $($server.Url)" -Continue
+            foreach ($currentlist in $ListName) {
+                try {
+                    $lists = $server.Web.Lists
+                    $list = $lists.GetByTitle($currentlist)
+                    $server.Load($lists)
+                    $server.Load($list)
+                    $server.ExecuteQuery()
+                    
+                    if ($currentlist -notin $lists.Title) {
+                        Stop-PSFFunction -EnableException:$EnableException -Message "List $currentlist cannot be found on $($server.Url)" -Continue
+                    }
+                    
+                    Select-DefaultView -InputObject $list -Property Id, Title, Description, ItemCount, BaseType, Created
                 }
-                
-                Select-DefaultView -InputObject $list -Property Id, Title, Description, BaseType, Created, ItemCount
-            }
-            catch {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                }
             }
         }
     }
