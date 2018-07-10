@@ -50,6 +50,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be $script:mylist
             $results.Description | Should -Be "My List Description"
         }
+        #TODO - attempt to create a duplicate list
     }
     
     Context "Get-SPRList" {
