@@ -110,7 +110,7 @@
                 $list.Update()
                 $server.ExecuteQuery()
                 
-                $list | Get-SPRColumnDetail | Where-Object Name -eq $DisplayName | Sort-Object guid -Descending | Select-Object -First 1
+                $list | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object guid -Descending | Select-Object -First 1
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
