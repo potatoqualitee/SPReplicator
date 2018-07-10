@@ -52,10 +52,10 @@
     process {
         if (-not $InputObject) {
             if ($Uri) {
-                $InputObject = Get-SprList -Uri $Uri -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
             }
             elseif ($global:server) {
-                $InputObject = $global:server | Get-SprList -ListName $ListName
+                $InputObject = $global:server | Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"

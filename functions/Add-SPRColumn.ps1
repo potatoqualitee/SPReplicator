@@ -59,17 +59,27 @@
         [Parameter(Mandatory)]
         [string]$ColumnName,
         [string]$DisplayName = $ColumnName,
+        [string]$Type = "Text",
+        [string]$Description,
+        [string]$Xml,
+        [string]$Default,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
+        [switch]$DoNotAddToDefaultView,
+        [ValidateSet("DefaultValue", "AddToDefaultContentType", "AddToNoContentType", "AddToAllContentTypes", "AddFieldInternalNameHint", "AddFieldToDefaultView", "AddFieldCheckDisplayName")]
+        [string[]]$FieldOption = "AddFieldInternalNameHint",
         [switch]$EnableException
     )
+    begin {
+        $addtodefaultlist = $DoNotAddToDefaultView -eq $false
+    }
     process {
         if (-not $InputObject) {
             if ($Uri) {
-                $InputObject = Get-SprList -Uri $Uri -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
             }
             elseif ($global:server) {
-                $InputObject = $global:server | Get-SprList -ListName $ListName
+                $InputObject = $global:server | Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
@@ -82,16 +92,21 @@
                 $server = $list.Context
                 $server.Load($list.Fields)
                 $server.ExecuteQuery()
-                # todo - add new datatypes
-                $xml = "<Field Type='Text' Name='$ColumnName' StaticName='$ColumnName' DisplayName='$DisplayName' />"
-                $field = $list.Fields.AddFieldAsXml($xml, $true, "AddFieldInternalNameHint") # $true = addToDefaultView, "AddFieldInternalNameHint"
+                if (-not $Xml) {
+                    $xml = "<Field Type='$Type' Name='$ColumnName' StaticName='$ColumnName' DisplayName='$DisplayName' Description ='$Description'  />"
+                }
+                if ($Default) {
+                    $xml = $xml.Replace(" />", "><Default>$Default</Default></Field>")
+                }
+                
+                $field = $list.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
                 $list.Update()
                 $server.Load($list)
                 $server.ExecuteQuery()
                 $list.Update()
                 $server.ExecuteQuery()
                 
-                Get-SPRList -Uri $server.Url -ListName $ListName | Select-DefaultView -Property Title, RootFolder, DefaultViewUrl, Created
+                $list | Get-SPRColumnDetail | Where-Object Name -eq $DisplayName | Sort-Object guid -Descending | Select-Object -First 1
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
