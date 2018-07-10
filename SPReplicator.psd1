@@ -53,7 +53,7 @@
     # ScriptsToProcess = @()
     
     # Type files (.ps1xml) to be loaded when importing this module
-    TypesToProcess    = @("xml\SPReplicator.Types.ps1xml")
+    # TypesToProcess    = @("xml\SPReplicator.Types.ps1xml")
     
     # Format files (.ps1xml) to be loaded when importing this module
     # FormatsToProcess = @()
