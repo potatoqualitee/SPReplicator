@@ -2,34 +2,34 @@
 <#
 .SYNOPSIS
     Get list of SharePoint templates.
-    
+
 .DESCRIPTION
     Get list of SharePoint templates.
 
 .PARAMETER Id
     Return only templates with specific IDs
-   
+
 .PARAMETER Name
     Return only templates with specific names
-    
+
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
-.EXAMPLE    
+.EXAMPLE
     Get-SPRListTemplate
-    
+
     Returns all templates and their corresponding numbers
-    
-.EXAMPLE    
+
+.EXAMPLE
     Get-SPRListTemplate -Id 100, 118
-    
+
     Returns all templates and their corresponding numbers that match 100 and 118
-    
-.EXAMPLE    
+
+.EXAMPLE
     Get-SPRListTemplate -Name AdminTasks, HealthReports
-    
+
     Returns templates and their corresponding numbers that match the name AdminTasks and HealthReports
 #>
     [CmdletBinding()]
