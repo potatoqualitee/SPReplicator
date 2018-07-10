@@ -43,9 +43,9 @@
         [switch]$EnableException
     )
     process {
-        Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Uri"
         if (-not $InputObject) {
             if ($Uri) {
+                Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Uri"
                 $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
             }
             elseif ($global:server) {
@@ -57,7 +57,8 @@
             }
         }
         try {
-            $global:server.Dispose()
+            Write-PSFMessage -Level Verbose -Message "Disconnecting to the SharePoint service at $($InputObject.Url)"
+            $InputObject.Dispose()
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
