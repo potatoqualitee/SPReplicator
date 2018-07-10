@@ -83,7 +83,8 @@
         foreach ($list in $InputObject) {
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target "hello" -Action "Removing record $($list.Id) from $($list.Title)")) {
                 try {
-                    $list.DeleteObject()
+                    #$list.DeleteObject()
+                    $global:server.Web.Lists.GetByTitle($InputObject.Title).DeleteObject()
                     $global:server.ExecuteQuery()
                 }
                 catch {
