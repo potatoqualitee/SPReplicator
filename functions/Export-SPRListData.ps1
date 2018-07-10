@@ -1,10 +1,10 @@
 ﻿Function Export-SPRListData {
 <#
 .SYNOPSIS
-    Exports all items to a file from a SharePoint list.
+    Exports all items from a SharePoint list to a file.
     
 .DESCRIPTION
-     Exports all items to a file from a SharePoint list.
+     Exports all items from a SharePoint list to a file.
     
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
@@ -16,7 +16,7 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
     
 .PARAMETER Path
-    The Path to the exported PowerShell object
+    The target xml file location.
 
 .PARAMETER InputObject
     Allows piping from Get-SPRList or Get-SPRListData

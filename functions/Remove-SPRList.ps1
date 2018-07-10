@@ -1,10 +1,10 @@
 ﻿Function Remove-SPRList {
 <#
 .SYNOPSIS
-    Deletes all items from a SharePoint list.
+    Deletes lists from a SharePoint site collection.
     
 .DESCRIPTION
-     Deletes all items from a SharePoint list.
+    Deletes lists items from a SharePoint  site collection.
     
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
@@ -16,7 +16,7 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER InputObject
-    Allows piping from Get-SPRList or Get-SPRListData
+    Allows piping from Get-SPRList
 
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -82,7 +82,6 @@
         foreach ($list in $InputObject) {
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target "hello" -Action "Removing record $($list.Id) from $($list.Title)")) {
                 try {
-                    #$list.DeleteObject()
                     $global:server.Web.Lists.GetByTitle($InputObject.Title).DeleteObject()
                     $global:server.ExecuteQuery()
                 }

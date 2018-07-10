@@ -31,6 +31,8 @@
     This commands builds up the XML for AddFieldAsXml. If you want to override that and just pass
     an xml command, use this parameter.
     
+    See this site for examples: https://karinebosch.wordpress.com/my-articles/creating-fields-using-csom/
+    
  .PARAMETER Default
     Sets the default value of the column.
   

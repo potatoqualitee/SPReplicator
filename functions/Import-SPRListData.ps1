@@ -18,7 +18,7 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
   
 .PARAMETER Path
-    The Path to the exported PowerShell object
+    The target xml file location.
 
 .PARAMETER InputObject
     Allows piping from Get-ChildItem
@@ -47,7 +47,7 @@
         [string]$ListName,
         [string]$Path,
         [parameter(ValueFromPipeline)]
-        [System.IO.FileInfo]$InputObject,
+        [System.IO.FileInfo[]]$InputObject,
         [switch]$EnableException
     )
     process {

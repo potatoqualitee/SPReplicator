@@ -1,10 +1,10 @@
 ﻿Function Remove-SPRListData {
 <#
 .SYNOPSIS
-    Deletes all items from a SharePoint list.
+    Deletes items from a SharePoint list.
     
 .DESCRIPTION
-     Deletes all items from a SharePoint list.
+    Deletes items from a SharePoint list.
     
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
@@ -16,10 +16,10 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Id
-    Remove only rows with specific IDs.
+    Removes only rows with specific IDs.
  
 .PARAMETER InputObject
-    Allows piping from Get-SPRList or Get-SPRListData.
+    Allows piping from Get-SPRListData.
 
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -84,6 +84,9 @@
         }
         
         foreach ($item in $InputObject) {
+            if (-not $item.ListObject) {
+                Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
+            }
             $list = $item.ListObject
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Removing record $($item.Id) from $($item.ListObject.Title)")) {
                 try {

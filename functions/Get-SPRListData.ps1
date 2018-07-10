@@ -8,12 +8,12 @@ Function Get-SPRListData {
     
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
-
-.PARAMETER ListName
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
     
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
+    
+.PARAMETER ListName
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
  
 .PARAMETER Id
     Return only rows with specific IDs
