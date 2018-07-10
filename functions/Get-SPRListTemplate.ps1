@@ -41,7 +41,7 @@
     process {
         # string description = Enumerations.GetEnumDescription((MyEnum)value);
         try {
-            $class = [Microsoft.SharePoint.Client.FieldType]
+            $class = [Microsoft.SharePoint.Client.ListTemplateType]
             if ($Id) {
                 foreach ($template in [System.Enum]::GetNames($class)) {
                     $number = [int][System.Enum]::Parse($class, $template)
