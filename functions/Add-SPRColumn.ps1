@@ -102,7 +102,7 @@
                 if ($Default) {
                     $xml = $xml.Replace(" />", "><Default>$Default</Default></Field>")
                 }
-                
+                Write-PSFMessage -Level Verbose -Message "Adding $ColumnName as $Type"
                 $field = $list.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
                 $list.Update()
                 $server.Load($list)
