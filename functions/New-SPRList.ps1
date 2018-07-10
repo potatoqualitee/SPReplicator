@@ -29,6 +29,12 @@
 .PARAMETER InputObject
     Allows piping from Connect-SPRSite 
     
+.PARAMETER WhatIf
+    If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
+
+.PARAMETER Confirm
+    If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
+   
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -54,7 +60,7 @@
     
     Gets list items with ID 100, 101 and 105
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Uri,
@@ -73,8 +79,8 @@
             if ($Uri) {
                 $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
             }
-            elseif ($global:server) {
-                $InputObject = $global:server
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or run Connect-SPRSite"
@@ -95,13 +101,14 @@
                 $templateid = (Get-SPRListTemplate -Name $Template).Id
                 Write-PSFMessage -Level Verbose -Message "Associating templateid $templateid"
                 $listinfo.TemplateType = $templateid
-                $List = $server.Web.Lists.Add($listinfo)
-                $List.Description = $Description
-                $List.Update()
-                Write-PSFMessage -Level Verbose -Message "Executing query"
-                $server.ExecuteQuery()
-                
-                $server | Get-SPRList -ListName $ListName | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
+                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Adding list $ListName")) {
+                    $List = $server.Web.Lists.Add($listinfo)
+                    $List.Description = $Description
+                    $List.Update()
+                    Write-PSFMessage -Level Verbose -Message "Executing query"
+                    $server.ExecuteQuery()
+                    $global:spsite | Get-SPRList -ListName $ListName | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
+                }
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

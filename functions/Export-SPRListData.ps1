@@ -57,8 +57,8 @@
             if ($Uri) {
                 $InputObject = Get-SprListData -Uri $Uri -Credential $Credential -ListName $ListName
             }
-            elseif ($global:server) {
-                $InputObject = $global:server | Get-SprListData -ListName $ListName
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite | Get-SprListData -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"

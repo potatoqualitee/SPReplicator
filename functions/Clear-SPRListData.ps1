@@ -65,8 +65,8 @@
             if ($Uri) {
                 $InputObject = Get-SPRListData -Uri $Uri -Credential $Credential -ListName $ListName
             }
-            elseif ($global:server) {
-                $InputObject = $global:server | Get-SPRListData -ListName $ListName
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite | Get-SPRListData -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
@@ -82,7 +82,7 @@
         if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Removing Batch")) {
             try {
                 $InputObject.ListItem.DeleteObject()
-                $global:server.ExecuteQuery()
+                $global:spsite.ExecuteQuery()
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

@@ -20,9 +20,8 @@ $ModuleBase = Split-Path -Parent $MyInvocation.MyCommand.Path
 # This should stop people making breaking changes to the tests without first altering the test
 Remove-Module SPReplicator -Force -ErrorAction SilentlyContinue
 Import-Module $ModuleBase\..\SPReplicator.psd1
-
 $includedNames = (Get-ChildItem "$PSScriptRoot\..\functions" | Where-Object Name -like "*.ps1" ).BaseName
-$commands = Get-Command -Module (Get-Module dbachecks) -CommandType Cmdlet, Function, Workflow | Where-Object Name -in $includedNames
+$commands = Get-Command -Module (Get-Module SPReplicator) -CommandType Cmdlet, Function, Workflow | Where-Object Name -in $includedNames
 
 ## When testing help, remember that help is cached at the beginning of each session.
 ## To test, restart session.

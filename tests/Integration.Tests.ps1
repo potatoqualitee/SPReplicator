@@ -6,8 +6,8 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         $list = Get-SPRList -Uri $script:uri -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        # all commands set $global:server, remove this variable to start from scratch
-        $global:server = $null
+        # all commands set $global:spsite, remove this variable to start from scratch
+        $global:spsite = $null
     }
     AfterAll {
         $list = Get-SPRList -Uri $script:uri -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
@@ -56,7 +56,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Get-SPRList" {
-        $global:server = $null
+        $global:spsite = $null
         It "Gets a list named $script:mylist with a basetype GenericList" {
             $results = Get-SPRList -Uri $script:uri -ListName $script:mylist
             $results.Title | Should -Be $script:mylist
@@ -184,7 +184,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $row = Get-SPRListData -ListName $script:mylist -Id $script:id
             $row | Should -Not -Be $null
             $results = Get-SPRListData -ListName $script:mylist | Where-Object Id -in $script:id | Remove-SPRListData -Confirm:$false
-            $results | Should -Be $null
+            $results.Site | Should -Not -Be $null
             $row = Get-SPRListData -ListName $script:mylist -Id $script:id  3> $null
             $row | Should -Be $null
         }
@@ -193,12 +193,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Clear-SPRListData" {
         It "Removes data from $script:mylist" {
             $results = Clear-SPRListData -Uri $script:uri -ListName $script:mylist -Confirm:$false
+            Get-SPRListData -Uri $script:uri -ListName $script:mylist | Should -Be $null
         }
     }
     
     Context "Remove-SPRList" {
         It "Removes $script:mylist" {
-            $results = Get-SPRList -Uri $script:uri -ListName 'My List', $script:mylist  | Remove-SPRList -Confirm:$false
+            $results = Get-SPRList -Uri $script:uri -ListName 'My List', $script:mylist | Remove-SPRList -Confirm:$false
+            Get-SPRList -Uri $script:uri -ListName $script:mylist | Should -Be $null
+            
         }
     }
 }

@@ -50,26 +50,29 @@
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
- 
-.EXAMPLE
-    Add-SPRColumn -Uri intranet.ad.local -ListName 'My List'
 
-    Gets data from My List on intranet.ad.local. Figures out the wsdl address automatically.
+.EXAMPLE
+    Connect-SPRSite -Uri intranet.ad.local
+    Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description "One column"
+    
+    Adds a text column named TestColumn to 'My List' on intranet.ad.local 
     
 .EXAMPLE
-    Add-SPRColumn -ListName 'My List' -Uri intranet.ad.local | Add-SPRColumn
+    Add-SPRColumn -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) -ColumnName TestColumn
 
-     Gets data from My List on intranet.ad.local.
-    
-.EXAMPLE
-    Add-SPRColumn -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
-
-    Gets data from My List and logs into the webapp as ad\user.
+    Adds a text column named TestColumn to 'My List' on intranet.ad.local and logs into the site collection as ad\user.
     
 .EXAMPLE    
-    Add-SPRColumn -Uri sharepoint2016 -ListName 'My List' -Id 100, 101, 105
+    Add-SPRColumn -Uri intranet.ad.local -ListName List1 -ColumnName Age -Default 40 -Type Integer
     
-    Gets list items with ID 100, 101 and 105
+    Adds a number column named Age to List1 on intranet.ad.local and sets the default value to 40s.
+  
+.EXAMPLE    
+    $xml = "<Field Type='URL' Name='EmployeePicture' StaticName='EmployeePicture' DisplayName='Employee Picture' Format='Image'/>"
+    Add-SPRColumn -ListName List1 -Uri intranet.ad.local -Xml $xml
+    
+    Adds a column named EmployeePicture with the URL datatype to List1 on intranet.ad.local
+    
 #>
     [CmdletBinding()]
     param (
@@ -78,7 +81,6 @@
         [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
-        [Parameter(Mandatory)]
         [string]$ColumnName,
         [string]$DisplayName,
         [string]$Type = "Text",
@@ -99,12 +101,20 @@
         $addtodefaultlist = $DoNotAddToDefaultView -eq $false
     }
     process {
+        if (-not $ColumnName -and -not $Xml) {
+            Stop-PSFFunction -EnableException:$EnableException -Message "You must specify ColumnName or Xml"
+            return
+        }
+        if ($Xml -and $Default) {
+            Stop-PSFFunction -EnableException:$EnableException -Message "You cannot specify Xml and Default. Add the default to the Xml instead."
+            return
+        }
         if (-not $InputObject) {
             if ($Uri) {
                 $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
             }
-            elseif ($global:server) {
-                $InputObject = $global:server | Get-SPRList -ListName $ListName
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite | Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
@@ -117,19 +127,22 @@
                 $server = $list.Context
                 $server.Load($list.Fields)
                 $server.ExecuteQuery()
+                
                 if (-not $Xml) {
                     $xml = "<Field Type='$Type' Name='$ColumnName' StaticName='$ColumnName' DisplayName='$DisplayName' Description ='$Description'  />"
+                    if ($Default) {
+                        $xml = $xml.Replace(" />", "><Default>$Default</Default></Field>")
+                    }
+                }
+                if (-not $ColumnName) {
+                    $xmldata = [xml]($xml.ToString())
+                    $ColumnName = $xmldata.Field.Name
                 }
                 Write-PSFMessage -Level Verbose -Message $xml
-                if ($Default) {
-                    $xml = $xml.Replace(" />", "><Default>$Default</Default></Field>")
-                }
-                Write-PSFMessage -Level Verbose -Message "Adding $ColumnName as $Type"
+                Write-PSFMessage -Level Verbose -Message "Added $ColumnName as $Type"
                 $field = $list.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
                 $list.Update()
                 $server.Load($list)
-                $server.ExecuteQuery()
-                $list.Update()
                 $server.ExecuteQuery()
                 
                 $list | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object guid -Descending | Select-Object -First 1

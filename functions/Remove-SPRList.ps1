@@ -65,8 +65,8 @@
             if ($Uri) {
                 $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
             }
-            elseif ($global:server) {
-                $InputObject = $global:server | Get-SPRList -ListName $ListName
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite | Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
@@ -75,15 +75,22 @@
         }
         
         if (-not $InputObject) {
-            Stop-PSFFunction -EnableException:$EnableException -Message "No records to delete."
+            Stop-PSFFunction -EnableException:$EnableException -Message "No list to delete."
             return
         }
         
         foreach ($list in $InputObject) {
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target "hello" -Action "Removing record $($list.Id) from $($list.Title)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Removing record $($list.Id) from $($list.Title)")) {
                 try {
-                    $global:server.Web.Lists.GetByTitle($InputObject.Title).DeleteObject()
-                    $global:server.ExecuteQuery()
+                    Write-PSFMessage -Level Verbose -Message "Deleting $($list.Title) from $($list.Context)"
+                    $list.DeleteObject()
+                    $global:spsite.ExecuteQuery()
+                    [pscustomobject]@{
+                        Site = $site
+                        ListName = $list.Title
+                        ItemId = $list.Id
+                        Status = "Deleted"
+                    }
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

@@ -48,13 +48,13 @@
     process {
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Uri"
         try {
-            $global:server = New-Object Microsoft.SharePoint.Client.ClientContext($Uri)
+            $global:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Uri)
             if ($Credential) {
-                $global:server.Credentials
+                $global:spsite.Credentials
             }
-            $global:server.ExecuteQuery()
+            $global:spsite.ExecuteQuery()
             
-            Add-Member -InputObject $global:server -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force -PassThru
+            Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force -PassThru
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

@@ -51,8 +51,8 @@
                 Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Uri"
                 $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
             }
-            elseif ($global:server) {
-                $InputObject = $global:server
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or run Connect-SPRSite"

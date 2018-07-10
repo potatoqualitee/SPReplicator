@@ -40,7 +40,7 @@
 .EXAMPLE
     Get-SPRList -ListName 'My List' -Uri intranet.ad.local | Remove-SPRListData -Confirm:$false
 
-     Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
+    Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
     
 .EXAMPLE
     Get-SPRListData -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Remove-SPRListData -Confirm:$false
@@ -69,8 +69,8 @@
             if ($Uri) {
                 $InputObject = Get-SPRListData -Uri $Uri -Credential $Credential -ListName $ListName -Id $Id
             }
-            elseif ($global:server) {
-                $InputObject = $global:server | Get-SPRListData -ListName $ListName -Id $Id
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite | Get-SPRListData -ListName $ListName -Id $Id
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
@@ -83,6 +83,10 @@
             return
         }
         
+        if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
+            $InputObject = $InputObject | Get-SPRListData
+        }
+        
         foreach ($item in $InputObject) {
             if (-not $item.ListObject) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
@@ -90,8 +94,15 @@
             $list = $item.ListObject
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Removing record $($item.Id) from $($item.ListObject.Title)")) {
                 try {
+                    Write-PSFMessage -Level Verbose -Message "Removing $($item.Id) from $($list.Title)"
                     $list.GetItemById($item.Id).DeleteObject()
-                    $global:server.ExecuteQuery()
+                    $global:spsite.ExecuteQuery()
+                    [pscustomobject]@{
+                        Site = $list.Context
+                        ListName = $list.Title
+                        ItemId   = $item.Id
+                        Status = "Deleted"
+                    }
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

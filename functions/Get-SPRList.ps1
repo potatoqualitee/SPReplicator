@@ -54,8 +54,8 @@
             if ($Uri) {
                 $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
             }
-            elseif ($global:server) {
-                $InputObject = $global:server
+            elseif ($global:spsite) {
+                $InputObject = $global:spsite
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or run Connect-SPRSite"
@@ -66,9 +66,12 @@
         foreach ($server in $InputObject) {
             if (-not $ListName) {
                 try {
+                    $web = $server.Web
+                    $server.Load($web)
+                    $server.ExecuteQuery()
                     $lists = $server.Web.Lists
-                    $global:server.Load($lists)
-                    $global:server.ExecuteQuery()
+                    $server.Load($lists)
+                    $server.ExecuteQuery()
                     $lists | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
                 }
                 catch {
@@ -78,21 +81,22 @@
             else {
                 foreach ($currentlist in $ListName) {
                     try {
+                        $web = $server.Web
+                        $server.Load($web)
+                        $server.ExecuteQuery()
                         $lists = $server.Web.Lists
-                        $global:server.Load($lists)
-                        $global:server.ExecuteQuery()
+                        $server.Load($lists)
+                        $server.ExecuteQuery()
                         
                         if ($currentlist -notin $lists.Title) {
-                            # Let's see if this works better
-                            continue
-                            Stop-PSFFunction -EnableException:$EnableException -Message "List $currentlist cannot be found on $($global:server.Url)" -Continue
+                            Stop-PSFFunction -EnableException:$EnableException -Message "List $currentlist cannot be found on $($server.Url)" -Continue
                         }
                         
-                        Write-PSFMessage -Level Verbose -Message "Getting $currntlist from $global:server"
-                        $list = $lists.GetByTitle($currentlist)
-                        $global:server.Load($list)
-                        $global:server.ExecuteQuery()
-                        Select-DefaultView -InputObject $list -Property Id, Title, Description, ItemCount, BaseType, Created
+                        $list = $lists | Where-Object Title -eq $currentlist
+                        Write-PSFMessage -Level Verbose -Message "Getting $currentlist from $($server.Url)"
+                        $server.Load($list)
+                        $server.ExecuteQuery()
+                        $list | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
                     }
                     catch {
                         Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
