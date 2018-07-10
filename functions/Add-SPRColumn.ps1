@@ -58,7 +58,7 @@
         [string]$ListName,
         [Parameter(Mandatory)]
         [string]$ColumnName,
-        [string]$DisplayName = $ColumnName,
+        [string]$DisplayName,
         [string]$Type = "Text",
         [string]$Description,
         [string]$Xml,
@@ -71,6 +71,9 @@
         [switch]$EnableException
     )
     begin {
+        if (-not $DisplayName) {
+            $DisplayName = $ColumnName
+        }
         $addtodefaultlist = $DoNotAddToDefaultView -eq $false
     }
     process {
@@ -95,6 +98,7 @@
                 if (-not $Xml) {
                     $xml = "<Field Type='$Type' Name='$ColumnName' StaticName='$ColumnName' DisplayName='$DisplayName' Description ='$Description'  />"
                 }
+                Write-PSFMessage -Level Verbose -Message $xml
                 if ($Default) {
                     $xml = $xml.Replace(" />", "><Default>$Default</Default></Field>")
                 }

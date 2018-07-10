@@ -52,7 +52,7 @@
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Mandatory, HelpMessage = "SharePoint lists.asmx?wsdl location")]
+        [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
         [string]$Uri,
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
