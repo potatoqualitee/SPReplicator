@@ -79,21 +79,24 @@
         
         foreach ($server in $InputObject) {
             try {
+                Write-PSFMessage -Level Verbose -Message "Loading up all lists"
                 $lists = $server.Web.Lists
                 $server.Load($lists)
                 $server.ExecuteQuery()
                 
-                #Create list with list template
+                Write-PSFMessage -Level Verbose -Message "Creating list"
                 $listinfo = New-Object Microsoft.SharePoint.Client.ListCreationInformation
                 $listinfo.Title = $ListName
                 $templateid = (Get-SPRListTemplate -Name $Template).Id
+                Write-PSFMessage -Level Verbose -Message "Associating templateid $templateid"
                 $listinfo.TemplateType = $templateid
                 $List = $server.Web.Lists.Add($listinfo)
                 $List.Description = $Description
                 $List.Update()
+                Write-PSFMessage -Level Verbose -Message "Executing query"
                 $server.ExecuteQuery()
                 
-                Get-SPRList -Uri $server.Url -ListName $ListName | Select-DefaultView -Property Title, RootFolder, DefaultViewUrl, Created
+                $server | Get-SPRList -ListName $ListName | Select-DefaultView -Property Title, RootFolder, DefaultViewUrl, Created
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
