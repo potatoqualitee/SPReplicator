@@ -56,6 +56,9 @@
         [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
+        [Parameter(Mandatory)]
+        [string]$ColumnName,
+        [string]$DisplayName = $ColumnName,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -79,8 +82,8 @@
                 $server = $list.Context
                 $server.Load($list.Fields)
                 $server.ExecuteQuery()
-                $field = $list.Fields.GetByInternalNameOrTitle("DemoField")
-                $list.Fields.Add($field)
+                $xml = "<Field Type='Text' Name='$ColumnName' StaticName='$ColumnName' DisplayName='$DisplayName' />"
+                $field = $list.Fields.AddFieldAsXml($xml, $true, "AddFieldInternalNameHint") # $true = addToDefaultView, "AddFieldInternalNameHint"
                 $list.Update()
                 $server.Load($list)
                 $server.ExecuteQuery()
