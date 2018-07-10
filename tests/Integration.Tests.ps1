@@ -9,6 +9,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         # all commands set $global:server, remove this variable to start from scratch
         $global:server = $null
     }
+    AfterAll {
+        $list = Get-SPRList -Uri $script:uri -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
+        $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
+    }
     Context "Connect-SPRSite" {
         It "Connects to a site" {
             $results = Connect-SPRSite -Uri $script:uri
@@ -39,16 +43,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "New-SPRList" {
         It "Creates a new list named $script:mylist" {
-            $results = New-SPRList -ListName $script:mylist
-            $results.Title | Should -Be $script:mylist
-            $results.Description.Length | Should -Be 0
-            $results.GetType().Name | Should -Be 'List'
-            $null = $results | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue
-        }
-        It "Creates a new list named $script:mylist with a description" {
             $results = New-SPRList -ListName $script:mylist -Description "My List Description"
             $results.Title | Should -Be $script:mylist
+            $results.GetType().Name | Should -Be 'List'
             $results.Description | Should -Be "My List Description"
+        }
+        It "Does not create a duplicate list named $script:mylist" {
+            $results = New-SPRList -ListName $script:mylist -WarningAction SilentlyContinue 3>$null
+            $results | Should -Be $null
         }
         #TODO - attempt to create a duplicate list
     }
@@ -114,6 +116,21 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
                 $results.TestColumn | Should -Be 'Sample SQL Data'
             }
         }
+        
+        It "Autocreates new list" {
+            $newlistname = 'Sample test create new list'
+            $object = @()
+            $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
+            $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
+            $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
+            $results = $object | Add-SPRListItem -Uri $script:uri -ListName $newlistname -AutoCreateList
+            $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
+            $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
+            
+            $results = Get-SPRList -Uri $script:uri -ListName $newlistname
+            $results | Should -Not -Be $null
+            $results | Remove-SPRList -Confirm:$false
+        }
     }
     
     Context "Get-SPRListData" {
@@ -122,9 +139,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title.Count | Should -BeGreaterThan 1
             $results.Title | Should -Contain 'Hello SQL'
             $results.TestColumn | Should -Contain 'Sample SQL Data'
+            $script:id = $results[0].Id
         }
-        $script:id = $results | Select-Object -First 1 -ExpandProperty Id
-        It "Gets one data based on ID, doesn't require Uri" {
+        
+        It "Gets one data based on ID ($script:id), doesn't require Uri" {
             $results = Get-SPRListData -ListName $script:mylist -Id $script:id
             $results.Title.Count | Should -Be 1
             $results.Id | Should -Be $script:id
@@ -146,16 +164,16 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Import-SPRListData" {
         It "imports data from $script:filename" {
             $count = (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count
-            $result = Import-SPRListData -Uri $script:uri -ListName $script:mylist -Path $script:filename
-            (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
+            $results = Import-SPRListData -Uri $script:uri -ListName $script:mylist -Path $script:filename
             $results.Title | Should -Contain 'Hello SQL'
+            (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
         }
     }
     
     Context "Add-SPRListItem" {
         It "Imports data from $script:filename" {
             $count = (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count
-            $result = Import-CliXml -Path $script:filename | Add-SPRListItem -Uri $script:uri -ListName $script:mylist
+            $results = Import-CliXml -Path $script:filename | Add-SPRListItem -Uri $script:uri -ListName $script:mylist
             (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
             $results.Title | Should -Contain 'Hello SQL'
         }
@@ -165,23 +183,22 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         It "Removes specific data from $script:mylist" {
             $row = Get-SPRListData -ListName $script:mylist -Id $script:id
             $row | Should -Not -Be $null
-            $result = Get-SPRListData -ListName $script:mylist | Where-Object Id -in $script:id | Remove-SPRListData -Confirm:$false
-            $result | Should -Be $null
+            $results = Get-SPRListData -ListName $script:mylist | Where-Object Id -in $script:id | Remove-SPRListData -Confirm:$false
+            $results | Should -Be $null
             $row = Get-SPRListData -ListName $script:mylist -Id $script:id  3> $null
             $row | Should -Be $null
-            $warn | Should -Not -Be $null
         }
     }
     
     Context "Clear-SPRListData" {
         It "Removes data from $script:mylist" {
-            $result = Clear-SPRListData -Uri $script:uri -ListName $script:mylist -Confirm:$false
+            $results = Clear-SPRListData -Uri $script:uri -ListName $script:mylist -Confirm:$false
         }
     }
     
     Context "Remove-SPRList" {
         It "Removes $script:mylist" {
-            $result = Get-SPRList -Uri $script:uri -ListName 'My List' | Remove-SPRList -Confirm:$false
+            $results = Get-SPRList -Uri $script:uri -ListName 'My List', $script:mylist  | Remove-SPRList -Confirm:$false
         }
     }
 }
