@@ -82,7 +82,7 @@
         if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Removing Batch")) {
             try {
                 $InputObject.ListItem.DeleteObject()
-                $InputObject.ListItem.Context.ExecuteQuery()
+                $global:server.ExecuteQuery()
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
