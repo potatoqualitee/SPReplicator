@@ -82,6 +82,7 @@
                 $server = $list.Context
                 $server.Load($list.Fields)
                 $server.ExecuteQuery()
+                # todo - add new datatypes
                 $xml = "<Field Type='Text' Name='$ColumnName' StaticName='$ColumnName' DisplayName='$DisplayName' />"
                 $field = $list.Fields.AddFieldAsXml($xml, $true, "AddFieldInternalNameHint") # $true = addToDefaultView, "AddFieldInternalNameHint"
                 $list.Update()
@@ -99,57 +100,3 @@
         }
     }
 }
-
-<#
-
-#Retrieve site columns (fields)
-                $sitecolumns = $server.Web.AvailableFields
-                $server.Load($sitecolumns)
-                $server.ExecuteQuery()
-                
-                #Grab city and company fields
-                $City = $server.Web.AvailableFields | Where-Object { $_.Title -eq "City" }
-                $Company = $server.Web.AvailableFields | Where-Object { $_.Title -eq "Company" }
-                $server.Load($City)
-                $server.Load($Company)
-                $server.ExecuteQuery()
-                
-                #Add fields to the list
-                $List.Fields.Add($City)
-                $List.Fields.Add($Company)
-                $List.Update()
-                $server.ExecuteQuery()
-                
-                #Add fields to the default view
-                $DefaultView = $List.DefaultView
-                $DefaultView.ViewFields.Add("City")
-                $DefaultView.ViewFields.Add("Company")
-                $DefaultView.Update()
-                $server.ExecuteQuery()
-                
-                #Adds an item to the list
-                $ListItemInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
-                $Item = $List.AddItem($ListItemInfo)
-                $Item["Title"] = "New Item"
-                $Item["Company"] = "Contoso"
-                $Item["WorkCity"] = "London"
-                $Item.Update()
-                $server.ExecuteQuery()
-
-# Create Single List Item
-$ListItemCreationInformation = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
-$NewListItem = $List.AddItem($ListItemCreationInformation)
-$NewListItem["Title"] = 'xxx'
-$NewListItem.Update()
-$ClientContext.ExecuteQuery()
-
-# Loop Create List Item
-for ($i=11; $i -le 20; $i++)
-{
-  $ListItemCreationInformation = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
-  $NewListItem = $List.AddItem($ListItemCreationInformation)
-  $NewListItem["Title"] = "abc$($i)"
-  $NewListItem.Update()
-  $ClientContext.ExecuteQuery()
-}
-#>
