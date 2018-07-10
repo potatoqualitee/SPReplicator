@@ -64,6 +64,7 @@
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
         'Connect-SPRSite',
+        'Disconnect-SPRSite',
         'Clear-SPRListData',
         'Get-SPRListData',
         'Get-SPRList',
@@ -72,7 +73,8 @@
         'Export-SPRListData',
         'Import-SPRListData',
         'Get-SPRListTemplate',
-        'New-SPRList'
+        'New-SPRList',
+        'Remove-SPRListData'
     )
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
