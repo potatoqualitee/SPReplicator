@@ -1,4 +1,4 @@
-﻿Function Clear-SPRListData {
+﻿Function Remove-SPRList {
 <#
 .SYNOPSIS
     Deletes all items from a SharePoint list using a Web service proxy object.
@@ -30,22 +30,22 @@
     If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
 .EXAMPLE
-    Clear-SPRListData -Uri intranet.ad.local -ListName 'My List'
+    Remove-SPRList -Uri intranet.ad.local -ListName 'My List'
 
     Deletes all items from My List on intranet.ad.local. Prompts for confirmation.
     
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Uri intranet.ad.local | Clear-SPRListData -Confirm:$false
+    Get-SPRList -ListName 'My List' -Uri intranet.ad.local | Remove-SPRList -Confirm:$false
 
      Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
     
 .EXAMPLE
-    Get-SPRListData -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Clear-SPRListData -Confirm:$false
+    Get-SPRListData -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Remove-SPRList -Confirm:$false
 
     Deletes all items from My List by logging into the webapp as ad\user.
     
 .EXAMPLE
-    Clear-SPRListData -Uri intranet.ad.local -ListName 'My List'
+    Remove-SPRList -Uri intranet.ad.local -ListName 'My List'
     
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
@@ -55,6 +55,7 @@
         [string]$Uri,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
+        [int[]]$Id,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
@@ -63,10 +64,10 @@
     process {
         if (-not $InputObject) {
             if ($Uri) {
-                $InputObject = Get-SPRListData -Uri $Uri -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
             }
             elseif ($global:server) {
-                $InputObject = $global:server | Get-SPRListData -ListName $ListName
+                $InputObject = $global:server | Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
@@ -79,13 +80,15 @@
             return
         }
         
-        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Removing Batch")) {
-            try {
-                $InputObject.ListItem.DeleteObject()
-                $global:server.ExecuteQuery()
-            }
-            catch {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+        foreach ($list in $InputObject) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target "hello" -Action "Removing record $($list.Id) from $($list.Title)")) {
+                try {
+                    $list.DeleteObject()
+                    $global:server.ExecuteQuery()
+                }
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                }
             }
         }
     }

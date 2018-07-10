@@ -64,60 +64,49 @@ Function Get-SPRListData {
     )
     process {
         if (-not $InputObject) {
-            if ($Uri -and $ListName) {
-                $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+            if ($Uri) {
+                $InputObject = Get-SprList -Uri $Uri -Credential $Credential -ListName $ListName
+            }
+            elseif ($global:server) {
+                $InputObject = $global:server | Get-SPRList -ListName $ListName
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName or pipe in the results of Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
                 return
             }
         }
         
         foreach ($list in $InputObject) {
             try {
-                $service = $list.Service
-                $listname = $list.ListName
-                
-                $xmlDoc = $list.XmlDoc
-                $xmlquery = $list.XmlQuery
-                $viewFields = $list.ViewFields
-                $queryOptions = $list.QueryOptions
-                $batchelement = $list.BatchElement
-                
+                Write-PSFMessage -Level Verbose -Message "Performing GetItems"
                 if ($Id) {
-                    $combotext = @()
-                    foreach ($number in $id) {
-                        $combotext += "<Value Type='Counter'>$number</Value>"
+                    foreach ($number in $Id) {
+                        $listItems = $list.GetItemById($number)
                     }
-                    $combotext = $combotext -join ""
-                    $xmlquery.InnerXml = "<Where><In><FieldRef Name='ID'/><Values>$combotext</Values></In></Where>"
+                }
+                else {
+                    $listItems = $list.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
                 }
                 
-                # listName, viewName, XmlNode query, XmlNode viewFields, rowLimit, XmlNode queryOptions, string webID
-                Write-PSFMessage -Level Verbose -Message "Performing GetListItems"
-                $listdata = ($service.GetListItems($listName, $null, $xmlquery, $viewFields, $RowLimit, $queryOptions, $null)).data.row
+                $list.Context.Load($listItems)
+                $list.Context.ExecuteQuery()
+                $fields = $listItems | Select-Object -First 1 -ExpandProperty FieldValues
+                $baseobject = [pscustomobject]@{ }
                 
-                if ($listdata.ows_ID) {
-                    Write-PSFMessage -Level Verbose -Message "Massaging results"
-                    # Get name attribute values (guids) for list and view
-                    $ndlistview = $service.GetListAndView($listname, $null)
-                    $listidname = $ndlistview.ChildNodes.Item(0).Name
-                    $viewidname = $ndlistview.ChildNodes.Item(1).Name
-                    
-                    
-                    # Note that an empty viewname parameter causes the method to use the default view
-                    $batchelement = $list.BatchElement
-                    $batchelement.SetAttribute("onerror", "continue")
-                    $batchelement.SetAttribute("listversion", "1")
-                    $batchelement.SetAttribute("viewname", $viewidname)
-                    
-                    Write-PSFMessage -Level Verbose -Message "Adding extra fields"
-                    $listdata | Add-Member -MemberType NoteProperty -Name Service -Value $service
-                    $listdata | Add-Member -MemberType NoteProperty -Name ListName -Value $ListName
-                    $listdata | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement
-                    
-                    Write-PSFMessage -Level Verbose -Message "Selecting data"
-                    $listdata | Select-Object -ExcludeProperty OuterXml, InnerXml, HasAttributes, PreviousText, BaseURI, HasChildNodes, LastChild, FirstChild, ChildNodes, SchemaInfo, InnerText, NextSibling, PreviousSibling, Item, Name, LocalName, NamespaceURI, Prefix, NodeType, ParentNode, OwnerDocument, Attributes
+                foreach ($column in $fields.Keys) {
+                    Add-Member -InputObject $baseobject -NotePropertyName $column -NotePropertyValue $null
+                }
+                Add-Member -InputObject $baseobject -NotePropertyName ListObject -NotePropertyValue $null
+                Add-Member -InputObject $baseobject -NotePropertyName ListItem -NotePropertyValue $null
+                
+                foreach ($item in $listItems) {
+                    $object = $baseobject.PSObject.Copy()
+                    $object.ListObject = $list
+                    $object.ListItem = $item
+                    foreach ($fieldName in $item.FieldValues.Keys) {
+                        $object.$fieldName = $item.FieldValues[$fieldName]
+                    }
+                    Select-DefaultView -InputObject $object -ExcludeProperty _HasCopyDestinations, _CopySource, owshiddenversion, WorkflowVersion, _UIVersion, _UIVersionString, _ModerationStatus, _ModerationComments, InstanceID, WorkflowInstanceID, Last_x0020_Modified, Created_x0020_Date, FSObjType, SortBehavior, FileLeafRef, UniqueId, SyncClientId, ProgId, ScopeId, File_x0020_Type, MetaInfo, _Level, _IsCurrentVersion, ItemChildCount, FolderChildCount, Restricted, AppAuthor, AppEditor
                 }
             }
             catch {

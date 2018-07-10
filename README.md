@@ -46,12 +46,10 @@ Imports all items from a file into a SharePoint list using a Web service proxy o
 ![image](https://user-images.githubusercontent.com/8278033/42403894-6b91e0d2-8120-11e8-8659-34a7bb942b4a.png)
 
 <!---
-Get-SPRService -Uri sharepoint2016
+Connect-SPRSite -Uri sharepoint2016
 Get-SPRList -Uri sharepoint2016 -ListName 'My List'
 Get-SPRListData -Uri sharepoint2016 -ListName 'My List'
-Get-SPRListData -Uri sharepoint2016 -ListName 'My List' -Id 91
 Get-SPRColumnDetail -Uri sharepoint2016 -ListName 'My List'
-
 
 $object = @()
     $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
@@ -59,9 +57,26 @@ $object = @()
     $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
 Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' -InputObject $object
 
-Export-SPRListData -Uri intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
+Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | 
+Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' 
+
+$item = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | 
+Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' 
+
+Get-SPRListData -Uri sharepoint2016 -ListName 'My List' -Id $item.Id
+
+rm C:\temp\mylist.xml
+Export-SPRListData -Uri sharepoint2016 -ListName 'My List' -Path C:\temp\mylist.xml
+
+Import-CliXml -Path C:\temp\mylist.xml | Add-SPRListItem -Uri sharepoint2016 -ListName 'My List'
 Import-SPRListData -Uri sharepoint2016  -ListName 'My List' -Path C:\temp\mylist.xml
 
 Clear-SPRListData -Uri sharepoint2016 -ListName 'My List' -Confirm:$false
 
+New-SPRList -ListName 'My List'
+New-SPRList -ListName 'My List2'
+Add-SPRColumn -ListName 'My List'
+
+Get-SPRList -Uri sharepoint2016 -ListName 'My List2' | Remove-SPRList -Confirm:$false
+Get-SPRListData -ListName 'My List' | Where-Object Id -in $item.Id | Remove-SPRListData
 -->

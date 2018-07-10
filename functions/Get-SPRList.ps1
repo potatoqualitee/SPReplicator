@@ -24,7 +24,7 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
     
 .PARAMETER IntputObject
-    Allows piping from Get-SPRService 
+    Allows piping from Connect-SPRSite
     
 .EXAMPLE
     Get-SPRList -Uri intranet.ad.local -ListName 'My List'
@@ -32,7 +32,7 @@
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
     
 .EXAMPLE
-    Get-SPRService -Uri intranet.ad.local | Get-SPRList -ListName 'My List'
+    Connect-SPRSite -Uri intranet.ad.local | Get-SPRList -ListName 'My List'
 
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
     
@@ -46,7 +46,7 @@
         [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
         [string]$Uri,
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string[]]$ListName,
         [int]$RowLimit = 0,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
@@ -56,39 +56,35 @@
     process {
         if (-not $InputObject) {
             if ($Uri) {
-                $InputObject = Get-SPRService -Uri $Uri -Credential $Credential
+                $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
+            }
+            elseif ($global:server) {
+                $InputObject = $global:server
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or pipe in the results of Get-SPRService"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or run Connect-SPRSite"
                 return
             }
         }
         
-        foreach ($service in $InputObject) {
-            try {
-                if ($ListName -notin $service.GetListCollection().List.Title) {
-                    $url = [System.Uri]$service.Url
-                    Stop-PSFFunction -EnableException:$EnableException -Message "List $ListName cannot be found on $($url.Host)" -Continue
+        foreach ($server in $InputObject) {
+            foreach ($currentlist in $ListName) {
+                try {
+                    $lists = $server.Web.Lists
+                    $list = $lists.GetByTitle($currentlist)
+                    $server.Load($lists)
+                    $server.Load($list)
+                    $server.ExecuteQuery()
+                    
+                    if ($currentlist -notin $lists.Title) {
+                        Stop-PSFFunction -EnableException:$EnableException -Message "List $currentlist cannot be found on $($server.Url)" -Continue
+                    }
+                    
+                    Select-DefaultView -InputObject $list -Property Id, Title, Description, ItemCount, BaseType, Created
                 }
-                
-                $xmlDoc = New-Object System.Xml.XmlDocument
-                $query = $xmlDoc.CreateElement("Query")
-                $viewFields = $xmlDoc.CreateElement("ViewFields")
-                $queryOptions = $xmlDoc.CreateElement("QueryOptions")
-                $batchelement = $xmldoc.CreateElement("Batch")
-                
-                $list = $service.GetList($listName)
-                $list | Add-Member -MemberType NoteProperty -Name Service -Value $service
-                $list | Add-Member -MemberType NoteProperty -Name ListName -Value $ListName
-                $list | Add-Member -MemberType NoteProperty -Name BatchElement -Value $batchelement
-                $list | Add-Member -MemberType NoteProperty -Name XmlDoc -Value $xmldoc
-                $list | Add-Member -MemberType NoteProperty -Name ViewFields -Value $viewFields
-                $list | Add-Member -MemberType NoteProperty -Name QueryOptions -Value $queryOptions
-                $list | Add-Member -MemberType NoteProperty -Name XmlQuery -Value $query
-                $list | Select-DefaultView -ExcludeProperty BatchElement, XmlDoc, ViewFields, QueryOptions, XmlQuery
-            }
-            catch {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                }
             }
         }
     }

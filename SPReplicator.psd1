@@ -53,7 +53,7 @@
     # ScriptsToProcess = @()
     
     # Type files (.ps1xml) to be loaded when importing this module
-    # TypesToProcess = @()
+    TypesToProcess    = @("xml\SPReplicator.Types.ps1xml")
     
     # Format files (.ps1xml) to be loaded when importing this module
     # FormatsToProcess = @()
@@ -63,14 +63,19 @@
     
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
-        'Get-SPRService',
+        'Connect-SPRSite',
+        'Disconnect-SPRSite',
         'Clear-SPRListData',
         'Get-SPRListData',
         'Get-SPRList',
         'Add-SPRListItem',
         'Get-SPRColumnDetail',
         'Export-SPRListData',
-        'Import-SPRListData'
+        'Import-SPRListData',
+        'Get-SPRListTemplate',
+        'New-SPRList',
+        'Remove-SPRListData',
+        'Remove-SPRList'
     )
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

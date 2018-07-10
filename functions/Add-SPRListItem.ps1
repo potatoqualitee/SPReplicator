@@ -68,7 +68,6 @@
                 [object[]]$Row,
                 [object[]]$ColumnInfo
             )
-            $collection = @()
             foreach ($currentrow in $row) {
                 $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
                 
@@ -86,38 +85,39 @@
                         $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                     }
                     
-                    $fieldname = $fieldname.Replace('ows_', '')
                     Write-PSFMessage -Level Verbose -Message "Adding $fieldname to row"
-                    $collection += "<Field Name='$fieldname'>$value</Field>"
+                    $newItem.set_item($fieldname, $value)
                 }
             }
-            $collection
+            $newItem
         }
-        $xml = @()
     }
     process {
         $list = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
         $columns = $list | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object Listname, DisplayName
         
         foreach ($row in $InputObject) {
-            $start = "<Method ID='1' Cmd='New'><Field Name='ID'>New</Field>"
-            $middle = Add-Row -Row $row -ColumnInfo $columns
-            $end = "</Method>"
-            $xml += "$start $middle $end"
-            Write-PSFMessage -Level Verbose -Message "Queued row for $listname"
-        }
-    }
-    end {
-        $list.BatchElement.InnerXml = $xml -join ""
-        
-        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding Batch")) {
             try {
-                # Do batch
-                $results = ($list.Service.UpdateListItems($listName, $list.BatchElement)).Result
-                Invoke-ParseResultSet -ResultSet $results
+            $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
+            $newItem = $list.addItem($itemCreateInfo)
+            $newItem = Add-Row -Row $row -ColumnInfo $columns
+            $newItem.update()
+            $list.Context.Load($newItem)
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+            }
+            
+            Write-PSFMessage -Level Verbose -Message "Queued row for $listname"
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding Batch")) {
+                try {
+                    # Do batch
+                    $list.Context.ExecuteQuery()
+                    Get-SPRListData -ListName $listname -Id $newItem.Id
+                }
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                }
             }
         }
     }

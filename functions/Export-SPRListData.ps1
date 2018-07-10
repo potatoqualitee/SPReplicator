@@ -47,32 +47,30 @@
         [switch]$EnableException
     )
     begin {
-        $xml = $collection = @()
+        $collection = @()
     }
     process {
         if (-not $InputObject) {
-            if ($Uri -and $ListName) {
-                $InputObject = Get-SPRListData -Uri $Uri -Credential $Credential -ListName $ListName
+            if ($Uri) {
+                $InputObject = Get-SprListData -Uri $Uri -Credential $Credential -ListName $ListName
+            }
+            elseif ($global:server) {
+                $InputObject = $global:server | Get-SprListData -ListName $ListName
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName or pipe in the results of Get-SPRService"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
                 return
-            }
-        }
-        
-        if ($InputObject) {
-            if (-not $InputObject[0].ows_ID) {
-                $InputObject = $InputObject | Get-SPRListData
             }
         }
         $collection += $InputObject
     }
     end {
         try {
-            $columns = Get-SPRColumnDetail -Uri $collection[0].Service.Uri -ListName $collection[0].ListName |
-            Where-Object { -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -ne 'Computed' }
-            
-            $data = $collection | Select-Object -Property $columns.OwsName
+            $columns = $collection | Select-Object -First 1 -ExpandProperty ListObject | Get-SPRColumnDetail |
+            Where-Object {
+                -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'ID', 'Modified','Attachments'
+            }
+            $data = $collection | Select-Object -Property $columns.Name
             Export-Clixml -InputObject $data -Path $Path -ErrorAction Stop
             Get-ChildItem -Path $Path -ErrorAction Stop
         }
