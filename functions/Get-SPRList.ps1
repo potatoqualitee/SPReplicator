@@ -71,18 +71,19 @@
             foreach ($currentlist in $ListName) {
                 try {
                     $lists = $server.Web.Lists
+                    $global:server.Load($lists)
+                    $global:server.ExecuteQuery()
                     
                     if ($currentlist -notin $lists.Title) {
                         # Let's see if this works better
                         continue
-                        Stop-PSFFunction -EnableException:$EnableException -Message "List $currentlist cannot be found on $($server.Url)" -Continue
+                        Stop-PSFFunction -EnableException:$EnableException -Message "List $currentlist cannot be found on $($global:server.Url)" -Continue
                     }
                     
+                    Write-PSFMessage -Level Verbose -Message "Getting $currntlist from $global:server"
                     $list = $lists.GetByTitle($currentlist)
-                    $server.Load($lists)
-                    $server.Load($list)
-                    $server.ExecuteQuery()
-                    
+                    $global:server.Load($list)
+                    $global:server.ExecuteQuery()
                     Select-DefaultView -InputObject $list -Property Id, Title, Description, ItemCount, BaseType, Created
                 }
                 catch {
