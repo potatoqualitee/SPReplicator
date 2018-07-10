@@ -59,6 +59,7 @@
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
+        [switch]$AutoCreateList,
         [switch]$EnableException
     )
     begin {
@@ -85,8 +86,14 @@
                         $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                     }
                     
-                    Write-PSFMessage -Level Verbose -Message "Adding $fieldname to row"
-                    $newItem.set_item($fieldname, $value)
+                    # Skip reserved words, so far is only ID
+                    if ($fieldname -notin 'ID') {
+                        Write-PSFMessage -Level Verbose -Message "Adding $fieldname to row"
+                        $newItem.set_item($fieldname, $value)
+                    }
+                    else {
+                        Write-PSFMessage -Level Verbose -Message "Not adding $fieldname to row (reserved name)"
+                    }
                 }
             }
             $newItem
@@ -94,6 +101,45 @@
     }
     process {
         $list = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+        if (-not $list) {
+            if (-not $AutoCreateList) {
+                Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"
+                return
+            } else {
+                $list = New-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+                
+                $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
+                $columns = ($list | Get-SPRColumnDetail).Title
+                $newcolumns = $datatable.Columns | Where-Object ColumnName -NotIn $columns
+                
+                Write-PSFMessage -Level Debug -Message "All columns: $columns"
+                Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
+                
+                foreach ($column in $newcolumns) {
+                    $type = switch ($column.DataType.Name) {
+                        "Double" { "Number" }
+                        "Int16" { "Number" }
+                        "Int32" { "Number" }
+                        "Int64" { "Number" }
+                        "Single" { "Number" }
+                        "UInt16" { "Number" }
+                        "UInt32" { "Number" }
+                        "UInt64" { "Number" }
+                        "Text" { "Text" }
+                        "Note" { "Note" }
+                        "DateTime" { "DateTime" }
+                        "Boolean" { "Boolean" }
+                        "Number" { "Number" }
+                        "Decimal" { "Currency" }
+                        "Guid" { "Guid" }
+                        default { "Text" }
+                    }
+                    $cname = $column.ColumnName
+                    $null = $list | Add-SPRColumn -ColumnName $cname -Type $type
+                }
+            }
+        }
+        
         $columns = $list | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object Listname, DisplayName
         
         foreach ($row in $InputObject) {
