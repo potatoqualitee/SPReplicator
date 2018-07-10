@@ -11,7 +11,7 @@ function Select-DefaultView {
     A lot of this is from boe, thanks boe!
     https://learn-powershell.net/2013/08/03/quick-hits-set-the-default-property-display-in-powershell-on-custom-objects/
 
-.PARAMETER IntputObject
+.PARAMETER InputObject
     Allows piping
  
 .PARAMETER TypeName

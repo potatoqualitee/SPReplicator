@@ -1,21 +1,21 @@
 ﻿Function Get-SPRColumnDetail {
  <#
 .SYNOPSIS
-    Returns information (Name, DisplayName, Data type) about columns in a SharePoint list using a Web service proxy object.
+    Returns information (Name, DisplayName, Data type) about columns in a SharePoint list.
     
 .DESCRIPTION
-    Returns information (Name, DisplayName, Data type) about columns in a SharePoint list using a Web service proxy object.
+    Returns information (Name, DisplayName, Data type) about columns in a SharePoint list.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
 
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
   
 .PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
  
-.PARAMETER IntputObject
+.PARAMETER InputObject
     Allows piping from Get-SPRList 
     
 .PARAMETER EnableException
@@ -40,11 +40,11 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Uri,
+        [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
-        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException

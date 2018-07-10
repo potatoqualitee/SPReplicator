@@ -1,10 +1,10 @@
 ﻿Function Get-SPRListTemplate {
 <#
 .SYNOPSIS
-    Returns data from a SharePoint list using a Web service proxy object.
+    Returns data from a SharePoint list.
     
 .DESCRIPTION
-    Returns data from a SharePoint list using a Web service proxy object.
+    Returns data from a SharePoint list.
 
 .PARAMETER Id
     Return only rows with specific IDs

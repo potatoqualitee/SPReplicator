@@ -1,34 +1,37 @@
 ﻿Function Add-SPRListItem {
  <#
 .SYNOPSIS
-    Adds items to a SharePoint list using a Web service proxy object.
+    Adds items to a SharePoint list.
     
 .DESCRIPTION
-    Adds items to a SharePoint list using a Web service proxy object.
+    Adds items to a SharePoint list.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
 
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
    
 .PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
- 
-.PARAMETER IntputObject
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
+    
+.PARAMETER AutoCreateList
+    If a Sharepoint list does not exist, one will be created based off of the guessed column types.
+    
+.PARAMETER InputObject
     Allows piping from Get-SPRList
+    
+.PARAMETER WhatIf
+    If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
+
+.PARAMETER Confirm
+    If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
     
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
  
-.PARAMETER WhatIf
-    If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
-
-.PARAMETER Confirm
-    If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
-
 .EXAMPLE
     $csv = Import-Csv -Path C:\temp\listitems.csv
     Add-SPRListItem -Uri intranet.ad.local -ListName 'My List' -InputObject $mycsv
@@ -52,11 +55,11 @@
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Uri,
+        [PSCredential]$Credential,
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
-        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$AutoCreateList,

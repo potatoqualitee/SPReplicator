@@ -1,27 +1,24 @@
 Function Get-SPRListData {
 <#
 .SYNOPSIS
-    Returns data from a SharePoint list using a Web service proxy object.
+    Returns data from a SharePoint list.
     
 .DESCRIPTION
-    Returns data from a SharePoint list using a Web service proxy object.
+    Returns data from a SharePoint list.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
 
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
     
-.PARAMETER RowLimit
-    Limit the number of rows returned. The entire list is returned by default.
+.PARAMETER Credential
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
  
 .PARAMETER Id
     Return only rows with specific IDs
- 
-.PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
- 
-.PARAMETER IntputObject
+
+.PARAMETER InputObject
     Allows piping from Get-SPRList 
     
 .PARAMETER EnableException
@@ -51,15 +48,14 @@ Function Get-SPRListData {
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Uri,
+        [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
-        [int]$RowLimit = 0,
-        [PSCredential]$Credential,
+        [int[]]$Id,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
-        [int[]]$Id,
         [switch]$EnableException
     )
     process {

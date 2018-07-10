@@ -1,21 +1,24 @@
 ﻿Function Export-SPRListData {
 <#
 .SYNOPSIS
-    Exports all items to a file from a SharePoint list using a Web service proxy object.
+    Exports all items to a file from a SharePoint list.
     
 .DESCRIPTION
-     Exports all items to a file from a SharePoint list using a Web service proxy object.
+     Exports all items to a file from a SharePoint list.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
-
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
+    
+.PARAMETER Credential
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
+ 
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
-   
-.PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
- 
-.PARAMETER IntputObject
+    
+.PARAMETER Path
+    The Path to the exported PowerShell object
+
+.PARAMETER InputObject
     Allows piping from Get-SPRList or Get-SPRListData
     
 .PARAMETER EnableException
@@ -35,15 +38,15 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Uri,
+        [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
-        [PSCredential]$Credential,
-        [parameter(ValueFromPipeline)]
-        [object]$InputObject,
         [Parameter(Mandatory)]
         [string]$Path,
+        [parameter(ValueFromPipeline)]
+        [object]$InputObject,
         [switch]$EnableException
     )
     begin {
@@ -68,7 +71,7 @@
         try {
             $columns = $collection | Select-Object -First 1 -ExpandProperty ListObject | Get-SPRColumnDetail |
             Where-Object {
-                -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'ID', 'Modified','Attachments'
+                -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'ID', 'Modified', 'Attachments'
             }
             $columnsnames = $columns.Name | Select-Object -Unique
             $data = $collection | Select-Object -Property $columnsnames

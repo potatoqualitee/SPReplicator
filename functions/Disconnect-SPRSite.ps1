@@ -1,17 +1,20 @@
 ﻿Function Disconnect-SPRSite {
 <#
 .SYNOPSIS
-    Creates a SharePoint Client Context object that lets you use and manage the Web service in Windows PowerShell.
+    Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
     
 .DESCRIPTION
-    Creates a SharePoint Client Context object that lets you use and manage the Web service in Windows PowerShell.
+    Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
 
 .PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
     
+.PARAMETER InputObject
+    Allows piping of server/spsite objects
+  
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.

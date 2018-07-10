@@ -1,28 +1,33 @@
 ﻿Function New-SPRList {
 <#
 .SYNOPSIS
-    Returns data from a SharePoint list using a Web service proxy object.
+    Creates a new SharePoint list.
     
 .DESCRIPTION
-    Returns data from a SharePoint list using a Web service proxy object.
+    Creates a new SharePoint list.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
-
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
+    
+.PARAMETER Credential
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
+ 
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
     
-.PARAMETER RowLimit
-    Limit the number of rows returned. The entire list is returned by default.
+.PARAMETER Description
+    The description for the list
  
-.PARAMETER Id
-    Return only rows with specific IDs
- 
-.PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
- 
-.PARAMETER IntputObject
-    Allows piping from New-SPRList 
+.PARAMETER Template
+    The SharePoint list template that is used to build the new list. By default, SharePoint "GenericList".
+    
+    This parameter auto-completes for your convenience.
+    
+.PARAMETER OnQuickLaunch
+    Adds list to Quick Launch
+    
+.PARAMETER InputObject
+    Allows piping from Connect-SPRSite 
     
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -58,9 +63,9 @@
         [string]$ListName,
         [string]$Description,
         [string]$Template = "GenericList",
+        [switch]$OnQuickLaunch,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
-        [switch]$OnQuickLaunch,
         [switch]$EnableException
     )
     process {
@@ -96,7 +101,7 @@
                 Write-PSFMessage -Level Verbose -Message "Executing query"
                 $server.ExecuteQuery()
                 
-                $server | Get-SPRList -ListName $ListName | Select-DefaultView -Property Title, RootFolder, DefaultViewUrl, Created
+                $server | Get-SPRList -ListName $ListName | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

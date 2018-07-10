@@ -1,26 +1,26 @@
 ﻿Function Import-SPRListData {
 <#
 .SYNOPSIS
-    Imports all items from a file into a SharePoint list using a Web service proxy object.
+    Imports all items from a file into a SharePoint list.
     
 .DESCRIPTION
-    Imports all items from a file into a SharePoint list using a Web service proxy object.
+    Imports all items from a file into a SharePoint list.
     
     To import from any other types of objects, use Add-SPRListItem.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
-
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
+ 
+.PARAMETER Credential
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
+ 
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
   
 .PARAMETER Path
     The Path to the exported PowerShell object
 
-.PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
- 
-.PARAMETER IntputObject
+.PARAMETER InputObject
     Allows piping from Get-ChildItem
     
 .PARAMETER EnableException
@@ -40,14 +40,14 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint lists.asmx?wsdl location")]
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Uri,
+        [PSCredential]$Credential,
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
-        [PSCredential]$Credential,
+        [string]$Path,
         [parameter(ValueFromPipeline)]
         [System.IO.FileInfo]$InputObject,
-        [string]$Path,
         [switch]$EnableException
     )
     process {

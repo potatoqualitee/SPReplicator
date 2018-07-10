@@ -18,8 +18,8 @@ if ($SkipHelpTest) { return }
 $ModuleBase = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # This should stop people making breaking changes to the tests without first altering the test
-Remove-Module dbachecks -Force -ErrorAction SilentlyContinue
-Import-Module $ModuleBase\..\dbachecks.psd1 
+Remove-Module SPReplicator -Force -ErrorAction SilentlyContinue
+Import-Module $ModuleBase\..\SPReplicator.psd1
 
 $includedNames = (Get-ChildItem "$PSScriptRoot\..\functions" | Where-Object Name -like "*.ps1" ).BaseName
 $commands = Get-Command -Module (Get-Module dbachecks) -CommandType Cmdlet, Function, Workflow | Where-Object Name -in $includedNames

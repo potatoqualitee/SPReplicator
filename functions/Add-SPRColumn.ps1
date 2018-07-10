@@ -1,28 +1,48 @@
 ﻿Function Add-SPRColumn {
 <#
 .SYNOPSIS
-    Returns data from a SharePoint list using a Web service proxy object.
+    Adds a column to a SharePoint list.
     
 .DESCRIPTION
-    Returns data from a SharePoint list using a Web service proxy object.
+    Adds a column to a SharePoint list.
     
 .PARAMETER Uri
-    The address to the web application. You can also pass a hostname and it'll figure it out.
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
+
+.PARAMETER Credential
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
 
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+ 
+.PARAMETER ColumnName
+    The column name.
+   
+.PARAMETER DisplayName
+    The column display name.
     
-.PARAMETER RowLimit
-    Limit the number of rows returned. The entire list is returned by default.
+.PARAMETER Type
+   The column datatype.
+    
+ .PARAMETER Description
+    The column description.
+    
+ .PARAMETER Xml
+    This commands builds up the XML for AddFieldAsXml. If you want to override that and just pass
+    an xml command, use this parameter.
+    
+ .PARAMETER Default
+    Sets the default value of the column.
+  
+.PARAMETER DoNotAddToDefaultView
+    By default, the newly added column will be added to the default view. Use this parameter
+    to prevent this.
  
-.PARAMETER Id
-    Return only rows with specific IDs
- 
-.PARAMETER Credential
-    Provide alternative credentials to the web service. Otherwise, it will use default credentials. 
- 
-.PARAMETER IntputObject
-    Allows piping from Add-SPRColumn 
+.PARAMETER FieldOption
+    The Field Options for the column. This parameter has auto-complete for your convenience.
+    
+.PARAMETER InputObject
+    Allows piping from Get-SPRList 
     
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -63,11 +83,11 @@
         [string]$Description,
         [string]$Xml,
         [string]$Default,
-        [parameter(ValueFromPipeline)]
-        [object]$InputObject,
         [switch]$DoNotAddToDefaultView,
         [ValidateSet("DefaultValue", "AddToDefaultContentType", "AddToNoContentType", "AddToAllContentTypes", "AddFieldInternalNameHint", "AddFieldToDefaultView", "AddFieldCheckDisplayName")]
         [string[]]$FieldOption = "AddFieldInternalNameHint",
+        [parameter(ValueFromPipeline)]
+        [object]$InputObject,
         [switch]$EnableException
     )
     begin {
