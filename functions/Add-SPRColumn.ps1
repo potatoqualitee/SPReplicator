@@ -9,6 +9,9 @@
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
+    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    See Get-Help Connect-SPRsite for more information.
+    
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
 
@@ -69,10 +72,9 @@
   
 .EXAMPLE    
     $xml = "<Field Type='URL' Name='EmployeePicture' StaticName='EmployeePicture' DisplayName='Employee Picture' Format='Image'/>"
-    Add-SPRColumn -ListName List1 -Uri intranet.ad.local -Xml $xml
+    Get-SPRList -ListName List1 -Uri intranet.ad.local | Add-SPRColumn -Xml $xml
     
     Adds a column named EmployeePicture with the URL datatype to List1 on intranet.ad.local
-    
 #>
     [CmdletBinding()]
     param (

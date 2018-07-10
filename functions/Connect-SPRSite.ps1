@@ -1,10 +1,14 @@
 ﻿Function Connect-SPRSite {
 <#
 .SYNOPSIS
-    Creates a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+    Creates a reusable SharePoint Client Context object that lets you use and 
+    manage the site collection in Windows PowerShell.
     
 .DESCRIPTION
-    Creates a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+    Creates a reusable SharePoint Client Context object that lets you use 
+    and manage the site collection in Windows PowerShell.
+    
+    If you Connect-SPRSite, you no longer need to specify -Uri and -Credential.
     
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.

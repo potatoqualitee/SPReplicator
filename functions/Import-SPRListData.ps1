@@ -10,6 +10,9 @@
     
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
+    
+    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    See Get-Help Connect-SPRsite for more information.
  
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
@@ -19,6 +22,9 @@
   
 .PARAMETER Path
     The target xml file location.
+    
+.PARAMETER AutoCreateList
+    Nothing yet - placeholder/reminder
 
 .PARAMETER InputObject
     Allows piping from Get-ChildItem
@@ -46,6 +52,7 @@
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
         [string]$Path,
+        [switch]$AutoCreateList,
         [parameter(ValueFromPipeline)]
         [System.IO.FileInfo[]]$InputObject,
         [switch]$EnableException

@@ -9,6 +9,9 @@
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
     
+    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    See Get-Help Connect-SPRsite for more information.
+    
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
  
@@ -41,24 +44,24 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
  
 .EXAMPLE
-    New-SPRList -Uri intranet.ad.local -ListName 'My List'
+    New-SPRList -Uri intranet.ad.local -ListName List1
 
-    Gets data from My List on intranet.ad.local. Figures out the wsdl address automatically.
+    Creates a list called List1 on intranet.ad.local. Use Add-SPRColumn to add more columns.
     
 .EXAMPLE
-    New-SPRList -ListName 'My List' -Uri intranet.ad.local | New-SPRList
+    $null = Connect-Uri -Uri intranet.ad.local
+    New-SPRList -ListName 'My Announcements' -Template Announcements
 
-     Gets data from My List on intranet.ad.local.
+    Creates a resuable connection to intranet.ad.local then uses that to create a new list called 
+    My Announcements using the Announcements. Use Get-SPRListTemplate to find out all templates
+    or just tab through the options.
     
 .EXAMPLE
-    New-SPRList -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
+    New-SPRList -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) -OnQuickLaunch
 
-    Gets data from My List and logs into the webapp as ad\user.
+    Creates a list called List1 on intranet.ad.local and logs into the webapp as ad\user.
     
-.EXAMPLE    
-    New-SPRList -Uri sharepoint2016 -ListName 'My List' -Id 100, 101, 105
-    
-    Gets list items with ID 100, 101 and 105
+    Adds list to Quick Launch
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (

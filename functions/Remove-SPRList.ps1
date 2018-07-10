@@ -9,6 +9,9 @@
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
+    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    See Get-Help Connect-SPRsite for more information.
+    
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials. 
   
@@ -32,12 +35,12 @@
 .EXAMPLE
     Remove-SPRList -Uri intranet.ad.local -ListName 'My List'
 
-    Deletes all items from My List on intranet.ad.local. Prompts for confirmation.
+    Removes the list "My List" on intranet.ad.local. Prompts for confirmation.
     
 .EXAMPLE
     Get-SPRList -ListName 'My List' -Uri intranet.ad.local | Remove-SPRList -Confirm:$false
 
-     Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
+    Removes the list "My List" on intranet.ad.local. Does not prompt for confirmation.
     
 .EXAMPLE
     Get-SPRListData -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Remove-SPRList -Confirm:$false
@@ -45,7 +48,7 @@
     Deletes all items from My List by logging into the webapp as ad\user.
     
 .EXAMPLE
-    Remove-SPRList -Uri intranet.ad.local -ListName 'My List'
+    Remove-SPRList -Uri intranet.ad.local -ListName 'My List' -WhatIf
     
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>

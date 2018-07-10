@@ -23,7 +23,7 @@
 .EXAMPLE
     Disconnect-SPRSite -Uri intranet.ad.local
 
-    Creates a web service object for intranet.ad.local. Figures out the wsdl address automatically.
+    Disconnects from intranet.ad.local by disposing the global variable
     
 .EXAMPLE
     Disconnect-SPRSite -Uri https://intranet.ad.local/
@@ -61,7 +61,7 @@
         }
         try {
             Write-PSFMessage -Level Verbose -Message "Disconnecting to the SharePoint service at $($InputObject.Url)"
-            $InputObject.Dispose()
+            $global:spsite.Dispose()
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

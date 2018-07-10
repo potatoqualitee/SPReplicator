@@ -84,12 +84,11 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Description.Length | Should -Be 0
         }
         It "Supports xml" {
-            $xml = 
-            $results = Get-SPRList -ListName $script:mylist | Add-SPRColumn -ColumnName Scoopty -DisplayName PipedColumnSample
+            $xml = "<Field Type='URL' Name='EmployeePicture' StaticName='EmployeePicture'  DisplayName='Employee Picture' Format='Image'/>"
+            $results = Get-SPRList -ListName $script:mylist | Add-SPRColumn -Xml $xml
+            $results.DisplayName | Should -Be 'Employee Picture'
+            $results.Type | Should -Be 'Hyperlink or Picture'
             $results.ListName | Should -Be $script:mylist
-            $results.Name | Should -Be Scoopty
-            $results.DisplayName | Should -Be PipedColumnSample
-            $results.Description.Length | Should -Be 0
         }
     }
     
