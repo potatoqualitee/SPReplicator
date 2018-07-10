@@ -1,10 +1,10 @@
 ﻿Function Get-SPRList {
 <#
 .SYNOPSIS
-    Creates a SharePoint Web service proxy object that lets you use and manage a SharePoint list in Windows PowerShell.
+    Returns a SharePoint list object.
 
 .DESCRIPTION
-    Creates a SharePoint Web service proxy object that lets you use and manage a SharePoint list in Windows PowerShell.
+    Returns a SharePoint list object.
 
 .PARAMETER Uri
     The address to the site collection. You can also pass a hostname and it'll figure it out.

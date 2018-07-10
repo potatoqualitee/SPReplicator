@@ -1,49 +1,47 @@
 # SPReplicator
 PowerShell module to replicate SharePoint list data
 
-## Get-SPRService
-Creates a SharePoint Web service proxy object that lets you use and manage the Web service in Windows PowerShell.
-
-![image](https://user-images.githubusercontent.com/8278033/42355459-ee853e20-8068-11e8-82cf-053ee6ebc5ce.png)
-
-## Get-SPRList
-Creates a SharePoint Web service proxy object that lets you use and manage a SharePoint list in Windows PowerShell.
-    
-![image](https://user-images.githubusercontent.com/8278033/42355538-5094da9e-8069-11e8-976e-5504c9af4076.png)
-
-or alternatively
-
-![image](https://user-images.githubusercontent.com/8278033/42355538-5094da9e-8069-11e8-976e-5504c9af4076.png)
-
-## Get-SPRListData
-Returns data from a SharePoint list using a Web service proxy object.
- 
-![image](https://user-images.githubusercontent.com/8278033/42355607-a08c5e3c-8069-11e8-92a4-b9273d648cf9.png)
-
-## Get-SPRColumnDetail
-Returns information (Name, DisplayName, Data type) about columns in a SharePoint list using a Web service proxy object.
-
-![image](https://user-images.githubusercontent.com/8278033/42355638-cad24f08-8069-11e8-9fe2-c7ae147f1db9.png)
-
-## Clear-SPRListData
-Deletes all items from a SharePoint list using a Web service proxy object.
- 
-![image](https://user-images.githubusercontent.com/8278033/42355673-059062f6-806a-11e8-93e6-10e75ad8ab49.png)
+## Add-SPRColumn
+Adds a column to a SharePoint list.
 
 ## Add-SPRListItem
-Adds items to a SharePoint list using a Web service proxy object.
+Adds items to a SharePoint list.
 
-![image](https://user-images.githubusercontent.com/8278033/42388506-6d84b5ca-80e1-11e8-9ed7-7bbfede791a1.png)
+## Clear-SPRListData
+Deletes all items from a SharePoint list.
+
+## Connect-SPRSite
+Creates a reusable SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+
+## Disconnect-SPRSite
+Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
 
 ## Export-SPRListData
-Exports all items to a file from a SharePoint list using a Web service proxy object.
+Exports all items from a SharePoint list to a file.
 
-![image](https://user-images.githubusercontent.com/8278033/42403716-d47ab30a-811e-11e8-9a33-7254d90a6f4b.png)
+## Get-SPRColumnDetail
+Returns information (Name, DisplayName, Data type) about columns in a SharePoint list.
+
+## Get-SPRList
+Returns a SharePoint list object.
+
+## Get-SPRListData
+Returns data from a SharePoint list.
+
+## Get-SPRListTemplate
+Get list of SharePoint templates.
 
 ## Import-SPRListData
-Imports all items from a file into a SharePoint list using a Web service proxy object.
+Imports all items from a file into a SharePoint list.
 
-![image](https://user-images.githubusercontent.com/8278033/42403894-6b91e0d2-8120-11e8-8659-34a7bb942b4a.png)
+## New-SPRList
+Creates a new SharePoint list.
+
+## Remove-SPRList
+ Deletes lists from a SharePoint site collection.
+
+## Remove-SPRListData
+Deletes items from a SharePoint list.
 
 <!---
 Connect-SPRSite -Uri sharepoint2016
