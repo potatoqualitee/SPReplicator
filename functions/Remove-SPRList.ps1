@@ -86,7 +86,7 @@
                     $list.DeleteObject()
                     $global:spsite.ExecuteQuery()
                     [pscustomobject]@{
-                        Site = $site
+                        Site = $list.Context
                         ListName = $list.Title
                         ItemId = $list.Id
                         Status = "Deleted"

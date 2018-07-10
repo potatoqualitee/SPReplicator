@@ -83,6 +83,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.DisplayName | Should -Be PipedColumnSample
             $results.Description.Length | Should -Be 0
         }
+        It "Supports xml" {
+            $xml = 
+            $results = Get-SPRList -ListName $script:mylist | Add-SPRColumn -ColumnName Scoopty -DisplayName PipedColumnSample
+            $results.ListName | Should -Be $script:mylist
+            $results.Name | Should -Be Scoopty
+            $results.DisplayName | Should -Be PipedColumnSample
+            $results.Description.Length | Should -Be 0
+        }
     }
     
     Context "Get-SPRColumnDetail" {

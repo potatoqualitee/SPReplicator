@@ -81,22 +81,17 @@
             else {
                 foreach ($currentlist in $ListName) {
                     try {
-                        $web = $server.Web
-                        $server.Load($web)
-                        $server.ExecuteQuery()
                         $lists = $server.Web.Lists
                         $server.Load($lists)
                         $server.ExecuteQuery()
                         
-                        if ($currentlist -notin $lists.Title) {
-                            Stop-PSFFunction -EnableException:$EnableException -Message "List $currentlist cannot be found on $($server.Url)" -Continue
-                        }
-                        
                         $list = $lists | Where-Object Title -eq $currentlist
-                        Write-PSFMessage -Level Verbose -Message "Getting $currentlist from $($server.Url)"
-                        $server.Load($list)
-                        $server.ExecuteQuery()
-                        $list | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
+                        if ($list) {
+                            Write-PSFMessage -Level Verbose -Message "Getting $currentlist from $($server.Url)"
+                            $server.Load($list)
+                            $server.ExecuteQuery()
+                            $list | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
+                        }
                     }
                     catch {
                         Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
