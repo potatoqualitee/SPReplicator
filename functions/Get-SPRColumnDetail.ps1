@@ -64,13 +64,18 @@
         }
         
         foreach ($list in $InputObject) {
-            $list.Context.Load($list.Fields)
-            $list.Context.ExecuteQuery()
-            foreach ($column in $list.Fields) {
-                $title = $column.Title
-                Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.Title
-                Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
-                Select-DefaultView -InputObject $column -Property ListName, 'Title as DisplayName', 'StaticName as Name', 'TypeDisplayName as Type'
+            try {
+                $list.Context.Load($list.Fields)
+                $list.Context.ExecuteQuery()
+                foreach ($column in $list.Fields) {
+                    $title = $column.Title
+                    Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.Title
+                    Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
+                    Select-DefaultView -InputObject $column -Property ListName, 'Title as DisplayName', 'StaticName as Name', 'TypeDisplayName as Type'
+                }
+            }
+            catch {
+                Stop-PSFFunction -EnableException:$EnableException -ErrorRecord $_ -Message "Failure"
             }
         }
     }
