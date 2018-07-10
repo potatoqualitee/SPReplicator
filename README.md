@@ -79,4 +79,17 @@ Add-SPRColumn -ListName 'My List'
 
 Get-SPRList -Uri sharepoint2016 -ListName 'My List2' | Remove-SPRList -Confirm:$false
 Get-SPRListData -ListName 'My List' | Where-Object Id -in $item.Id | Remove-SPRListData
+
+$server = Connect-SPRSite -Uri sharepoint2016
+$lists = $server.Web.Lists
+$server.Load($lists)
+$server.ExecuteQuery()
+foreach ($list in $server.Web.Lists) {
+    $List = $server.web.Lists.GetByTitle($List.Title)
+    $server.Load($List)
+    $List.DeleteObject()
+    $server.ExecuteQuery()
+}
+
+
 -->
