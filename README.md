@@ -287,6 +287,7 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 ## TODO
 
 Add logging to export to SP or SQL
+Make a dictionary that tracks what's already been imported
 
 ## Pester tested
 
