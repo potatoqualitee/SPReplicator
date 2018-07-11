@@ -89,6 +89,8 @@ Disconnects a SharePoint Client Context object that lets you use and manage the 
 Disconnect-SPRSite
 ```
 
+![image](https://user-images.githubusercontent.com/8278033/42565445-292606ce-849f-11e8-94ee-3986c54441de.png)
+
 ## Add-SPRColumn
 Adds a column to a SharePoint list.
 
@@ -105,7 +107,7 @@ Adds items to a SharePoint list.
 Deletes all items from a SharePoint list.
 
 ```powershell
-Get-SPRListTemplate
+Clear-SPRListData -ListName 'My List'
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42565035-08562786-849e-11e8-8289-38d4c5b92f0c.png)
@@ -121,6 +123,15 @@ Returns a SharePoint list object.
 
 ## Get-SPRListData
 Returns data from a SharePoint list.
+
+```powershell
+Get-SPRListData -ListName 'My List'
+Get-SPRListData -ListName 'My List' -Id 1
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42566521-91a9a7d4-84a2-11e8-9a96-f6765ad3a8aa.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42566593-c7494f70-84a2-11e8-8c1f-17c2054b4b8f.png)
 
 ## Get-SPRListTemplate
 Get list of SharePoint templates.
