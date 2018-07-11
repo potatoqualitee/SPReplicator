@@ -33,8 +33,13 @@ SPReplicator has a number of commands that help you manage SharePoint lists. You
 #### Export from SharePoint List
 
 ```powershell
-Export-SPRListData -Site https://intranet -ListName Employees -Path \\nas\replicationdata\Employees.csv
+Export-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+Get-SPRListData -ListName 'My List' | Where Title -match Hello2 | Export-SPRListData -Path C:\temp\hello2.xml
 ```
+
+![image](https://user-images.githubusercontent.com/8278033/42569683-0dda065a-84ad-11e8-8edc-d35058e4e00c.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42569711-271efd96-84ad-11e8-8aaa-071c1bbd33a9.png)
 
 ### Establish a session to the SharePoint site
 
