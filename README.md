@@ -52,6 +52,7 @@ Connect-SPRSite -Site https://intranet -Credential (Get-Credential ad\otheruser)
 Now that we've established a connection via `Connect-SPRSite`, we no longer need to specify the Site.
 
 We can import data two ways, using `Import-SPRListData` or `Add-SPRListItem`
+
 ```powershell
 # Import from CSV
 Import-SPRListData -ListName Employees -Path \\nas\replicationdata\Employees.csv
@@ -101,7 +102,33 @@ Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description Awesome
 ![image](https://user-images.githubusercontent.com/8278033/42560633-c61f0a78-8492-11e8-9ac2-f3b772d8b8dc.png)
 
 ## Add-SPRListItem
-Adds items to a SharePoint list.
+Adds items to a SharePoint list from various sources. CSV, generic objects, exported lists.
+
+```powershell
+$object = @()
+$object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
+$object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
+$object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
+
+$object | Add-SPRListItem -ListName 'My List'
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42570287-227a3c4a-84af-11e8-9e5a-4dc6e9f2f4af.png)
+
+```powershell
+Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"  | 
+Add-SPRListItem -ListName 'My List'
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42570441-9a4b0466-84af-11e8-87fc-c04b545e18c9.png)
+
+This is particularly cool. List doesn't exist? Auto-create it! Note, it mostly defaults to text rows so use this sparingly.
+```powershell
+Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL',TestColumn = 'Sample SQL Data'"  | 
+Add-SPRListItem -ListName BrandNewList -AutoCreateList
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42570505-d060d8be-84af-11e8-948d-f97888611346.png)
 
 ## Clear-SPRListData
 Deletes all items from a SharePoint list.
@@ -201,7 +228,7 @@ Deletes items from a SharePoint list.
 
 ```powershell
 Get-SPRListData -ListName 'My List' -Id 44, 45 | Remove-SPRListData
- Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListData -Confirm:$false
+Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListData -Confirm:$false
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42569305-c7273e68-84ab-11e8-85eb-2d34610e5220.png)
