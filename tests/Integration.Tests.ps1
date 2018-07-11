@@ -21,6 +21,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Get-SPRConnectedSite" {
+        It "Gets connected site information" {
+            $results = Get-SPRConnectedSite
+            $results.Url | Should -Be "https://$script:site"
+            $results.RequestTimeout | Should -Be 180000
+        }
+    }
     Context "Get-SPRListTemplate" {
         It "Gets all template info" {
             $results = Get-SPRListTemplate
