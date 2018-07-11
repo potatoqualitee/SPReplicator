@@ -289,6 +289,7 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 * Add logging to export to SP or SQL
 * Make a dictionary that tracks what's already been imported
 * Make it Core compat if it's not already
+* Explore extracting files from attachments
 
 ## Pester tested
 
