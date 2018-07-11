@@ -71,7 +71,23 @@ The rest of the commands, you can see in screenshots.
 
 ## Command summaries
 
-In the screenshots and examples below, I'll be connecting to my SharePoint 2016 server, aptly named `https://sharepoint2016`
+In the screenshots and examples below, I'll be connecting to my SharePoint 2016 server, aptly named `https://sharepoint2016`.
+
+## Connect-SPRSite
+Creates a reusable SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+
+```powershell
+Connect-SPRSite -Site https://sharepoint2016
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42564673-1ceca0a4-849d-11e8-8f6b-22c1a0aad1e1.png)
+
+## Disconnect-SPRSite
+Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+
+```powershell
+Disconnect-SPRSite
+```
 
 ## Add-SPRColumn
 Adds a column to a SharePoint list.
@@ -90,22 +106,6 @@ Deletes all items from a SharePoint list.
 
 ```powershell
 Get-SPRListTemplate
-```
-
-## Connect-SPRSite
-Creates a reusable SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
-
-```powershell
-Connect-SPRSite -Site https://sharepoint2016
-```
-
-![image](https://user-images.githubusercontent.com/8278033/42564673-1ceca0a4-849d-11e8-8f6b-22c1a0aad1e1.png)
-
-## Disconnect-SPRSite
-Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
-
-```powershell
-Disconnect-SPRSite
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42565035-08562786-849e-11e8-8289-38d4c5b92f0c.png)
