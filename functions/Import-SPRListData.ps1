@@ -24,7 +24,7 @@
     The target xml file location.
 
 .PARAMETER AutoCreateList
-    Nothing yet - placeholder/reminder
+    Autocreate the SharePoint list if it does not exist
 
 .PARAMETER InputObject
     Allows piping from Get-ChildItem
@@ -75,7 +75,7 @@
         }
         foreach ($file in $InputObject) {
             try {
-                Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -ListName $ListName
+                Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -ListName $ListName -AutoCreateList:$AutoCreateList
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
