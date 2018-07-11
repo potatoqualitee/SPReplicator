@@ -10,7 +10,7 @@ SPReplicator is now in the PowerShell Gallery. Run the following from an adminis
 Install-Module dbatools
 ```
 
-Or if you don't have have administrative access or want to save it locally (just for yourself), run:
+Or if you don't have administrative access or want to save it locally (just for yourself), run:
 ```powershell
 Install-Module dbatools -Scope CurrentUser
 ```
@@ -21,14 +21,14 @@ If you're scheduling tasks via Task Schedule or SQL Server agent, installing the
 
 This module can be used for replicating data in a number of ways.
 
-* Between air gapped (offline) servers that do not have direct access to eachother
+* Between air gapped (offline) servers that do not have direct access to each other
 * Directly from SharePoint site collection to SharePoint site collection
 * From SQL Server to SharePoint
 * From CSV to SharePoint
 
 ## Usage examples
 
-SPReplicator has a number of commands that help you manage SharPoint lists. You can view, delete, and add records easily and there's even a command that makes it easy to see internal column names and datatypes.
+SPReplicator has a number of commands that help you manage SharePoint lists. You can view, delete, and add records easily and there's even a command that makes it easy to see internal column names and datatypes.
 
 #### Export from SharePoint List
 
