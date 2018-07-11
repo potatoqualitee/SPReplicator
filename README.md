@@ -169,6 +169,13 @@ Get-SPRListTemplate
 ## Import-SPRListData
 Imports all items from a file into a SharePoint list.
 
+```powershell
+Import-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+Get-ChildItem C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' 
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42569956-fb412f40-84ad-11e8-9c25-d7b06470301e.png)
+
 ## New-SPRList
 Creates a new SharePoint list.
 
