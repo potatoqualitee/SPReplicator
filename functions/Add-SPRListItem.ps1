@@ -164,6 +164,7 @@
                 try {
                     # Do batch
                     $list.Context.ExecuteQuery()
+                    Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
                     Get-SPRListData -ListName $listname -Id $newItem.Id
                 }
                 catch {
