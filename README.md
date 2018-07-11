@@ -130,6 +130,12 @@ Get-SPRColumnDetail -ListName 'My List'
 ## Get-SPRList
 Returns a SharePoint list object.
 
+```powershell
+Get-SPRList -ListName 'My List'
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42568030-65cde896-84a7-11e8-8a7f-a730f4f26344.png)
+
 ## Get-SPRListData
 Returns data from a SharePoint list.
 
@@ -176,6 +182,15 @@ Remove-SPRList -ListName List2 -Confirm:$false
 
 ## Remove-SPRListData
 Deletes items from a SharePoint list.
+
+```powershell
+Get-SPRListData -ListName 'My List' -Id 44, 45 | Remove-SPRListData
+ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListData -Confirm:$false
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42569305-c7273e68-84ab-11e8-85eb-2d34610e5220.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42569374-0952af20-84ac-11e8-88c7-eaf7c0664a82.png)
 
 <!---
 Connect-SPRSite -Uri sharepoint2016
