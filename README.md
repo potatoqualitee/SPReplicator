@@ -108,9 +108,12 @@ Deletes all items from a SharePoint list.
 
 ```powershell
 Clear-SPRListData -ListName 'My List'
+Clear-SPRListData -ListName 'My List' -Confirm:$false
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42565035-08562786-849e-11e8-8289-38d4c5b92f0c.png)
+![image](https://user-images.githubusercontent.com/8278033/42567696-4798dc4c-84a6-11e8-947e-58bff29bbd89.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42567757-7b428f84-84a6-11e8-8863-b654c59044c2.png)
 
 ## Export-SPRListData
 Exports all items from a SharePoint list to a file.
