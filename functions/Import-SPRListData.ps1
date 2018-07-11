@@ -8,10 +8,10 @@
 
     To import from any other types of objects, use Add-SPRListItem.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
 
 .PARAMETER Credential
@@ -35,19 +35,19 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Import-SPRListData -Uri intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
+    Import-SPRListData -Site intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
 
     Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
 
 .EXAMPLE
-    Get-SPRListData -Path C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' -Uri intranet.ad.local
+    Get-SPRListData -Path C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' -Site intranet.ad.local
 
     Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
 #>
     [CmdletBinding()]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
@@ -75,7 +75,7 @@
         }
         foreach ($file in $InputObject) {
             try {
-                Import-Clixml -Path $file | Add-SPRListItem -Uri $Uri -Credential $Credential -ListName $ListName
+                Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -ListName $ListName
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

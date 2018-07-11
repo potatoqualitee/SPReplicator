@@ -6,10 +6,10 @@
 .DESCRIPTION
     Returns a SharePoint list object.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
 
 .PARAMETER Credential
@@ -27,24 +27,24 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRList -Uri intranet.ad.local -ListName 'My List'
+    Get-SPRList -Site intranet.ad.local -ListName 'My List'
 
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Connect-SPRSite -Uri intranet.ad.local | Get-SPRList -ListName 'My List'
+    Connect-SPRSite -Site intranet.ad.local | Get-SPRList -ListName 'My List'
 
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRList -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRList -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
 
     Creates a web service object for My List and logs into the webapp as ad\user.
 #>
     [CmdletBinding()]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string[]]$ListName,
@@ -54,14 +54,14 @@
     )
     process {
         if (-not $InputObject) {
-            if ($Uri) {
-                $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
+            if ($Site) {
+                $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
             }
             elseif ($global:spsite) {
                 $InputObject = $global:spsite
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or run Connect-SPRSite"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
                 return
             }
         }

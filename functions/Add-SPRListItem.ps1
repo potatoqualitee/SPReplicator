@@ -6,10 +6,10 @@
 .DESCRIPTION
     Adds items to a SharePoint list.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
 .PARAMETER ListName
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
@@ -36,12 +36,12 @@
 
 .EXAMPLE
     $csv = Import-Csv -Path C:\temp\listitems.csv
-    Add-SPRListItem -Uri intranet.ad.local -ListName 'My List' -InputObject $mycsv
+    Add-SPRListItem -Site intranet.ad.local -ListName 'My List' -InputObject $mycsv
 
     Adds data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
 
 .EXAMPLE
-    Import-Csv -Path C:\temp\listitems.csv | Add-SPRListItem -Uri intranet.ad.local -ListName 'My List'
+    Import-Csv -Path C:\temp\listitems.csv | Add-SPRListItem -Site intranet.ad.local -ListName 'My List'
 
     Adds data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
 
@@ -50,14 +50,14 @@
     $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
     $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
     $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-    Add-SPRListData -Uri intranet.ad.local -ListName 'My List' -InputObject $object
+    Add-SPRListData -Site intranet.ad.local -ListName 'My List' -InputObject $object
 
     Adds data from a custom object $object into the My List SharePoint list, so long as there are matching columns (Title and TestColumn).
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
@@ -104,13 +104,13 @@
         }
     }
     process {
-        $list = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+        $list = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
         if (-not $list) {
             if (-not $AutoCreateList) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"
                 return
             } else {
-                $list = New-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+                $list = New-SPRList -Site $Site -Credential $Credential -ListName $ListName
 
                 $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
                 $columns = ($list | Get-SPRColumnDetail).Title

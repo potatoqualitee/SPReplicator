@@ -6,10 +6,10 @@ Function Get-SPRListData {
 .DESCRIPTION
     Returns data from a SharePoint list.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
 
 .PARAMETER Credential
@@ -30,29 +30,29 @@ Function Get-SPRListData {
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRListData -Uri intranet.ad.local -ListName 'My List'
+    Get-SPRListData -Site intranet.ad.local -ListName 'My List'
 
     Gets data from My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Uri intranet.ad.local | Get-SPRListData
+    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Get-SPRListData
 
      Gets data from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRListData -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
 
     Gets data from My List and logs into the webapp as ad\user.
 
 .EXAMPLE
-    Get-SPRListData -Uri sharepoint2016 -ListName 'My List' -Id 100, 101, 105
+    Get-SPRListData -Site sharepoint2016 -ListName 'My List' -Id 100, 101, 105
 
     Gets list items with ID 100, 101 and 105
 #>
     [CmdletBinding()]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
@@ -63,14 +63,14 @@ Function Get-SPRListData {
     )
     process {
         if (-not $InputObject) {
-            if ($Uri) {
-                $InputObject = Get-SprList -Uri $Uri -Credential $Credential -ListName $ListName
+            if ($Site) {
+                $InputObject = Get-SprList -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
                 $InputObject = $global:spsite | Get-SPRList -ListName $ListName
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
                 return
             }
         }

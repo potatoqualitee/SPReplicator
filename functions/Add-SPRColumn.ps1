@@ -6,10 +6,10 @@
 .DESCRIPTION
     Adds a column to a SharePoint list.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
 
 .PARAMETER Credential
@@ -55,31 +55,31 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Connect-SPRSite -Uri intranet.ad.local
+    Connect-SPRSite -Site intranet.ad.local
     Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description "One column"
 
     Adds a text column named TestColumn to 'My List' on intranet.ad.local
 
 .EXAMPLE
-    Add-SPRColumn -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) -ColumnName TestColumn
+    Add-SPRColumn -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) -ColumnName TestColumn
 
     Adds a text column named TestColumn to 'My List' on intranet.ad.local and logs into the site collection as ad\user.
 
 .EXAMPLE
-    Add-SPRColumn -Uri intranet.ad.local -ListName List1 -ColumnName Age -Default 40 -Type Integer
+    Add-SPRColumn -Site intranet.ad.local -ListName List1 -ColumnName Age -Default 40 -Type Integer
 
     Adds a number column named Age to List1 on intranet.ad.local and sets the default value to 40s.
 
 .EXAMPLE
     $xml = "<Field Type='URL' Name='EmployeePicture' StaticName='EmployeePicture' DisplayName='Employee Picture' Format='Image'/>"
-    Get-SPRList -ListName List1 -Uri intranet.ad.local | Add-SPRColumn -Xml $xml
+    Get-SPRList -ListName List1 -Site intranet.ad.local | Add-SPRColumn -Xml $xml
 
     Adds a column named EmployeePicture with the URL datatype to List1 on intranet.ad.local
 #>
     [CmdletBinding()]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
@@ -112,14 +112,14 @@
             return
         }
         if (-not $InputObject) {
-            if ($Uri) {
-                $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+            if ($Site) {
+                $InputObject = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
                 $InputObject = $global:spsite | Get-SPRList -ListName $ListName
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
                 return
             }
         }

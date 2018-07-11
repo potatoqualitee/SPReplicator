@@ -6,10 +6,10 @@
 .DESCRIPTION
     Deletes lists items from a SharePoint  site collection.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
 
 .PARAMETER Credential
@@ -33,29 +33,29 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Remove-SPRList -Uri intranet.ad.local -ListName 'My List'
+    Remove-SPRList -Site intranet.ad.local -ListName 'My List'
 
     Removes the list "My List" on intranet.ad.local. Prompts for confirmation.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Uri intranet.ad.local | Remove-SPRList -Confirm:$false
+    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Remove-SPRList -Confirm:$false
 
     Removes the list "My List" on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Get-SPRListData -Uri intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Remove-SPRList -Confirm:$false
+    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Remove-SPRList -Confirm:$false
 
     Deletes all items from My List by logging into the webapp as ad\user.
 
 .EXAMPLE
-    Remove-SPRList -Uri intranet.ad.local -ListName 'My List' -WhatIf
+    Remove-SPRList -Site intranet.ad.local -ListName 'My List' -WhatIf
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
@@ -65,14 +65,14 @@
     )
     process {
         if (-not $InputObject) {
-            if ($Uri) {
-                $InputObject = Get-SPRList -Uri $Uri -Credential $Credential -ListName $ListName
+            if ($Site) {
+                $InputObject = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
                 $InputObject = $global:spsite | Get-SPRList -ListName $ListName
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
                 return
             }
         }

@@ -6,10 +6,10 @@
 .DESCRIPTION
      Exports all items from a SharePoint list to a file.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-    Don't want to specify the Uri or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
 
 .PARAMETER Credential
@@ -30,19 +30,19 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Export-SPRListData -Uri intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
+    Export-SPRListData -Site intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
 
     Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
 
 .EXAMPLE
-    Get-SPRListData -ListName 'My List' -Uri intranet.ad.local |Export-SPRListData -Path C:\temp\mylist.xml
+    Get-SPRListData -ListName 'My List' -Site intranet.ad.local |Export-SPRListData -Path C:\temp\mylist.xml
 
     Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
 #>
     [CmdletBinding()]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
@@ -57,14 +57,14 @@
     }
     process {
         if (-not $InputObject) {
-            if ($Uri) {
-                $InputObject = Get-SprListData -Uri $Uri -Credential $Credential -ListName $ListName
+            if ($Site) {
+                $InputObject = Get-SprListData -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
                 $InputObject = $global:spsite | Get-SprListData -ListName $ListName
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
                 return
             }
         }

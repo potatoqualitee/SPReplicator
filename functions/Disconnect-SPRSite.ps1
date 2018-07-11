@@ -6,7 +6,7 @@
 .DESCRIPTION
     Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
 .PARAMETER Credential
@@ -21,17 +21,17 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Disconnect-SPRSite -Uri intranet.ad.local
+    Disconnect-SPRSite -Site intranet.ad.local
 
     Disconnects from intranet.ad.local by disposing the global variable
 
 .EXAMPLE
-    Disconnect-SPRSite -Uri https://intranet.ad.local/
+    Disconnect-SPRSite -Site https://intranet.ad.local/
 
     Creates a web service object for intranet.ad.local using the formal and complete address.
 
 .EXAMPLE
-    Disconnect-SPRSite -Uri intranet.ad.local -Credential (Get-Credential ad\user)
+    Disconnect-SPRSite -Site intranet.ad.local -Credential (Get-Credential ad\user)
 
     Creates a web service object and logs into the webapp as ad\user.
 
@@ -39,7 +39,7 @@
     [CmdletBinding()]
     param (
         [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
@@ -47,15 +47,15 @@
     )
     process {
         if (-not $InputObject) {
-            if ($Uri) {
-                Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Uri"
-                $InputObject = Connect-SPRSite -Uri $Uri -Credential $Credential
+            if ($Site) {
+                Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
+                $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
             }
             elseif ($global:spsite) {
                 $InputObject = $global:spsite
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Uri or run Connect-SPRSite"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
                 return
             }
         }

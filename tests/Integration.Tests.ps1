@@ -4,19 +4,19 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
-        $list = Get-SPRList -Uri $script:uri -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
+        $list = Get-SPRList -Site $script:site -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
     }
     AfterAll {
-        $list = Get-SPRList -Uri $script:uri -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
+        $list = Get-SPRList -Site $script:site -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
     }
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Uri $script:uri
-            $results.Url | Should -Be "https://$script:uri"
+            $results = Connect-SPRSite -Site $script:site
+            $results.Url | Should -Be "https://$script:site"
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -58,11 +58,11 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRList" {
         $global:spsite = $null
         It "Gets a list named $script:mylist with a basetype GenericList" {
-            $results = Get-SPRList -Uri $script:uri -ListName $script:mylist
+            $results = Get-SPRList -Site $script:site -ListName $script:mylist
             $results.Title | Should -Be $script:mylist
             $results.BaseType | Should -Be 'GenericList'
         }
-        It "Gets a list named $script:mylist and doesn't require a Uri since Connect-SPRSite was used" {
+        It "Gets a list named $script:mylist and doesn't require a Site since Connect-SPRSite was used" {
             $results = Get-SPRList -ListName $script:mylist
             $results.Title | Should -Be $script:mylist
         }
@@ -94,13 +94,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Get-SPRColumnDetail" {
         It "Gets a list named $script:mylist with a basetype GenericList" {
-            $results = Get-SPRColumnDetail -Uri $script:uri -ListName $script:mylist
+            $results = Get-SPRColumnDetail -Site $script:site -ListName $script:mylist
             $results.Name.Count | Should -BeGreaterThan 10
             $results.Name | Should -Contain 'TestColumn'
             $results.Name | Should -Contain 'Scoopty'
             $results.DisplayName | Should -Contain 'PipedColumnSample'
         }
-        It "Gets a list named $script:mylist and doesn't require a Uri since Connect-SPRSite was used" {
+        It "Gets a list named $script:mylist and doesn't require a Site since Connect-SPRSite was used" {
             $results = Get-SPRColumnDetail -ListName $script:mylist
             $results.Name.Count | Should -BeGreaterThan 10
         }
@@ -112,12 +112,12 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
             $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-            $results = Add-SPRListItem -Uri $script:uri -ListName $script:mylist -InputObject $object
+            $results = Add-SPRListItem -Site $script:site -ListName $script:mylist -InputObject $object
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
         }
         if ($env:COMPUTERNAME -eq "workstationx") {
-            It "Adds datatable results to list and doesn't require Uri since we used connect earlier" {
+            It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
                 $results = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | Add-SPRListItem -ListName $script:mylist
                 $results.Title | Should -Be 'Hello SQL'
                 $results.TestColumn | Should -Be 'Sample SQL Data'
@@ -130,11 +130,11 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
             $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-            $results = $object | Add-SPRListItem -Uri $script:uri -ListName $newlistname -AutoCreateList
+            $results = $object | Add-SPRListItem -Site $script:site -ListName $newlistname -AutoCreateList
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
             
-            $results = Get-SPRList -Uri $script:uri -ListName $newlistname
+            $results = Get-SPRList -Site $script:site -ListName $newlistname
             $results | Should -Not -Be $null
             $results | Remove-SPRList -Confirm:$false
         }
@@ -142,14 +142,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Get-SPRListData" {
         It "Gets data from $script:mylist" {
-            $results = Get-SPRListData -Uri $script:uri -ListName $script:mylist
+            $results = Get-SPRListData -Site $script:site -ListName $script:mylist
             $results.Title.Count | Should -BeGreaterThan 1
             $results.Title | Should -Contain 'Hello SQL'
             $results.TestColumn | Should -Contain 'Sample SQL Data'
             $script:id = $results[0].Id
         }
         
-        It "Gets one data based on ID ($script:id), doesn't require Uri" {
+        It "Gets one data based on ID ($script:id), doesn't require Site" {
             $results = Get-SPRListData -ListName $script:mylist -Id $script:id
             $results.Title.Count | Should -Be 1
             $results.Id | Should -Be $script:id
@@ -161,7 +161,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             if ((Test-Path $script:filename)) {
                 Remove-Item $script:filename
             }
-            $result = Export-SPRListData -Uri $script:uri -ListName $script:mylist -Path $script:filename
+            $result = Export-SPRListData -Site $script:site -ListName $script:mylist -Path $script:filename
             $result.FullName | Should -Be $script:filename
             $string = Select-String -Pattern 'TestColumn' -Path $result
             $string.Count | Should -BeGreaterThan 3
@@ -170,18 +170,18 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Import-SPRListData" {
         It "imports data from $script:filename" {
-            $count = (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count
-            $results = Import-SPRListData -Uri $script:uri -ListName $script:mylist -Path $script:filename
+            $count = (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count
+            $results = Import-SPRListData -Site $script:site -ListName $script:mylist -Path $script:filename
             $results.Title | Should -Contain 'Hello SQL'
-            (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
+            (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
         }
     }
     
     Context "Add-SPRListItem" {
         It "Imports data from $script:filename" {
-            $count = (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count
-            $results = Import-CliXml -Path $script:filename | Add-SPRListItem -Uri $script:uri -ListName $script:mylist
-            (Get-SPRListData -Uri $script:uri -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
+            $count = (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count
+            $results = Import-CliXml -Path $script:filename | Add-SPRListItem -Site $script:site -ListName $script:mylist
+            (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
             $results.Title | Should -Contain 'Hello SQL'
         }
     }
@@ -199,15 +199,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Clear-SPRListData" {
         It "Removes data from $script:mylist" {
-            $results = Clear-SPRListData -Uri $script:uri -ListName $script:mylist -Confirm:$false
-            Get-SPRListData -Uri $script:uri -ListName $script:mylist | Should -Be $null
+            $results = Clear-SPRListData -Site $script:site -ListName $script:mylist -Confirm:$false
+            Get-SPRListData -Site $script:site -ListName $script:mylist | Should -Be $null
         }
     }
     
     Context "Remove-SPRList" {
         It "Removes $script:mylist" {
-            $results = Get-SPRList -Uri $script:uri -ListName 'My List', $script:mylist | Remove-SPRList -Confirm:$false
-            Get-SPRList -Uri $script:uri -ListName $script:mylist | Should -Be $null
+            $results = Get-SPRList -Site $script:site -ListName 'My List', $script:mylist | Remove-SPRList -Confirm:$false
+            Get-SPRList -Site $script:site -ListName $script:mylist | Should -Be $null
             
         }
     }

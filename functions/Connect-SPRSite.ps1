@@ -8,9 +8,9 @@
     Creates a reusable SharePoint Client Context object that lets you use
     and manage the site collection in Windows PowerShell.
 
-    If you Connect-SPRSite, you no longer need to specify -Uri and -Credential.
+    If you Connect-SPRSite, you no longer need to specify -Site and -Credential.
 
-.PARAMETER Uri
+.PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
 .PARAMETER Credential
@@ -22,17 +22,17 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Connect-SPRSite -Uri intranet.ad.local
+    Connect-SPRSite -Site intranet.ad.local
 
     Creates a web service object for intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Connect-SPRSite -Uri https://intranet.ad.local/
+    Connect-SPRSite -Site https://intranet.ad.local/
 
     Creates a web service object for intranet.ad.local using the formal and complete address.
 
 .EXAMPLE
-    Connect-SPRSite -Uri intranet.ad.local -Credential (Get-Credential ad\user)
+    Connect-SPRSite -Site intranet.ad.local -Credential (Get-Credential ad\user)
 
     Creates a web service object and logs into the webapp as ad\user.
 
@@ -40,19 +40,19 @@
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = "SharePoint Site Collection")]
-        [string]$Uri,
+        [string]$Site,
         [PSCredential]$Credential,
         [switch]$EnableException
     )
     begin {
-        if ($Uri -notmatch 'http') {
-            $Uri = "https://$Uri"
+        if ($Site -notmatch 'http') {
+            $Site = "https://$Site"
         }
     }
     process {
-        Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Uri"
+        Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         try {
-            $global:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Uri)
+            $global:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
             if ($Credential) {
                 $global:spsite.Credentials
             }
