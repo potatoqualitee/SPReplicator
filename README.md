@@ -92,6 +92,15 @@ Disconnect-SPRSite
 
 ![image](https://user-images.githubusercontent.com/8278033/42565445-292606ce-849f-11e8-94ee-3986c54441de.png)
 
+## Get-SPRConnectedSite
+Returns the connected SharePoint Site Collection.
+
+```powershell
+Get-SPRConnectedSite
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42572134-b452d4a6-84b4-11e8-9a1e-834c1170a925.png)
+
 ## Add-SPRColumn
 Adds a column to a SharePoint list.
 
