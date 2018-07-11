@@ -159,11 +159,18 @@ Clear-SPRListData -ListName 'My List' -Confirm:$false
 Exports all items from a SharePoint list to a file.
 
 ```powershell
+# Export an entire list
 Export-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+
+# Export only some items
 Get-SPRListData -ListName 'My List' | Where Title -match Hello2 | Export-SPRListData -Path C:\temp\hello2.xml
 ```
 
+The entire list
+
 ![image](https://user-images.githubusercontent.com/8278033/42569683-0dda065a-84ad-11e8-8edc-d35058e4e00c.png)
+
+And only some items
 
 ![image](https://user-images.githubusercontent.com/8278033/42569711-271efd96-84ad-11e8-8aaa-071c1bbd33a9.png)
 
