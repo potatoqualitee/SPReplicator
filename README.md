@@ -76,6 +76,8 @@ In the screenshots and examples below, I'll be connecting to my SharePoint 2016 
 ## Add-SPRColumn
 Adds a column to a SharePoint list.
 
+![image](https://user-images.githubusercontent.com/8278033/42560633-c61f0a78-8492-11e8-9ac2-f3b772d8b8dc.png)
+
 ## Add-SPRListItem
 Adds items to a SharePoint list.
 
@@ -108,6 +110,10 @@ Imports all items from a file into a SharePoint list.
 
 ## New-SPRList
 Creates a new SharePoint list.
+
+![image](https://user-images.githubusercontent.com/8278033/42560182-c8fd276c-8491-11e8-8c2e-2234b249439c.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42560506-826f8cee-8492-11e8-89a5-0b1eaac26a95.png)
 
 ## Remove-SPRList
  Deletes lists from a SharePoint site collection.
