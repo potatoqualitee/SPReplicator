@@ -78,10 +78,7 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
         [string]$ColumnName,
         [string]$DisplayName,
@@ -92,6 +89,9 @@
         [switch]$DoNotAddToDefaultView,
         [ValidateSet("DefaultValue", "AddToDefaultContentType", "AddToNoContentType", "AddToAllContentTypes", "AddFieldInternalNameHint", "AddFieldToDefaultView", "AddFieldCheckDisplayName")]
         [string[]]$FieldOption = "AddFieldInternalNameHint",
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -116,14 +116,19 @@
                 $InputObject = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
-                $InputObject = $global:spsite | Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
                 return
             }
         }
-
+        
+        if (-not $InputObject) {
+            Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist"
+            return
+        }
+        
         foreach ($list in $InputObject) {
             try {
                 $server = $list.Context

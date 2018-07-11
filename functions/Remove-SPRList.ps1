@@ -54,11 +54,11 @@
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
+        [string]$ListName,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -69,7 +69,7 @@
                 $InputObject = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
-                $InputObject = $global:spsite | Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
@@ -83,7 +83,7 @@
         }
 
         foreach ($list in $InputObject) {
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Removing record $($list.Id) from $($list.Title)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Removing list $($list.Title)")) {
                 try {
                     Write-PSFMessage -Level Verbose -Message "Deleting $($list.Title) from $($list.Context)"
                     $list.DeleteObject()

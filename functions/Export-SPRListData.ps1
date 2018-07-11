@@ -41,13 +41,13 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
         [Parameter(Mandatory)]
         [string]$Path,
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -61,7 +61,7 @@
                 $InputObject = Get-SprListData -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
-                $InputObject = $global:spsite | Get-SprListData -ListName $ListName
+                $InputObject = Get-SprListData -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"

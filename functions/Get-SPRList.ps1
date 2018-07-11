@@ -43,11 +43,11 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
+        [string[]]$ListName,
+        [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
-        [string[]]$ListName,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException

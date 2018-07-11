@@ -54,11 +54,11 @@
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
+        [string]$ListName,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -69,7 +69,7 @@
                 $InputObject = Get-SPRListData -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
-                $InputObject = $global:spsite | Get-SPRListData -ListName $ListName
+                $InputObject = Get-SPRListData -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
@@ -82,10 +82,15 @@
             return
         }
 
-        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Removing Batch")) {
+        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing all records from $listname")) {
             try {
                 $InputObject.ListItem.DeleteObject()
                 $global:spsite.ExecuteQuery()
+                [pscustomobject]@{
+                    Site = $global:spsite
+                    ListName = $listname
+                    Status = "All records deleted"
+                }
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

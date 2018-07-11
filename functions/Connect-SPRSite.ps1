@@ -57,8 +57,9 @@
                 $global:spsite.Credentials
             }
             $global:spsite.ExecuteQuery()
-
-            Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force -PassThru
+            
+            Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
+            $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credential, RequestTimeout
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

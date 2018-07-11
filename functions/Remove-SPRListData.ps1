@@ -57,12 +57,12 @@
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
+        [string]$ListName,
+        [int[]]$Id,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
-        [int[]]$Id,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -73,23 +73,23 @@
                 $InputObject = Get-SPRListData -Site $Site -Credential $Credential -ListName $ListName -Id $Id
             }
             elseif ($global:spsite) {
-                $InputObject = $global:spsite | Get-SPRListData -ListName $ListName -Id $Id
+                $InputObject = Get-SPRListData -ListName $ListName -Id $Id
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
                 return
             }
         }
-
+        
         if (-not $InputObject) {
             Stop-PSFFunction -EnableException:$EnableException -Message "No records to delete."
             return
         }
-
+        
         if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
             $InputObject = $InputObject | Get-SPRListData
         }
-
+        
         foreach ($item in $InputObject) {
             if (-not $item.ListObject) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
@@ -103,7 +103,8 @@
                     [pscustomobject]@{
                         Site = $list.Context
                         ListName = $list.Title
-                        ItemId   = $item.Id
+                        ItemId = $item.Id
+                        Title = $item.Title
                         Status = "Deleted"
                     }
                 }

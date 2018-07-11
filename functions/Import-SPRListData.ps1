@@ -46,13 +46,13 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
-        [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
+        [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
         [string]$Path,
         [switch]$AutoCreateList,
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [System.IO.FileInfo[]]$InputObject,
         [switch]$EnableException

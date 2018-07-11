@@ -51,12 +51,12 @@ Function Get-SPRListData {
 #>
     [CmdletBinding()]
     param (
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
+        [string]$ListName,
+        [int[]]$Id,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
-        [int[]]$Id,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -67,45 +67,55 @@ Function Get-SPRListData {
                 $InputObject = Get-SprList -Site $Site -Credential $Credential -ListName $ListName
             }
             elseif ($global:spsite) {
-                $InputObject = $global:spsite | Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -ListName $ListName
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
                 return
             }
         }
-
+        
         foreach ($list in $InputObject) {
             try {
                 Write-PSFMessage -Level Verbose -Message "Performing GetItems"
                 if ($Id) {
+                    $listItems = @()
                     foreach ($number in $Id) {
-                        $listItems = $list.GetItemById($number)
+                        Write-PSFMessage -Level Verbose -Message "Getting item by ID $number"
+                        $single = $list.GetItemById($number)
+                        $list.Context.Load($single)
+                        $list.Context.ExecuteQuery()
+                        $listItems += $list.GetItemById($number)
                     }
                 }
                 else {
                     $listItems = $list.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
+                    $list.Context.Load($listItems)
+                    $list.Context.ExecuteQuery()
                 }
-
-                $list.Context.Load($listItems)
-                $list.Context.ExecuteQuery()
+                
                 $fields = $listItems | Select-Object -First 1 -ExpandProperty FieldValues
                 $baseobject = [pscustomobject]@{ }
-
+                
                 foreach ($column in $fields.Keys) {
                     Add-Member -InputObject $baseobject -NotePropertyName $column -NotePropertyValue $null
                 }
                 Add-Member -InputObject $baseobject -NotePropertyName ListObject -NotePropertyValue $null
                 Add-Member -InputObject $baseobject -NotePropertyName ListItem -NotePropertyValue $null
-
+                
                 foreach ($item in $listItems) {
                     $object = $baseobject.PSObject.Copy()
                     $object.ListObject = $list
                     $object.ListItem = $item
                     foreach ($fieldName in $item.FieldValues.Keys) {
-                        $object.$fieldName = $item.FieldValues[$fieldName]
+                        if ($fieldName -in 'Author', 'Editor') {
+                            $object.$fieldName = $item.FieldValues[$fieldName].LookupValue
+                        }
+                        else {
+                            $object.$fieldName = $item.FieldValues[$fieldName]
+                        }
                     }
-                    Select-DefaultView -InputObject $object -ExcludeProperty _HasCopyDestinations, _CopySource, owshiddenversion, WorkflowVersion, _UIVersion, _UIVersionString, _ModerationStatus, _ModerationComments, InstanceID, WorkflowInstanceID, Last_x0020_Modified, Created_x0020_Date, FSObjType, SortBehavior, FileLeafRef, UniqueId, SyncClientId, ProgId, ScopeId, File_x0020_Type, MetaInfo, _Level, _IsCurrentVersion, ItemChildCount, FolderChildCount, Restricted, AppAuthor, AppEditor
+                    Select-DefaultView -InputObject $object -ExcludeProperty Order, ListObject, ListItem, ContentTypeId, _HasCopyDestinations, _CopySource, owshiddenversion, WorkflowVersion, _UIVersion, _UIVersionString, _ModerationStatus, _ModerationComments, InstanceID, WorkflowInstanceID, Last_x0020_Modified, Created_x0020_Date, FSObjType, SortBehavior, FileLeafRef, UniqueId, SyncClientId, ProgId, ScopeId, File_x0020_Type, MetaInfo, _Level, _IsCurrentVersion, ItemChildCount, FolderChildCount, Restricted, AppAuthor, AppEditor
                 }
             }
             catch {

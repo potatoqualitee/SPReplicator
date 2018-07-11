@@ -61,7 +61,16 @@
         }
         try {
             Write-PSFMessage -Level Verbose -Message "Disconnecting to the SharePoint service at $($InputObject.Url)"
+            $output = [pscustomobject]@{
+                Url = $global:spsite.Url
+                ServerVersion = $global:spsite.ServerVersion
+                AuthenticationMode = $global:spsite.AuthenticationMode
+                Credential = $global:spsite.Credential
+                Disconnected = $true
+            }
             $global:spsite.Dispose()
+            Remove-Variable -Name spsite -Scope Global
+            $output
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

@@ -56,14 +56,14 @@
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
-        [Parameter(Mandatory, HelpMessage = "Human-readble SharePoint list name")]
+        [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$AutoCreateList,
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [switch]$EnableException
     )
     begin {
@@ -105,6 +105,7 @@
     }
     process {
         $list = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
+        
         if (-not $list) {
             if (-not $AutoCreateList) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"

@@ -65,14 +65,14 @@
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
-        [Parameter(HelpMessage = "Human-readble SharePoint list name")]
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
         [string]$Description,
         [string]$Template = "GenericList",
         [switch]$OnQuickLaunch,
+        [Parameter(HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
