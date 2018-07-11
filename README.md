@@ -7,12 +7,12 @@ SPReplicator is currently in beta. Please report any issues to clemaire@gmail.co
 ## Installer
 SPReplicator is now in the PowerShell Gallery. Run the following from an administrative prompt to install SPReplicator for all users:
 ```powershell
-Install-Module dbatools
+Install-Module SPReplicator
 ```
 
 Or if you don't have administrative access or want to save it locally (just for yourself), run:
 ```powershell
-Install-Module dbatools -Scope CurrentUser
+Install-Module SPReplicator -Scope CurrentUser
 ```
 
 If you're scheduling tasks via Task Schedule or SQL Server agent, installing the module with administrative privleges is best because it will ensure all users have access via Program Files.
@@ -39,6 +39,8 @@ Export-SPRListData -Site https://intranet -ListName Employees -Path \\nas\replic
 ### Establish a session to the SharePoint site
 
 You can specify `-Site` and `-Credential` with every command. Or you can establish a connection and not worry about specifying the Site or Credentials in subsequent command executions.
+
+There is no need to assign the output to a variable, as it creates a reusable global variable `$global:spsite`.
 
 ```powershell
 # using your own account credentials
