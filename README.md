@@ -30,6 +30,49 @@ This module can be used for replicating data in a number of ways.
 
 SPReplicator has a number of commands that help you manage SharPoint lists. You can view, delete, and add records easily and there's even a command that makes it easy to see internal column names and datatypes.
 
+#### Export from SharePoint List
+
+```powershell
+Export-SPRListData -Site https://intranet -ListName Employees -Path \\nas\replicationdata\Employees.csv
+```
+
+### Establish a session to the SharePoint site
+
+You can specify `-Site` and `-Credential` with every command. Or you can establish a connection and not worry about specifying the Site or Credentials in subsequent command executions.
+
+```powershell
+# using your own account credentials
+Connect-SPRSite -Site https://intranet
+
+# specifying other credentials
+Connect-SPRSite -Site https://intranet -Credential (Get-Credential ad\otheruser)
+```
+
+#### Import to SharePoint List
+Now that we've established a connection via `Connect-SPRSite`, we no longer need to specify the Site.
+
+We can import data two ways, using `Import-SPRListData` or `Add-SPRListItem`
+```powershell
+# Import from CSV
+Import-SPRListData -ListName Employees -Path \\nas\replicationdata\Employees.csv
+
+# Import from SQL Server
+Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select fname, lname where id > 100" | Add-SPRListItem -ListName emps
+
+# Import any PowerShell object, really. So long as it has the properly named columns.
+Get-ADUser -Filter * | Select SamAccountName, whateverelse | Add-SPRListItem -ListName ADList
+
+# Didn't have time to create a good SharePoint list? Use -AutoCreateList
+Get-ADUser -Filter * | Add-SPRListItem -ListName ADList -AutoCreateList
+
+```
+
+The rest of the commands, you can see in screenshots.
+
+## Command summaries
+
+In the screenshots and examples below, I'll be connecting to my SharePoint 2016 server, aptly named `https://sharepoint2016`
+
 ## Add-SPRColumn
 Adds a column to a SharePoint list.
 
