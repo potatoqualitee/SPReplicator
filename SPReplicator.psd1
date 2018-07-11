@@ -14,7 +14,7 @@
     ModuleVersion     = '0.0.1'
     
     # ID used to uniquely identify this module
-    GUID              = '9069ea99-986b-4f44-a32c-96b08d54986b'
+    GUID              = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
     
     # Author of this module
     Author            = 'Chrissy LeMaire'
@@ -23,7 +23,7 @@
     Copyright         = '(c) 2018 Chrissy LeMaire All rights reserved.'
     
     # Description of the functionality provided by this module
-    # Description = ''
+    Description = 'SPReplicator is a PowerShell module that helps replicate SharePoint list data.'
     
     # Minimum version of the Windows PowerShell engine required by this module
     # PowerShellVersion = ''
@@ -44,7 +44,7 @@
     # ProcessorArchitecture = ''
     
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.22.70' })
+    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.23.77' })
     
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
@@ -104,16 +104,16 @@
         PSData = @{
             
             # Tags applied to this module. These help with module discovery in online galleries.
-            # Tags = @()
+            Tags = @('SharePoint','data','replication','SQL Server')
             
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseUri = 'https://github.com/potatoqualitee/SPReplicator/blob/master/LICENSE'
             
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://github.com/potatoqualitee/SPReplicator'
             
             # A URL to an icon representing this module.
-            # IconUri = ''
+            IconUri = 'https://user-images.githubusercontent.com/8278033/42554599-39b769a6-8481-11e8-8b6a-379f4a3e54e6.png'
             
             # ReleaseNotes of this module
             # ReleaseNotes = ''
