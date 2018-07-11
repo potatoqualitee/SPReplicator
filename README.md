@@ -239,7 +239,10 @@ Get-ChildItem C:\temp\mylist.xml | Import-SPRListData -ListName 'My List'
 Creates a new SharePoint list.
 
 ```powershell
+# Create a generic list with a description
 New-SPRList -ListName List1 -Description "My awesome list"
+
+# Create a document library
 New-SPRList -ListName 'My Documents' -Template DocumentLibrary
 ```
 ![image](https://user-images.githubusercontent.com/8278033/42560182-c8fd276c-8491-11e8-8c2e-2234b249439c.png)
@@ -248,9 +251,12 @@ New-SPRList -ListName 'My Documents' -Template DocumentLibrary
 
 ## Remove-SPRList
  Deletes lists from a SharePoint site collection.
-
+ 
 ```powershell
+# Delete the list and prompt for confirmation.
 Remove-SPRList -ListName List1
+
+# Positive you're deleting the list you want? Add -Confirm:$false to avoid confirmation prompts.
 Remove-SPRList -ListName List2 -Confirm:$false
 ```
 ![image](https://user-images.githubusercontent.com/8278033/42563954-32927cfa-849b-11e8-9ab1-3b973ff098e7.png)
@@ -259,7 +265,10 @@ Remove-SPRList -ListName List2 -Confirm:$false
 Deletes items from a SharePoint list.
 
 ```powershell
+# Delete a couple items and prompt for confirmation.
 Get-SPRListData -ListName 'My List' -Id 44, 45 | Remove-SPRListData
+
+# Delete a bunch of items without confirmation.
 Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListData -Confirm:$false
 ```
 
@@ -267,6 +276,13 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 
 ![image](https://user-images.githubusercontent.com/8278033/42569374-0952af20-84ac-11e8-88c7-eaf7c0664a82.png)
 
+## Learn more
+
+To find out more about any command, including additional examples, use `Get-Help`. 
+
+```powershell
+Get-Help Get-SPRColumnDetail -Detailed
+```
 <!---
 Connect-SPRSite -Uri sharepoint2016
 Get-SPRList -Uri sharepoint2016 -ListName 'My List'
