@@ -121,6 +121,12 @@ Exports all items from a SharePoint list to a file.
 ## Get-SPRColumnDetail
 Returns information (Name, DisplayName, Data type) about columns in a SharePoint list.
 
+```powershell
+Get-SPRColumnDetail -ListName 'My List'
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42567935-19fcb8ac-84a7-11e8-9b48-0da67dd2ce0f.png)
+
 ## Get-SPRList
 Returns a SharePoint list object.
 
