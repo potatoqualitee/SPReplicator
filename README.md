@@ -233,9 +233,15 @@ Import-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
 
 # Or pipe it in
 Get-ChildItem C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' 
+
+# You can even automatically create a list if it doesn't exist
+dir 'C:\temp\My List.xml' | Import-SPRListData -ListName Test -AutoCreateList
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42569956-fb412f40-84ad-11e8-9c25-d7b06470301e.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42579528-41a428e6-84c4-11e8-9bc6-4a987a9679f4.png)
+
 
 ## New-SPRList
 Creates a new SharePoint list.
