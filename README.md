@@ -10,7 +10,7 @@ SPReplicator is now in the PowerShell Gallery. Run the following from an adminis
 Install-Module dbatools
 ```
 
-Or if you don't have have administrative access or want to save it locally (just for yourself), run:
+Or if you don't have administrative access or want to save it locally (just for yourself), run:
 ```powershell
 Install-Module dbatools -Scope CurrentUser
 ```
@@ -21,17 +21,89 @@ If you're scheduling tasks via Task Schedule or SQL Server agent, installing the
 
 This module can be used for replicating data in a number of ways.
 
-* Between air gapped (offline) servers that do not have direct access to eachother
+* Between air gapped (offline) servers that do not have direct access to each other
 * Directly from SharePoint site collection to SharePoint site collection
 * From SQL Server to SharePoint
 * From CSV to SharePoint
 
 ## Usage examples
 
-SPReplicator has a number of commands that help you manage SharPoint lists. You can view, delete, and add records easily and there's even a command that makes it easy to see internal column names and datatypes.
+SPReplicator has a number of commands that help you manage SharePoint lists. You can view, delete, and add records easily and there's even a command that makes it easy to see internal column names and datatypes.
+
+#### Export from SharePoint List
+
+```powershell
+Export-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+Get-SPRListData -ListName 'My List' | Where Title -match Hello2 | Export-SPRListData -Path C:\temp\hello2.xml
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42569683-0dda065a-84ad-11e8-8edc-d35058e4e00c.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42569711-271efd96-84ad-11e8-8aaa-071c1bbd33a9.png)
+
+### Establish a session to the SharePoint site
+
+You can specify `-Site` and `-Credential` with every command. Or you can establish a connection and not worry about specifying the Site or Credentials in subsequent command executions.
+
+```powershell
+# using your own account credentials
+Connect-SPRSite -Site https://intranet
+
+# specifying other credentials
+Connect-SPRSite -Site https://intranet -Credential (Get-Credential ad\otheruser)
+```
+
+#### Import to SharePoint List
+Now that we've established a connection via `Connect-SPRSite`, we no longer need to specify the Site.
+
+We can import data two ways, using `Import-SPRListData` or `Add-SPRListItem`
+```powershell
+# Import from CSV
+Import-SPRListData -ListName Employees -Path \\nas\replicationdata\Employees.csv
+
+# Import from SQL Server
+Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select fname, lname where id > 100" | Add-SPRListItem -ListName emps
+
+# Import any PowerShell object, really. So long as it has the properly named columns.
+Get-ADUser -Filter * | Select SamAccountName, whateverelse | Add-SPRListItem -ListName ADList
+
+# Didn't have time to create a good SharePoint list? Use -AutoCreateList
+Get-ADUser -Filter * | Add-SPRListItem -ListName ADList -AutoCreateList
+
+```
+
+The rest of the commands, you can see in screenshots.
+
+## Command summaries
+
+In the screenshots and examples below, I'll be connecting to my SharePoint 2016 server, aptly named `https://sharepoint2016`.
+
+## Connect-SPRSite
+Creates a reusable SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+
+```powershell
+Connect-SPRSite -Site https://sharepoint2016
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42564673-1ceca0a4-849d-11e8-8f6b-22c1a0aad1e1.png)
+
+## Disconnect-SPRSite
+Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+
+```powershell
+Disconnect-SPRSite
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42565445-292606ce-849f-11e8-94ee-3986c54441de.png)
 
 ## Add-SPRColumn
 Adds a column to a SharePoint list.
+
+```powershell
+Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description Awesome
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42560633-c61f0a78-8492-11e8-9ac2-f3b772d8b8dc.png)
 
 ## Add-SPRListItem
 Adds items to a SharePoint list.
@@ -39,11 +111,14 @@ Adds items to a SharePoint list.
 ## Clear-SPRListData
 Deletes all items from a SharePoint list.
 
-## Connect-SPRSite
-Creates a reusable SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+```powershell
+Clear-SPRListData -ListName 'My List'
+Clear-SPRListData -ListName 'My List' -Confirm:$false
+```
 
-## Disconnect-SPRSite
-Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
+![image](https://user-images.githubusercontent.com/8278033/42567696-4798dc4c-84a6-11e8-947e-58bff29bbd89.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42567757-7b428f84-84a6-11e8-8863-b654c59044c2.png)
 
 ## Export-SPRListData
 Exports all items from a SharePoint list to a file.
@@ -51,14 +126,41 @@ Exports all items from a SharePoint list to a file.
 ## Get-SPRColumnDetail
 Returns information (Name, DisplayName, Data type) about columns in a SharePoint list.
 
+```powershell
+Get-SPRColumnDetail -ListName 'My List'
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42567935-19fcb8ac-84a7-11e8-9b48-0da67dd2ce0f.png)
+
 ## Get-SPRList
 Returns a SharePoint list object.
+
+```powershell
+Get-SPRList -ListName 'My List'
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42568030-65cde896-84a7-11e8-8a7f-a730f4f26344.png)
 
 ## Get-SPRListData
 Returns data from a SharePoint list.
 
+```powershell
+Get-SPRListData -ListName 'My List'
+Get-SPRListData -ListName 'My List' -Id 1
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42566521-91a9a7d4-84a2-11e8-9a96-f6765ad3a8aa.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42566593-c7494f70-84a2-11e8-8c1f-17c2054b4b8f.png)
+
 ## Get-SPRListTemplate
 Get list of SharePoint templates.
+
+```powershell
+Get-SPRListTemplate
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42564578-d33b9870-849c-11e8-9977-73d061f5d58c.png)
 
 ## Import-SPRListData
 Imports all items from a file into a SharePoint list.
@@ -66,11 +168,34 @@ Imports all items from a file into a SharePoint list.
 ## New-SPRList
 Creates a new SharePoint list.
 
+```powershell
+New-SPRList -ListName List1 -Description "My awesome list"
+New-SPRList -ListName 'My Documents' -Template DocumentLibrary
+```
+![image](https://user-images.githubusercontent.com/8278033/42560182-c8fd276c-8491-11e8-8c2e-2234b249439c.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42560506-826f8cee-8492-11e8-89a5-0b1eaac26a95.png)
+
 ## Remove-SPRList
  Deletes lists from a SharePoint site collection.
 
+```powershell
+Remove-SPRList -ListName List1
+Remove-SPRList -ListName List2 -Confirm:$false
+```
+![image](https://user-images.githubusercontent.com/8278033/42563954-32927cfa-849b-11e8-9ab1-3b973ff098e7.png)
+
 ## Remove-SPRListData
 Deletes items from a SharePoint list.
+
+```powershell
+Get-SPRListData -ListName 'My List' -Id 44, 45 | Remove-SPRListData
+ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListData -Confirm:$false
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42569305-c7273e68-84ab-11e8-85eb-2d34610e5220.png)
+
+![image](https://user-images.githubusercontent.com/8278033/42569374-0952af20-84ac-11e8-88c7-eaf7c0664a82.png)
 
 <!---
 Connect-SPRSite -Uri sharepoint2016
