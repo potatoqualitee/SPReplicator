@@ -73,6 +73,7 @@
         'Get-SPRList',
         'Get-SPRListData',
         'Get-SPRListTemplate',
+        'Get-SPRConnectedSite',
         'Import-SPRListData',
         'New-SPRList',
         'Remove-SPRList'
