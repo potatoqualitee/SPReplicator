@@ -278,6 +278,11 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 
 ![image](https://user-images.githubusercontent.com/8278033/42569374-0952af20-84ac-11e8-88c7-eaf7c0664a82.png)
 
+## TODO
+
+Add logging to export to SP or SQL
+
+
 ## Learn more
 
 To find out more about any command, including additional examples, use `Get-Help`. 
