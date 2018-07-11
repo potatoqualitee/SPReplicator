@@ -116,6 +116,8 @@ Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description Awesome
 Adds items to a SharePoint list from various sources. CSV, generic objects, exported lists.
 
 ```powershell
+# Add from an object - what's important is that the columns match up, so Title and TestColumn
+# exist both in the object and the list.
 $object = @()
 $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
 $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
@@ -127,6 +129,7 @@ $object | Add-SPRListItem -ListName 'My List'
 ![image](https://user-images.githubusercontent.com/8278033/42570287-227a3c4a-84af-11e8-9e5a-4dc6e9f2f4af.png)
 
 ```powershell
+# You can even import from a SQL Server database. Note again the Title and TestColumn columns
 Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"  | 
 Add-SPRListItem -ListName 'My List'
 ```
@@ -147,7 +150,10 @@ Add-SPRListItem -ListName BrandNewList -AutoCreateList
 Deletes all items from a SharePoint list.
 
 ```powershell
+# Delete all rows, clearing the list. This will prompt for confirmation.
 Clear-SPRListData -ListName 'My List'
+
+# Positive you're deleting the rows you want? Add -Confirm:$false to avoid confirmation prompts.
 Clear-SPRListData -ListName 'My List' -Confirm:$false
 ```
 
@@ -196,7 +202,10 @@ Get-SPRList -ListName 'My List'
 Returns data from a SharePoint list.
 
 ```powershell
+# Get the entire list
 Get-SPRListData -ListName 'My List'
+
+# Get only item 1. You could also get -Id 1, 2, 3 and so on.
 Get-SPRListData -ListName 'My List' -Id 1
 ```
 
@@ -217,7 +226,10 @@ Get-SPRListTemplate
 Imports all items from a file into a SharePoint list.
 
 ```powershell
+# Manually specify the path to the xml file, which was exported from Export-SPRListData
 Import-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+
+# Or pipe it in
 Get-ChildItem C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' 
 ```
 
