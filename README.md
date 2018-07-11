@@ -240,7 +240,7 @@ dir 'C:\temp\My List.xml' | Import-SPRListData -ListName Test -AutoCreateList
 
 ![image](https://user-images.githubusercontent.com/8278033/42569956-fb412f40-84ad-11e8-9c25-d7b06470301e.png)
 
-![image](https://user-images.githubusercontent.com/8278033/42579528-41a428e6-84c4-11e8-9bc6-4a987a9679f4.png)
+![image](https://user-images.githubusercontent.com/8278033/42579927-092a00ca-84c5-11e8-81e4-2ac501227c71.png)
 
 
 ## New-SPRList
@@ -288,6 +288,11 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 
 Add logging to export to SP or SQL
 
+## Pester tested
+
+This module comes with integration tests! If you'd like to see how I test the commands, check out [Integration.Tests.ps1](https://github.com/potatoqualitee/SPReplicator/blob/master/tests/Integration.Tests.ps1)
+
+![image](https://user-images.githubusercontent.com/8278033/42579528-41a428e6-84c4-11e8-9bc6-4a987a9679f4.png)
 
 ## Learn more
 
@@ -296,6 +301,7 @@ To find out more about any command, including additional examples, use `Get-Help
 ```powershell
 Get-Help Get-SPRColumnDetail -Detailed
 ```
+
 <!---
 Connect-SPRSite -Uri sharepoint2016
 Get-SPRList -Uri sharepoint2016 -ListName 'My List'
