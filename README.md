@@ -130,6 +130,8 @@ Add-SPRListItem -ListName BrandNewList -AutoCreateList
 
 ![image](https://user-images.githubusercontent.com/8278033/42570505-d060d8be-84af-11e8-948d-f97888611346.png)
 
+![image](https://user-images.githubusercontent.com/8278033/42570634-3f2478fa-84b0-11e8-8ab7-3c996d29021d.png)
+
 ## Clear-SPRListData
 Deletes all items from a SharePoint list.
 
