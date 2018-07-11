@@ -111,12 +111,22 @@ Imports all items from a file into a SharePoint list.
 ## New-SPRList
 Creates a new SharePoint list.
 
+```powershell
+New-SPRList -ListName List1 -Description "My awesome list"
+New-SPRList -ListName 'My Documents' -Template DocumentLibrary
+```
 ![image](https://user-images.githubusercontent.com/8278033/42560182-c8fd276c-8491-11e8-8c2e-2234b249439c.png)
 
 ![image](https://user-images.githubusercontent.com/8278033/42560506-826f8cee-8492-11e8-89a5-0b1eaac26a95.png)
 
 ## Remove-SPRList
  Deletes lists from a SharePoint site collection.
+
+```powershell
+Remove-SPRList -ListName List1
+Remove-SPRList -ListName List2 -Confirm:$false
+```
+![image](https://user-images.githubusercontent.com/8278033/42563954-32927cfa-849b-11e8-9ab1-3b973ff098e7.png)
 
 ## Remove-SPRListData
 Deletes items from a SharePoint list.
