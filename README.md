@@ -116,6 +116,8 @@ Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description Awesome
 Adds items to a SharePoint list from various sources. CSV, generic objects, exported lists.
 
 ```powershell
+# Add from an object - what's important is that the columns match up, so Title and TestColumn
+# exist both in the object and the list.
 $object = @()
 $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
 $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
@@ -127,6 +129,7 @@ $object | Add-SPRListItem -ListName 'My List'
 ![image](https://user-images.githubusercontent.com/8278033/42570287-227a3c4a-84af-11e8-9e5a-4dc6e9f2f4af.png)
 
 ```powershell
+# You can even import from a SQL Server database. Note again the Title and TestColumn columns
 Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"  | 
 Add-SPRListItem -ListName 'My List'
 ```
@@ -147,7 +150,10 @@ Add-SPRListItem -ListName BrandNewList -AutoCreateList
 Deletes all items from a SharePoint list.
 
 ```powershell
+# Delete all rows, clearing the list. This will prompt for confirmation.
 Clear-SPRListData -ListName 'My List'
+
+# Positive you're deleting the rows you want? Add -Confirm:$false to avoid confirmation prompts.
 Clear-SPRListData -ListName 'My List' -Confirm:$false
 ```
 
@@ -159,11 +165,18 @@ Clear-SPRListData -ListName 'My List' -Confirm:$false
 Exports all items from a SharePoint list to a file.
 
 ```powershell
+# Export an entire list
 Export-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+
+# Export only some items
 Get-SPRListData -ListName 'My List' | Where Title -match Hello2 | Export-SPRListData -Path C:\temp\hello2.xml
 ```
 
+The entire list
+
 ![image](https://user-images.githubusercontent.com/8278033/42569683-0dda065a-84ad-11e8-8edc-d35058e4e00c.png)
+
+And only some items
 
 ![image](https://user-images.githubusercontent.com/8278033/42569711-271efd96-84ad-11e8-8aaa-071c1bbd33a9.png)
 
@@ -189,7 +202,10 @@ Get-SPRList -ListName 'My List'
 Returns data from a SharePoint list.
 
 ```powershell
+# Get the entire list
 Get-SPRListData -ListName 'My List'
+
+# Get only item 1. You could also get -Id 1, 2, 3 and so on.
 Get-SPRListData -ListName 'My List' -Id 1
 ```
 
@@ -210,7 +226,10 @@ Get-SPRListTemplate
 Imports all items from a file into a SharePoint list.
 
 ```powershell
+# Manually specify the path to the xml file, which was exported from Export-SPRListData
 Import-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+
+# Or pipe it in
 Get-ChildItem C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' 
 ```
 
@@ -220,7 +239,10 @@ Get-ChildItem C:\temp\mylist.xml | Import-SPRListData -ListName 'My List'
 Creates a new SharePoint list.
 
 ```powershell
+# Create a generic list with a description
 New-SPRList -ListName List1 -Description "My awesome list"
+
+# Create a document library
 New-SPRList -ListName 'My Documents' -Template DocumentLibrary
 ```
 ![image](https://user-images.githubusercontent.com/8278033/42560182-c8fd276c-8491-11e8-8c2e-2234b249439c.png)
@@ -229,9 +251,12 @@ New-SPRList -ListName 'My Documents' -Template DocumentLibrary
 
 ## Remove-SPRList
  Deletes lists from a SharePoint site collection.
-
+ 
 ```powershell
+# Delete the list and prompt for confirmation.
 Remove-SPRList -ListName List1
+
+# Positive you're deleting the list you want? Add -Confirm:$false to avoid confirmation prompts.
 Remove-SPRList -ListName List2 -Confirm:$false
 ```
 ![image](https://user-images.githubusercontent.com/8278033/42563954-32927cfa-849b-11e8-9ab1-3b973ff098e7.png)
@@ -240,7 +265,10 @@ Remove-SPRList -ListName List2 -Confirm:$false
 Deletes items from a SharePoint list.
 
 ```powershell
+# Delete a couple items and prompt for confirmation.
 Get-SPRListData -ListName 'My List' -Id 44, 45 | Remove-SPRListData
+
+# Delete a bunch of items without confirmation.
 Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListData -Confirm:$false
 ```
 
@@ -248,6 +276,13 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 
 ![image](https://user-images.githubusercontent.com/8278033/42569374-0952af20-84ac-11e8-88c7-eaf7c0664a82.png)
 
+## Learn more
+
+To find out more about any command, including additional examples, use `Get-Help`. 
+
+```powershell
+Get-Help Get-SPRColumnDetail -Detailed
+```
 <!---
 Connect-SPRSite -Uri sharepoint2016
 Get-SPRList -Uri sharepoint2016 -ListName 'My List'
