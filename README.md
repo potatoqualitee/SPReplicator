@@ -38,7 +38,7 @@ SPReplicator has a number of commands that help you manage SharePoint lists. You
 Export-SPRListData -Site https://intranet -ListName Employees -Path \\nas\replicationdata\Employees.csv
 ```
 
-### Establish a session to the SharePoint site
+#### Establish a session to the SharePoint site
 
 You can specify `-Site` and `-Credential` with every command. Or you can establish a connection and not worry about specifying the Site or Credentials in subsequent command executions.
 
