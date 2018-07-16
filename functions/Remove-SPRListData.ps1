@@ -64,7 +64,7 @@
         [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
-        [object]$InputObject,
+        [object[]]$InputObject,
         [switch]$EnableException
     )
     process {
