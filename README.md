@@ -152,7 +152,7 @@ Add-SPRListItem -ListName BrandNewList -AutoCreateList
 Updates modified items in a SharePoint list.
 
 ```powershell
-# Update rows that were modified
+# Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml
 $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
 Get-SPRListData -ListName 'My List' | Update-SPRListItem -UpdateObject $updates -Confirm:$false
 ```
