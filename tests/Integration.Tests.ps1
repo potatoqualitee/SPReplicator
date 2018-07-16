@@ -238,4 +238,11 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             
         }
     }
+    Context "Get-SPRLog" {
+        It "Gets some logs" {
+            $results = Get-SPRLog
+            $results.ModuleName | Select-Object -First 1 | Should -Be 'SPReplicator'
+            $results | Measure-Object | Select-Object -ExpandProperty Count | Should -BeGreaterThan 20
+        }
+    }
 }
