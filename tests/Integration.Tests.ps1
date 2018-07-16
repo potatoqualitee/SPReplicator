@@ -193,6 +193,26 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Update-SPRListItem" {
+        It "Updates data from $script:filename" {
+            # Replace a value to update
+            (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
+            (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
+            $updates = Import-CliXml -Path $script:filename
+            $results = Get-SPRListData -Site $script:site -ListName $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false
+            $results.Title.Count | Should -Be 1
+            $results.Title | Should -Be 'ScooptyScoop'
+            $results.TestColumn | Should -Be 'ScooptyData'
+        }
+        It "Doesn't update the other rows" {
+            $results = Get-SPRListData -Site $script:site -ListName $script:mylist
+            $results.Title | Should -Contain 'ScooptyScoop'
+            $results.Title | Should -Contain 'Hello'
+            $results.Title | Should -Contain 'Hello2'
+            $results.Title | Should -Contain 'Hello3'
+        }
+    }
+    
     Context "Remove-SPRListData" {
         It "Removes specific data from $script:mylist" {
             $row = Get-SPRListData -ListName $script:mylist -Id $script:id

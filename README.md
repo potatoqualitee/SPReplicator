@@ -27,6 +27,9 @@ This module can be used for replicating data in a number of ways.
 * Directly from SharePoint site collection to SharePoint site collection
 * From SQL Server to SharePoint
 * From CSV to SharePoint
+* Consider since
+* AsUser (force modify create/modified column)
+* Delete as view
 
 ## Usage examples
 

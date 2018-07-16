@@ -74,7 +74,7 @@
                     $title = $column.Title
                     Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.Title
                     Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
-                    Select-DefaultView -InputObject $column -Property ListName, 'Title as DisplayName', 'StaticName as Name', 'TypeDisplayName as Type'
+                    Select-DefaultView -InputObject $column -Property ListName, 'Title as DisplayName', 'StaticName as Name', 'TypeDisplayName as Type', FromBaseType
                 }
             }
             catch {
