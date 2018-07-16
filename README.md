@@ -148,6 +148,17 @@ Add-SPRListItem -ListName BrandNewList -AutoCreateList
 
 ![image](https://user-images.githubusercontent.com/8278033/42570634-3f2478fa-84b0-11e8-8ab7-3c996d29021d.png)
 
+## Update-SPRListData
+Deletes all items from a SharePoint list.
+
+```powershell
+# Update rows that were modified
+$updates = Import-CliXml -Path C:\temp\mylist-updated.xml
+Get-SPRListData -ListName 'My List' | Update-SPRListItem -UpdateObject $updates -Confirm:$false
+```
+
+![image](https://user-images.githubusercontent.com/8278033/42782751-8915d362-88e5-11e8-801e-5987ff7dc89f.png)
+
 ## Clear-SPRListData
 Deletes all items from a SharePoint list.
 
