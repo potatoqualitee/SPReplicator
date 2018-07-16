@@ -13,7 +13,7 @@
     List of specific column(s) to be updated. If no columns are specified, we'll try to figure out which fields to update.
 
 .PARAMETER UpdateObject
-    An object that contains updated fields. This object must have an ID field.
+    An object that contains updated fields. This object must have an ID or an alternative KeyColumn.
 
 .PARAMETER KeyColumn
     The column used for update comparisons - similar to a Primary Key in a SQL database. ID by default.
@@ -42,24 +42,20 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Update-SPRListItem -Site intranet.ad.local -ListName 'My List'
+    $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
+    Get-SPRListData -ListName 'My List' -Site intranet.ad.local | Update-SPRListItem -UpdateObject $updates
 
-    Updates all items from My List on intranet.ad.local. Prompts for confirmation.
-
-.EXAMPLE
-    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Update-SPRListItem -Confirm:$false
-
-    Updates all items from My List on intranet.ad.local. Does not prompt for confirmation.
+    Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Prompts for confirmation.
+    
+    Uses ID to compare items.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Update-SPRListItem -Confirm:$false
+    $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
+    Get-SPRListData -ListName 'My List' -Site intranet.ad.local | Update-SPRListItem -UpdateObject $updates -KeyColumn SSN -Confirm:$false
 
-    Updates all items from My List by logging into the webapp as ad\user.
-
-.EXAMPLE
-    Update-SPRListItem -Site intranet.ad.local -ListName 'My List'
-
-    No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
+    Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Does not prompt for confirmation.
+    
+    Uses SSN to compare items.
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
