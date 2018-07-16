@@ -6,6 +6,18 @@
 .DESCRIPTION
     Updates items from a SharePoint list.
 
+.PARAMETER ListName
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Column
+    List of specific column(s) to be updated. If no columns are specified, we'll try to figure out which fields to update.
+
+.PARAMETER UpdateObject
+    An object that contains updated fields. This object must have an ID field.
+
+.PARAMETER KeyColumn
+    The column used for update comparisons - similar to a Primary Key in a SQL database. ID by default.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -15,20 +27,8 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
-
-.PARAMETER Id
-    Updates only rows with specific IDs.
-
-.PARAMETER Column
-    List of specific column(s) to be updated. If no columns are specified, we'll try to figure out which fields to update.
-    
 .PARAMETER InputObject
     Allows piping from Get-SPRListData.
-
-.PARAMETER UpdateObject
-    An object that contains updated fields. This object must have an ID field.
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -65,14 +65,14 @@
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
-        [int[]]$Id,
         [string[]]$Column,
+        [object[]]$UpdateObject,
+        [string]$KeyColumn = 'ID',
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
-        [object[]]$UpdateObject,
         [switch]$EnableException
     )
     begin {
@@ -142,7 +142,7 @@
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
             }
             $list = $item.ListObject
-            $updateitem = $UpdateObject | Where-Object Id -eq $item.ListItem.Id
+            $updateitem = $UpdateObject | Where-Object $KeyColumn -eq $item.ListItem.$KeyColumn
             
             if (-not $updateitem) {
                 Write-PSFMessage -Level Verbose -Message "No matches for ID $($item.ListItem.Id)"
