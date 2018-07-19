@@ -4,7 +4,7 @@
 
 This module uses the SharePoint Client Side Object Model (CSOM) and all required libraries and dlls are included. Installing the SharePoint binaries is **not required** for the replication to work 👍 Thank you Microsoft for the redistributable nuget.
 
-SPReplicator is currently in beta. Please report any issues to clemaire@gmail.com.
+SPReplicator works with both on-prem and SharePoint Online and is currently in beta. Please report any issues to clemaire@gmail.com.
 
 ## Installer
 SPReplicator is now in the PowerShell Gallery. Run the following from an administrative prompt to install SPReplicator for all users:
@@ -53,6 +53,9 @@ Connect-SPRSite -Site https://intranet
 
 # specifying other credentials
 Connect-SPRSite -Site https://intranet -Credential (Get-Credential ad\otheruser)
+
+# using your own account credentials and SP Online
+Connect-SPRSite -Site https://corp.sharepoint.com -Credential (Get-Credential otheruser@corp.onmicrosoft.com)
 ```
 
 #### Import to SharePoint List
