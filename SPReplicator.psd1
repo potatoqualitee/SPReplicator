@@ -11,7 +11,7 @@
     RootModule        = 'SPReplicator.psm1'
     
     # Version number of this module.
-    ModuleVersion     = '0.0.3'
+    ModuleVersion     = '0.0.4'
     
     # ID used to uniquely identify this module
     GUID              = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
@@ -79,7 +79,9 @@
         'Remove-SPRList'
         'Remove-SPRListData',
         'Update-SPRListItem',
-        'Get-SPRLog'
+        'Get-SPRLog',
+        'Get-SPRConfig',
+        'Set-SPRConfig'
     )
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -134,8 +136,8 @@
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUl0sFkIOhyw4u1f497A2E6haa
-# HIKggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/Wv3xsdyKOzIYOpcMsXgnFG8
+# q9iggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -266,22 +268,22 @@
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQUoOszBNLdTUMAawyjaWU8BTLZd/swDQYJKoZIhvcNAQEBBQAE
-# ggEAJZseYmANspqrEdH91bn/cq+c/x9TssFErgJwN/Xo+D6xjCollNIunX/d+9jI
-# AH1Pt5S90RE8ZHyaDMgnVFUBtCHFAzJBjKHDUdwhr272hJ1YWjXgMV4b0xFDG+J6
-# ewHSjFJNouFeYneTzya1ol/lbEbB7NCU+LJvloxe7B9van25PKvf4nFg3BvaU0Pg
-# 7MWsmbTR6az61v5w4g2fNsc8xihBCoCtf1btSfqaqvr0+XRd7dwpZtUvMN4OW2Yz
-# WamBKBXGKn0d/XhyuvolhaBjQoJ0u1INHCK9IL1t1HwQ+G4Q8FW+nwUsOiYtvFg3
-# 7DlPP90BGo3PKW7kgh2urU2gIKGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQUaGCwToQL3xMJ9/RCuDFHuKQcvfowDQYJKoZIhvcNAQEBBQAE
+# ggEATgTzd+ej/pV8MXcvyUEKLDkJiEbuXVAj3u2+QoaCXrASd4IwqwYLmrSD9L/P
+# LFdaES8Iy0iim8Pn2jl+1ijxPtYdz1JJlaH0Ut9AWd5C8lS+wGIILHfJpba+4TMZ
+# 2DRlnvhpToDse9TDO1WITQ4wyR1OfhM2mB2RHTb3E13065trGwIZn9DF78+GYF4A
+# vczmLmttp8kUwahG4ocFQTOcIOaNSyZteXrIK9EyIesg7WzuRXX/pTXv+uL5c/r6
+# FzR1116eJ5I01hF+pVQraXNd84VKda4yyzoo4rxvdcE9tY2UVzwU8uEEavKLI642
+# zHFc0q385SSrb+QVJ7IGNt1AIaGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzE5MTM1MTI5WjAj
-# BgkqhkiG9w0BCQQxFgQU4xHLwUKduAp9UXSqV4plMTbSZV4wDQYJKoZIhvcNAQEB
-# BQAEggEAoKY4UPZtYe//WMRyThhhsY2QLpO1DQM/2iGOmmoy+FRucyQnOpcakSik
-# 0vw+i9e7cwBivx5eJ7o2+alSpBhWBX8/VW2h1/oOy0/ymh97jNUAd773FWaTsuK8
-# aBLui8v+/jSgZ3iBJijR5GxQJHcWwr7gRd0oMMPTeFyyLw2rMPWO8bOvecA7TyZ9
-# crBifOgULU+J9XPBVqxlkG30RMGw10DTqXy43Z4qDMpenXD6ZfRCrCzHYq+H/nCm
-# hhBYaH8Gy+vzm0J37VfGDA95sZhoYTZeIQfDrgPwi0ThY+2sOi94OcW1tDHs9Kx0
-# trov8JPT9/OkuZ/VVt5c888ryhKvog==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzE5MTk1NDQ1WjAj
+# BgkqhkiG9w0BCQQxFgQU+Xi6S8iqCXPZRL5lXtWfiqyAKjgwDQYJKoZIhvcNAQEB
+# BQAEggEAmf/3qcPrnlBUT0hOcYh3wRgAjYVOK4IwFE5oA/Se2NkEp0GHQYj1kF7P
+# xqeRkts6U9pJ/lRSYBCQfBkcTqZZZttit4P636JulpuP+oQxOgnSnh4QPmd/ZjDk
+# Ps44JVx6D4IARcnDgS5VvlodtAer9xr31vAS7TDH+fonsgqLdhqvrhooyCICPDmk
+# zV3YnfSYMugOC9ZvVDmMVseyqmdG7/K7xOSDWzXVWMzWRgI767gFz2klx0Mh2ccm
+# 4tq+Sh1dvi0ieQZYeThXoG12tuJsTIjCWdXVw9qkFBCKnStJlmMzVkDAJFNmX5XX
+# ffuHiKEhvakOE477C4vj3y2SIUyBKA==
 # SIG # End signature block

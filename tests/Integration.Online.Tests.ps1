@@ -4,21 +4,23 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
-        $list = Get-SPRList -Site $script:site -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
+        $script:startingconfig = Get-SPRConfig
+        $null = Set-SPRConfig -Name location -Value Online
+        $list = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
     }
     AfterAll {
-        $list = Get-SPRList -Site $script:site -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
+        $list = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $oldvalue = $script:currentconfig | Where-Object Name -eq location
+        $oldvalue = $script:startingconfig | Where-Object Name -eq location
         $results = Set-SPRConfig -Name location -Value $oldvalue.Value
     }
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:site
-            $results.Url | Should -Be "https://$script:site"
+            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
+            $results.Url | Should -Be $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -26,7 +28,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
-            $results.Url | Should -Be "https://$script:site"
+            $results.Url | Should -Be $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -67,7 +69,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRList" {
         $global:spsite = $null
         It "Gets a list named $script:mylist with a basetype GenericList" {
-            $results = Get-SPRList -Site $script:site -ListName $script:mylist
+            $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist
             $results.Title | Should -Be $script:mylist
             $results.BaseType | Should -Be 'GenericList'
         }
@@ -103,7 +105,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Get-SPRColumnDetail" {
         It "Gets a list named $script:mylist with a basetype GenericList" {
-            $results = Get-SPRColumnDetail -Site $script:site -ListName $script:mylist
+            $results = Get-SPRColumnDetail -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist
             $results.Name.Count | Should -BeGreaterThan 10
             $results.Name | Should -Contain 'TestColumn'
             $results.Name | Should -Contain 'Scoopty'
@@ -121,7 +123,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
             $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-            $results = Add-SPRListItem -Site $script:site -ListName $script:mylist -InputObject $object
+            $results = Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -InputObject $object
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
         }
@@ -139,11 +141,11 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
             $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-            $results = $object | Add-SPRListItem -Site $script:site -ListName $newlistname -AutoCreateList
+            $results = $object | Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -ListName $newlistname -AutoCreateList
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
             
-            $results = Get-SPRList -Site $script:site -ListName $newlistname
+            $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName $newlistname
             $results | Should -Not -Be $null
             $results | Remove-SPRList -Confirm:$false
         }
@@ -151,7 +153,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Get-SPRListData" {
         It "Gets data from $script:mylist" {
-            $results = Get-SPRListData -Site $script:site -ListName $script:mylist
+            $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist
             $results.Title.Count | Should -BeGreaterThan 1
             $results.Title | Should -Contain 'Hello SQL'
             $results.TestColumn | Should -Contain 'Sample SQL Data'
@@ -170,7 +172,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             if ((Test-Path $script:filename)) {
                 Remove-Item $script:filename
             }
-            $result = Export-SPRListData -Site $script:site -ListName $script:mylist -Path $script:filename
+            $result = Export-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -Path $script:filename
             $result.FullName | Should -Be $script:filename
             $string = Select-String -Pattern 'TestColumn' -Path $result
             $string.Count | Should -BeGreaterThan 3
@@ -179,18 +181,18 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Import-SPRListData" {
         It "imports data from $script:filename" {
-            $count = (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count
-            $results = Import-SPRListData -Site $script:site -ListName $script:mylist -Path $script:filename
+            $count = (Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist).Title.Count
+            $results = Import-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -Path $script:filename
             $results.Title | Should -Contain 'Hello SQL'
-            (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
+            (Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
         }
     }
     
     Context "Add-SPRListItem" {
         It "Imports data from $script:filename" {
-            $count = (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count
-            $results = Import-CliXml -Path $script:filename | Add-SPRListItem -Site $script:site -ListName $script:mylist
-            (Get-SPRListData -Site $script:site -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
+            $count = (Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist).Title.Count
+            $results = Import-CliXml -Path $script:filename | Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist
+            (Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist).Title.Count | Should -BeGreaterThan $count
             $results.Title | Should -Contain 'Hello SQL'
         }
     }
@@ -201,13 +203,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
             (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
             $updates = Import-CliXml -Path $script:filename
-            $results = Get-SPRListData -Site $script:site -ListName $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false
+            $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false
             $results.Title.Count | Should -Be 1
             $results.Title | Should -Be 'ScooptyScoop'
             $results.TestColumn | Should -Be 'ScooptyData'
         }
         It "Doesn't update the other rows" {
-            $results = Get-SPRListData -Site $script:site -ListName $script:mylist
+            $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist
             $results.Title | Should -Contain 'ScooptyScoop'
             $results.Title | Should -Contain 'Hello'
             $results.Title | Should -Contain 'Hello2'
@@ -228,15 +230,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Clear-SPRListData" {
         It "Removes data from $script:mylist" {
-            $results = Clear-SPRListData -Site $script:site -ListName $script:mylist -Confirm:$false
-            Get-SPRListData -Site $script:site -ListName $script:mylist | Should -Be $null
+            $results = Clear-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -Confirm:$false
+            Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Should -Be $null
         }
     }
     
     Context "Remove-SPRList" {
         It "Removes $script:mylist" {
-            $results = Get-SPRList -Site $script:site -ListName 'My List', $script:mylist | Remove-SPRList -Confirm:$false
-            Get-SPRList -Site $script:site -ListName $script:mylist | Should -Be $null
+            $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName 'My List', $script:mylist | Remove-SPRList -Confirm:$false
+            Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Should -Be $null
             
         }
     }
@@ -255,11 +257,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     Context "Set-SPRConfig" {
         It "Sets some configs" {
-            $script:currentconfig = Get-SPRConfig
             $results = Set-SPRConfig -Name location -Value Test
             $results.Value | Should -Be 'Test'
             $results = Get-SPRConfig
-            ($results | Where Name -eq location).Value | Should -Be 'Test'
+            ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
         }
     }
 }

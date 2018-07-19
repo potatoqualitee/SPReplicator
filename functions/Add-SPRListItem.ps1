@@ -50,7 +50,7 @@
     $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
     $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
     $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-    Add-SPRListData -Site intranet.ad.local -ListName 'My List' -InputObject $object
+    Add-SPRListItem -Site intranet.ad.local -ListName 'My List' -InputObject $object
 
     Adds data from a custom object $object into the My List SharePoint list, so long as there are matching columns (Title and TestColumn).
 #>

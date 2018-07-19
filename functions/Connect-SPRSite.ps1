@@ -36,12 +36,20 @@
 
     Creates a web service object and logs into the webapp as ad\user.
 
+.EXAMPLE
+    Connect-SPRSite -Site intranet.ad.local -Credential (Get-Credential me@mycorp.onmicrosoft.com) -Location Online
+
+    Creates a connection to SharePoint Online using the credential me@mycorp.onmicrosoft.com
+    
+    By default, this module is set to On-Premises. To change this use: Set-SPRConfig -Name Location -Value Online 
 #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [ValidateSet("OnPrem", "Online")]
+        [string]$Location,
         [switch]$EnableException
     )
     begin {
@@ -53,9 +61,23 @@
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         try {
             $global:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
+            
             if ($Credential) {
-                $global:spsite.Credentials
+                if (-not $Location) {
+                    $Location = Get-PSFConfigValue -FullName SPReplicator.Location
+                }
+                
+                if ($Location -eq "Onprem") {
+                    $global:spsite.Credentials
+                }
+                else {
+                    $username = $Credential.UserName
+                    $password = $Credential.Password
+                    $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($username, $password)
+                    $global:spsite.Credentials = $credentials
+                }
             }
+            
             $global:spsite.ExecuteQuery()
             
             Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
