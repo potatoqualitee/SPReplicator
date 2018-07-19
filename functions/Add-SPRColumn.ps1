@@ -76,7 +76,7 @@
 
     Adds a column named EmployeePicture with the URL datatype to List1 on intranet.ad.local
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,
@@ -145,14 +145,16 @@
                     $xmldata = [xml]($xml.ToString())
                     $ColumnName = $xmldata.Field.Name
                 }
-                Write-PSFMessage -Level Verbose -Message $xml
-                Write-PSFMessage -Level Verbose -Message "Added $ColumnName as $Type"
-                $field = $list.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
-                $list.Update()
-                $server.Load($list)
-                $server.ExecuteQuery()
-
-                $list | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object guid -Descending | Select-Object -First 1
+                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Added $ColumnName as $Type to $ListName")) {
+                    Write-PSFMessage -Level Verbose -Message $xml
+                    Write-PSFMessage -Level Verbose -Message "Added $ColumnName as $Type"
+                    $field = $list.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
+                    $list.Update()
+                    $server.Load($list)
+                    $server.ExecuteQuery()
+                    
+                    $list | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object guid -Descending | Select-Object -First 1
+                }
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

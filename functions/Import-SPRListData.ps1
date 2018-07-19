@@ -44,7 +44,7 @@
 
     Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$ListName,

@@ -75,12 +75,12 @@
             )
             foreach ($currentrow in $row) {
                 $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
-
+                
                 if (-not $columns) {
                     $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq Property | Select-Object -ExpandProperty Name |
                     Where-Object { $_ -notin 'RowError', 'RowState', 'Table', 'ItemArray', 'HasErrors' }
                 }
-
+                
                 foreach ($fieldname in $columns) {
                     $datatype = ($ColumnInfo | Where-Object Name -eq $fieldname).Type
                     if ($type -eq 'DateTime') {
@@ -89,7 +89,7 @@
                     else {
                         $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                     }
-
+                    
                     # Skip reserved words, so far is only ID
                     if ($fieldname -notin 'ID') {
                         Write-PSFMessage -Level Verbose -Message "Adding $fieldname to row"
@@ -110,55 +110,61 @@
             if (-not $AutoCreateList) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"
                 return
-            } else {
-                $list = New-SPRList -Site $Site -Credential $Credential -ListName $ListName
-
-                $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
-                $columns = ($list | Get-SPRColumnDetail).Title
-                $newcolumns = $datatable.Columns | Where-Object ColumnName -NotIn $columns
-
-                Write-PSFMessage -Level Debug -Message "All columns: $columns"
-                Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
-
-                foreach ($column in $newcolumns) {
-                    $type = switch ($column.DataType.Name) {
-                        "Double" { "Number" }
-                        "Int16" { "Number" }
-                        "Int32" { "Number" }
-                        "Int64" { "Number" }
-                        "Single" { "Number" }
-                        "UInt16" { "Number" }
-                        "UInt32" { "Number" }
-                        "UInt64" { "Number" }
-                        "Text" { "Text" }
-                        "Note" { "Note" }
-                        "DateTime" { "DateTime" }
-                        "Boolean" { "Boolean" }
-                        "Number" { "Number" }
-                        "Decimal" { "Currency" }
-                        "Guid" { "Guid" }
-                        default { "Text" }
+            }
+            else {
+                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding List $ListName")) {
+                    $list = New-SPRList -Site $Site -Credential $Credential -ListName $ListName
+                    
+                    $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
+                    $columns = ($list | Get-SPRColumnDetail).Title
+                    $newcolumns = $datatable.Columns | Where-Object ColumnName -NotIn $columns
+                    
+                    Write-PSFMessage -Level Debug -Message "All columns: $columns"
+                    Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
+                    
+                    foreach ($column in $newcolumns) {
+                        $type = switch ($column.DataType.Name) {
+                            "Double" { "Number" }
+                            "Int16" { "Number" }
+                            "Int32" { "Number" }
+                            "Int64" { "Number" }
+                            "Single" { "Number" }
+                            "UInt16" { "Number" }
+                            "UInt32" { "Number" }
+                            "UInt64" { "Number" }
+                            "Text" { "Text" }
+                            "Note" { "Note" }
+                            "DateTime" { "DateTime" }
+                            "Boolean" { "Boolean" }
+                            "Number" { "Number" }
+                            "Decimal" { "Currency" }
+                            "Guid" { "Guid" }
+                            default { "Text" }
+                        }
+                        $cname = $column.ColumnName
+                        $null = $list | Add-SPRColumn -ColumnName $cname -Type $type
                     }
-                    $cname = $column.ColumnName
-                    $null = $list | Add-SPRColumn -ColumnName $cname -Type $type
                 }
             }
+            
+            $columns = $list | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object Listname, DisplayName
         }
-
-        $columns = $list | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object Listname, DisplayName
-
+        
         foreach ($row in $InputObject) {
-            try {
-            $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
-            $newItem = $list.addItem($itemCreateInfo)
-            $newItem = Add-Row -Row $row -ColumnInfo $columns
-            $newItem.update()
-            $list.Context.Load($newItem)
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding List item $ListName")) {
+                try {
+                    
+                    $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
+                    $newItem = $list.AddItem($itemCreateInfo)
+                    $newItem = Add-Row -Row $row -ColumnInfo $columns
+                    $newItem.update()
+                    $list.Context.Load($newItem)
+                }
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                }
             }
-            catch {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
-            }
-
+            
             Write-PSFMessage -Level Verbose -Message "Queued row for $listname"
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding Batch")) {
                 try {
