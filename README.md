@@ -27,9 +27,6 @@ This module can be used for replicating data in a number of ways.
 * Directly from SharePoint site collection to SharePoint site collection
 * From SQL Server to SharePoint
 * From CSV to SharePoint
-* Consider since
-* AsUser (force modify create/modified column)
-* Delete as view
 
 ## Usage examples
 
@@ -307,6 +304,9 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 * Make a dictionary that tracks what's already been imported
 * Make it Core compat if it's not already
 * Explore extracting files from attachments
+* Consider since
+* AsUser (force modify create/modified column)
+* Delete as view
 
 ## Pester tested
 
