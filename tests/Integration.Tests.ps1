@@ -224,6 +224,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Select-SPRObject" {
+        It "Gets data from $script:mylist and excludes other data" {
+            $results = Get-SPRListData -Site $script:site -ListName $script:mylist | Select-SPRObject -Property 'Title as Test1234'
+            $results | Get-Member -Name Title | Should -Be $null
+            $results | Get-Member -Name Test1234 | Should -Not -Be $null
+            $results.Test1234 | Should -Contain 'ScooptyScoop'
+        }
+    }
+    
     Context "Remove-SPRListData" {
         It "Removes specific data from $script:mylist" {
             $row = Get-SPRListData -ListName $script:mylist -Id $script:id
