@@ -71,16 +71,27 @@
                     $global:spsite.Credentials
                 }
                 else {
-                    $username = $Credential.UserName
-                    $password = $Credential.Password
-                    $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($username, $password)
+                    $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($Credential.UserName, $Credential.Password)
                     $global:spsite.Credentials = $credentials
                 }
             }
             
-            $global:spsite.ExecuteQuery()
+            if ($global:spsite.HasPendingRequest) {
+                $global:spsite.ExecuteQueryAsync().Wait()
+            }
             
             Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
+            
+            if (-not $global:spsite.ExecuteQuery) {
+                Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
+                    if ($global:spsite.HasPendingRequest) {
+                        $global:spsite.ExecuteQueryAsync().Wait()
+                    }
+                } -Force
+            }
+            
+            $global:spsite.ExecuteQuery()
+            
             $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credential, RequestTimeout
         }
         catch {

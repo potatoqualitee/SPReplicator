@@ -127,7 +127,16 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
         if ($env:COMPUTERNAME -eq "workstationx") {
             It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
-                $results = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | Add-SPRListItem -ListName $script:mylist
+                if ($PSVersionTable.PSEdition -ne "Core") {
+                    $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
+                }
+                else {
+                    $dt = New-Object System.Data.Datatable
+                    [void]$dt.Columns.Add("Title")
+                    [void]$dt.Columns.Add("TestColumn")
+                    [void]$dt.Rows.Add("Hello SQL", "Sample SQL Data")
+                }
+                $results = $dt | Add-SPRListItem -ListName $script:mylist
                 $results.Title | Should -Be 'Hello SQL'
                 $results.TestColumn | Should -Be 'Sample SQL Data'
             }
@@ -259,7 +268,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results = Set-SPRConfig -Name location -Value Test
             $results.Value | Should -Be 'Test'
             $results = Get-SPRConfig
-            ($results | Where Name -eq location).Value | Should -Be 'Test'
+            ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
         }
     }
 }

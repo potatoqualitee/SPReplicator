@@ -1,7 +1,15 @@
 $PSModulePath = $PSScriptRoot
 Get-ChildItem "$PSScriptRoot\bin\" -Recurse | Unblock-File
-Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.dll"
-Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.dll"
+
+if ($PSVersionTable.PSEdition -eq "Core") {
+    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Portable.dll"
+    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Windows.dll"
+    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Portable.dll"
+}
+else {
+    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.dll"
+    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.dll"
+}
 
 foreach ($function in (Get-ChildItem -Recurse "$PSScriptRoot\functions\*.ps1")) {
 	$ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($function))), $null, $null)
