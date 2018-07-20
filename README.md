@@ -306,8 +306,9 @@ Makes it easier to alias columns to select and rename for export.
 # This makes it easy to import items.xml to a SharePoint with with a FullName column.
 
 Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
-    
 ```
+
+![image](https://user-images.githubusercontent.com/8278033/43017926-91910924-8bf3-11e8-8133-5084b4a685a3.png)
 
 ## TODO
 
