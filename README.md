@@ -301,12 +301,15 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 ## TODO
 
 * Add logging to export to SP or SQL
-* Make a dictionary that tracks what's already been imported
-* Make it Core compat if it's not already
 * Explore extracting files from attachments
 * Consider since
 * AsUser (force modify create/modified column)
 * Delete as view
+
+## MAYBE WONT DO
+
+* Make a dictionary that tracks what's already been imported
+    * Taken care of by Column Key, but maybe.
 
 ## Pester tested
 
@@ -321,52 +324,3 @@ To find out more about any command, including additional examples, use `Get-Help
 ```powershell
 Get-Help Get-SPRColumnDetail -Detailed
 ```
-
-<!---
-Connect-SPRSite -Uri sharepoint2016
-Get-SPRList -Uri sharepoint2016 -ListName 'My List'
-Get-SPRListData -Uri sharepoint2016 -ListName 'My List'
-Get-SPRColumnDetail -Uri sharepoint2016 -ListName 'My List'
-
-$object = @()
-    $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
-    $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
-    $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' -InputObject $object
-
-Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | 
-Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' 
-
-$item = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | 
-Add-SPRListItem -Uri sharepoint2016 -ListName 'My List' 
-
-Get-SPRListData -Uri sharepoint2016 -ListName 'My List' -Id $item.Id
-
-rm C:\temp\mylist.xml
-Export-SPRListData -Uri sharepoint2016 -ListName 'My List' -Path C:\temp\mylist.xml
-
-Import-CliXml -Path C:\temp\mylist.xml | Add-SPRListItem -Uri sharepoint2016 -ListName 'My List'
-Import-SPRListData -Uri sharepoint2016  -ListName 'My List' -Path C:\temp\mylist.xml
-
-Clear-SPRListData -Uri sharepoint2016 -ListName 'My List' -Confirm:$false
-
-New-SPRList -ListName 'My List'
-New-SPRList -ListName 'My List2'
-Add-SPRColumn -ListName 'My List'
-
-Get-SPRList -Uri sharepoint2016 -ListName 'My List2' | Remove-SPRList -Confirm:$false
-Get-SPRListData -ListName 'My List' | Where-Object Id -in $item.Id | Remove-SPRListData
-
-$server = Connect-SPRSite -Uri sharepoint2016
-$lists = $server.Web.Lists
-$server.Load($lists)
-$server.ExecuteQuery()
-foreach ($list in $server.Web.Lists) {
-    $List = $server.web.Lists.GetByTitle($List.Title)
-    $server.Load($List)
-    $List.DeleteObject()
-    $server.ExecuteQuery()
-}
-
-https://user-images.githubusercontent.com/8278033/42554381-57ff0744-8480-11e8-97fe-64f666b953e8.png
--->
