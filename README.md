@@ -298,6 +298,17 @@ Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListD
 
 ![image](https://user-images.githubusercontent.com/8278033/42569374-0952af20-84ac-11e8-88c7-eaf7c0664a82.png)
 
+## Select-SPRObject
+Makes it easier to alias columns to select and rename for export.
+ 
+```powershell
+# Get two columns, FullName and Created from 'My List'. In the example below, FullName is an alias of Title.
+# This makes it easy to import items.xml to a SharePoint with with a FullName column.
+
+Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
+    
+```
+
 ## TODO
 
 * Add logging to export to SP or SQL
