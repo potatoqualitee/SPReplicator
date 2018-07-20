@@ -2,6 +2,11 @@
 Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 . "$PSScriptRoot\constants.ps1"
 
+if ($PSVersionTable.PSEdition -eq "Core") {
+    Stop-PSFFunction -Message "SharePoint Online not supported in Core :("
+    return
+}
+
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         $script:startingconfig = Get-SPRConfig

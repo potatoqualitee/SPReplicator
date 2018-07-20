@@ -3,7 +3,7 @@ Get-ChildItem "$PSScriptRoot\bin\" -Recurse | Unblock-File
 
 if ($PSVersionTable.PSEdition -eq "Core") {
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Portable.dll"
-    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Windows.dll"
+    #Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Windows.dll"
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Portable.dll"
 }
 else {

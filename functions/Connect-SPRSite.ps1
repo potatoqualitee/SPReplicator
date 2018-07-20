@@ -16,6 +16,12 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
+.PARAMETER AuthenticationMode
+    Specifies the authentication modes of the client Web request.
+
+.PARAMETER Location
+    Onprem or Online
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -50,6 +56,8 @@
         [PSCredential]$Credential,
         [ValidateSet("OnPrem", "Online")]
         [string]$Location,
+        [ValidateSet("Default", "FormsAuthentication", "Authentication")]
+        [string]$AuthenticationMode = "Default",
         [switch]$EnableException
     )
     begin {
@@ -71,8 +79,14 @@
                     $global:spsite.Credentials
                 }
                 else {
-                    $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($Credential.UserName, $Credential.Password)
-                    $global:spsite.Credentials = $credentials
+                    if ($PSVersionTable.PSEdition -eq "Core") {
+                        Stop-PSFFunction -Message "Core works with Onprem but not yet SharePoint online, waiting for working DLL :("
+                        return
+                    }
+                    else {
+                        $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($Credential.UserName, $Credential.Password)
+                        $global:spsite.Credentials = $credentials
+                    }
                 }
             }
             
@@ -83,16 +97,16 @@
             Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
             
             if (-not $global:spsite.ExecuteQuery) {
+                # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
                 Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
                     if ($global:spsite.HasPendingRequest) {
                         $global:spsite.ExecuteQueryAsync().Wait()
                     }
                 } -Force
             }
-            
+            $global:spsite.AuthenticationMode = $AuthenticationMode
             $global:spsite.ExecuteQuery()
-            
-            $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credential, RequestTimeout
+            $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
