@@ -24,14 +24,14 @@
     Excludes other properties
     
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property 'FirstName as Name', Created
+    Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property 'Title as FullName', Created
     
-    Returns two visible columns, Name and Created. Name is an alias of FirstName. FirstName still exists but is hidden from the default view.
+    Returns two visible columns, Name and Created. Name is an alias of Title.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property 'FirstName as Name', Created | Export-SPRObject -Path C:\temp\items.xml
+    Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
     
-    Returns two visible columns, Name and Created. Name is an alias of FirstName.
+    Returns two visible columns, Name and Created. Name is an alias of FullName.
     
     Then, an object is exported with only the columns Name and Created
 
