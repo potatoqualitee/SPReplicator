@@ -6,6 +6,7 @@ if ($PSVersionTable.PSEdition -eq "Core") {
     Stop-PSFFunction -Message "SharePoint Online not supported in Core :("
     return
 }
+$PSDefaultParameterValues = @{ '*:EnableException' = $true }
 
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
@@ -29,7 +30,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.RequestTimeout | Should -Be 180000
         }
     }
-    
+    return
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
