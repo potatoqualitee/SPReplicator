@@ -19,7 +19,7 @@ environment:
 # Set alternative clone folder
 # clone_folder: C:\github\SPReplicator
 
-before_test:
+build_script:
 # grab appveyor lab files and needed requirements for tests in CI
 - ps: .\Tests\appveyor.prep.ps1
 
