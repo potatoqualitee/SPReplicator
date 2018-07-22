@@ -147,7 +147,8 @@
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Updating record $($item.Id) from $($list.Title)")) {
                 try {
                     if (-not $Column) {
-                        $Column = $list | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo','Order' } | Sort-Object Listname, DisplayName | Select-Object -ExpandProperty Name
+                        $Column = $list | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo', 'Order' } | Sort-Object Listname, DisplayName | Select-Object -ExpandProperty Name
+                        $Column += 'Author', 'Editor'
                     }
                     
                     Write-PSFMessage -Level Verbose -Message "Updating $($item.Id) from $($list.Title)"

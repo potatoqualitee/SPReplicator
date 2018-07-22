@@ -106,6 +106,11 @@
             }
             $global:spsite.AuthenticationMode = $AuthenticationMode
             $global:spsite.ExecuteQuery()
+            
+            #$currentuser = (Get-SPRUser | Where-Object LoginName -match $currentuser)
+            #$loginname = Get-SPRUser $currentuser
+            #Add-Member -InputObject $global:spsite -MemberType NoteProperty -Name LoginName -Value $loginname -Force
+            
             $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout
         }
         catch {
