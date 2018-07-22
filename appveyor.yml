@@ -1,5 +1,4 @@
 ﻿# See http://www.appveyor.com/docs/appveyor-yml for many more options
-
 version: 0.0.{build}
 
 cache:
@@ -19,18 +18,13 @@ environment:
 
 matrix:
   fast_finish: true
-  
-# Set alternative clone folder
-clone_folder: C:\github\SPReplicator
 
 build_script:
 # grab appveyor lab files and needed requirements for tests in CI
 - ps: .\Tests\appveyor.prep.ps1
 
-#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
 test_script:
-# Test with native PS version
+# Test with PowerShell and Pester
 - ps: .\Tests\appveyor.pester.ps1
 
 #on_finish:

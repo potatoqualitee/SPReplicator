@@ -29,11 +29,7 @@ Executes the test
 Finalizes the tests
 #>
 param (
-    [switch]$Finalize,
-    $PSVersion = $PSVersionTable.PSVersion.Major,
-    $TestFile = "PesterResults$PSVersion.xml",
-    $ProjectRoot = $ENV:APPVEYOR_BUILD_FOLDER,
-    $ModuleBase = $ProjectRoot
+    $ModuleBase = $ENV:APPVEYOR_BUILD_FOLDER
 )
 
 # Move to the project root
@@ -45,7 +41,6 @@ $alltests = @()
 $alltests += Get-ChildItem "$ModuleBase\tests\Integration.Online.Tests.ps1"
 $results = Invoke-Pester $alltests -PassThru
 
-#$totalcount = $results | Select-Object -ExpandProperty TotalCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
 $failedcount = $results | Select-Object -ExpandProperty FailedCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
 if ($failedcount -gt 0) {
     $faileditems = $results | Select-Object -ExpandProperty TestResult | Where-Object { $_.Passed -notlike $True }
