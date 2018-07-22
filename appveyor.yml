@@ -1,7 +1,5 @@
 ﻿# See http://www.appveyor.com/docs/appveyor-yml for many more options
 
-configuration: "Debug"
-
 version: 0.0.{build}
 
 cache:
@@ -10,8 +8,8 @@ cache:
 - C:\Program Files\WindowsPowerShell\Modules\PSScriptAnalyzer -> appveyor.yml
 - C:\Program Files\WindowsPowerShell\Modules\Pester -> appveyor.yml
 
-shallow_clone: true
-
+# shallow_clone: true
+  
 environment: 
   environment: master
   version: 0.0.$(appveyor_build_number)
