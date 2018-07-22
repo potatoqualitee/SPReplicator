@@ -7,6 +7,8 @@ if ($PSVersionTable.PSEdition -eq "Core") {
     return
 }
 
+#$PSDefaultParameterValues = @{ '*:EnableException' = $true }
+
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         $script:startingconfig = Get-SPRConfig
