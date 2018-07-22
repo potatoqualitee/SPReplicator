@@ -29,6 +29,9 @@
 
 .PARAMETER InputObject
     Allows piping from Get-SPRListData.
+
+.PARAMETER AllowNulls
+    Update fields to null values, otherwise, it'll skip.
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -67,6 +70,7 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [switch]$AllowNulls,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$EnableException
@@ -89,6 +93,9 @@
                             $fieldupdate = $UpdateItem[$fieldname]
                         }
                         
+                        if (-not $fieldupdate -and -not $AllowNulls) {
+                            continue
+                        }
                         if (($item.ListItem[$fieldname]) -ne $fieldupdate) {
                             Write-PSFMessage -Level Verbose -Message "Updating $fieldname setting to $fieldupdate"
                             $runupdate = $true

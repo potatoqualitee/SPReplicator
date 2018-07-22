@@ -76,7 +76,9 @@
                 }
                 
                 if ($Location -eq "Onprem") {
-                    $global:spsite.Credentials
+                    $global:spsite.Credentials = $Credential.GetNetworkCredential()
+                    Add-Member -InputObject $global:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
+                    
                 }
                 else {
                     if ($PSVersionTable.PSEdition -eq "Core") {
@@ -86,6 +88,7 @@
                     else {
                         $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($Credential.UserName, $Credential.Password)
                         $global:spsite.Credentials = $credentials
+                        Add-Member -InputObject $global:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
                     }
                 }
             }
@@ -106,12 +109,19 @@
             }
             $global:spsite.AuthenticationMode = $AuthenticationMode
             $global:spsite.ExecuteQuery()
+            $global:spweb = $global:spsite.Web
             
-            #$currentuser = (Get-SPRUser | Where-Object LoginName -match $currentuser)
-            #$loginname = Get-SPRUser $currentuser
-            #Add-Member -InputObject $global:spsite -MemberType NoteProperty -Name LoginName -Value $loginname -Force
+            if ($global:spsite.Credentials) {
+                $loginname = Get-SPRUser -UserName $global:spsite.Credentials
+            }
+            else {
+                $username = whoami
+                $loginname = Get-SPRUser -UserName $username
+            }
             
-            $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout
+            Add-Member -InputObject $global:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
+            
+            $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

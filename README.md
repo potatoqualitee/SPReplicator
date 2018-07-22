@@ -336,3 +336,16 @@ To find out more about any command, including additional examples, use `Get-Help
 ```powershell
 Get-Help Get-SPRColumnDetail -Detailed
 ```
+
+<!--
+$global:a = @()
+foreach ($prop in $props.Name) {
+    try {
+        $server.Load($server.Web.$prop)
+    }
+    catch {
+        $global:a += $prop
+        continue
+    }
+}
+-->

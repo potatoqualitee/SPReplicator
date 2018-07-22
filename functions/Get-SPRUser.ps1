@@ -49,62 +49,66 @@
         [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
-        [object]$InputObject,
+        [object[]]$InputObject,
         [switch]$EnableException
     )
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
+                $null = Connect-SPRSite -Site $Site -Credential $Credential
+                $InputObject = Get-SPRWeb
             }
-            elseif ($global:spsite) {
-                $InputObject = $global:spsite
+            elseif ($global:spweb) {
+                $InputObject = $global:spweb
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
                 return
             }
         }
-        foreach ($server in $InputObject) {
+        else {
+            if ($InputObject[0] -is [Microsoft.SharePoint.Client.User]) {
+                $UserName = $InputObject.LoginName
+                $InputObject = $global:spweb
+            }
+        }
+        
+        foreach ($web in $InputObject) {
             if (-not $UserName) {
                 try {
-                    $web = $server.Web
-                    $server.Load($web)
-                    $server.ExecuteQuery()
-                    $users = $server.Web.SiteUsers
-                    $server.Load($users)
-                    $server.ExecuteQuery()
+                    $global:spsite.Load($web)
+                    $global:spsite.ExecuteQuery()
+                    $users = $web.SiteUsers
+                    $global:spsite.Load($users)
+                    $global:spsite.ExecuteQuery()
                     # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
-                    if ((Get-PSFConfigValue -FullName SPReplicator.Location) -eq "Online") {
-                        $users | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                    if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
+                        $users = $users | Select-Object -ExcludeProperty Alerts
                     }
-                    else {
-                        $users | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
-                    }
+                    $users | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
             }
             else {
-                foreach ($currentuser in $UserName) {
+                foreach ($user in $UserName) {
                     try {
-                        $users = $server.Web.SiteUsers
-                        $server.Load($users)
-                        $server.ExecuteQuery()
-                        $user = $users | Where-Object Title -eq $currentuser
+                        $users = $web.SiteUsers
+                        $global:spsite.Load($users)
+                        $global:spsite.ExecuteQuery()
+                        $user = $users | Where-Object { $_.LoginName -contains $username -or $_.Title -contains $username -or $_.Email -contains $username }
+                        
                         if ($user) {
-                            Write-PSFMessage -Level Verbose -Message "Getting $currentuser from $($server.Url)"
-                            $server.Load($user)
-                            $server.ExecuteQuery()
-                            Add-Member -InputObject $user -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
+                            Write-PSFMessage -Level Verbose -Message "Getting $($user.Title) from $($global:spsite.Url)"
+                            Add-Member -InputObject $user -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force
                             
                             # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -eq "Online") {
-                                $users | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                                $user | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                             }
                             else {
-                                $users | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                                $user | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                             }
                         }
                     }
