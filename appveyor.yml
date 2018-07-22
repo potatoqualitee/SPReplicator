@@ -15,7 +15,7 @@ environment:
   environment: master
   version: 0.0.$(appveyor_build_number)
   sponlinecred:
-    secure: S6wQnBeB5UVjpkNwlU0sSQ==
+    secure: laeoVnNCekpahfrSc4HJtA==
 
 matrix:
   fast_finish: true
