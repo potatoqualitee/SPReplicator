@@ -16,8 +16,11 @@ environment:
   sponlinecred:
     secure: S6wQnBeB5UVjpkNwlU0sSQ==
 
+matrix:
+  fast_finish: true
+  
 # Set alternative clone folder
-# clone_folder: C:\github\SPReplicator
+clone_folder: C:\github\SPReplicator
 
 build_script:
 # grab appveyor lab files and needed requirements for tests in CI

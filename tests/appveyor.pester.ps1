@@ -44,7 +44,7 @@ if (-not $Finalize) {
     $alltests = @()
     #$alltests += Get-ChildItem "$ModuleBase\tests\InModule.Help.Tests.ps1"
     $alltests += Get-ChildItem "$ModuleBase\tests\Integration.Online.Tests.ps1"
-    Invoke-Pester "$ModuleBase\tests" | Export-Clixml -Path "$ModuleBase\$TestFile"
+    Invoke-Pester $alltests | Export-Clixml -Path "$ModuleBase\$TestFile"
 }
 else {
     $results = @(Get-ChildItem -Path "$ModuleBase\PesterResults*.xml" | Import-Clixml)
