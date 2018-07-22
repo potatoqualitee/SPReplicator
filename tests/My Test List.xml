@@ -1,0 +1,55 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Object[]</T>
+      <T>System.Array</T>
+      <T>System.Object</T>
+    </TN>
+    <LST>
+      <Obj RefId="1">
+        <TN RefId="1">
+          <T>Selected.System.Management.Automation.PSCustomObject</T>
+          <T>System.Management.Automation.PSCustomObject</T>
+          <T>System.Object</T>
+        </TN>
+        <MS>
+          <S N="Title">Hello</S>
+          <S N="TestColumn">Sample Data</S>
+          <Nil N="Scoopty" />
+          <Nil N="EmployeePicture" />
+          <I32 N="ID">1</I32>
+        </MS>
+      </Obj>
+      <Obj RefId="2">
+        <TNRef RefId="1" />
+        <MS>
+          <S N="Title">Hello2</S>
+          <S N="TestColumn">Sample Data2</S>
+          <Nil N="Scoopty" />
+          <Nil N="EmployeePicture" />
+          <I32 N="ID">2</I32>
+        </MS>
+      </Obj>
+      <Obj RefId="3">
+        <TNRef RefId="1" />
+        <MS>
+          <S N="Title">Hello3</S>
+          <S N="TestColumn">Sample Data3</S>
+          <Nil N="Scoopty" />
+          <Nil N="EmployeePicture" />
+          <I32 N="ID">3</I32>
+        </MS>
+      </Obj>
+      <Obj RefId="4">
+        <TNRef RefId="1" />
+        <MS>
+          <S N="Title">ScooptyScoop</S>
+          <S N="TestColumn">ScooptyData</S>
+          <Nil N="Scoopty" />
+          <Nil N="EmployeePicture" />
+          <I32 N="ID">4</I32>
+        </MS>
+      </Obj>
+    </LST>
+  </Obj>
+</Objs>
