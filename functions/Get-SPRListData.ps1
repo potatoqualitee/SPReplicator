@@ -98,12 +98,11 @@ Function Get-SPRListData {
                     }
                 }
                 elseif ($View) {
-                    # ALMOST
                     $listview = $list.Views.GetByTitle($View)
                     $list.Context.Load($listview)
                     $list.Context.ExecuteQuery()
                     $caml = New-Object Microsoft.SharePoint.Client.CamlQuery
-                    $caml.ViewXml = $listview.ViewQuery
+                    $caml.ViewXml = "<View><Query>$($listview.ViewQuery)</Query></View>"
                     $listItems = $list.GetItems($caml)
                     $list.Context.Load($listItems)
                     $list.Context.ExecuteQuery()
