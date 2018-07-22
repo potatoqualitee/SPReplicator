@@ -31,18 +31,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
-    Context "Connect-SPRSite" {
-        It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
-            $results.Url | Should -Be "$script:onlinesite"
-            $results.RequestTimeout | Should -Be 180000
-        }
-    }
-    
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
-            $results.Url | Should -Be "$script:onlinesite"
+            $results.Url | Should -Be $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -220,7 +212,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Update-SPRListItem" {
-        It "Updates data from $script:filename" {
+        It -Skip "Updates data from $script:filename" {
             # Replace a value to update
             (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
             (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
@@ -260,7 +252,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Clear-SPRListData" {
-        It "Removes data from $script:mylist" {
+        It -Skip "Removes data from $script:mylist" {
             $results = Clear-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -Confirm:$false
             Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Should -Be $null
         }
