@@ -21,6 +21,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $oldvalue = $script:startingconfig | Where-Object Name -eq location
         $results = Set-SPRConfig -Name location -Value $oldvalue.Value
+        Remove-Item $script:filename -ErrorAction SilentlyContinue
     }
     
     Context "Connect-SPRSite" {
@@ -222,7 +223,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'ScooptyScoop'
             $results.TestColumn | Should -Be 'ScooptyData'
         }
-        It "Doesn't update the other rows" {
+        It -Skip "Doesn't update the other rows" {
             $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist
             $results.Title | Should -Contain 'ScooptyScoop'
             $results.Title | Should -Contain 'Hello'
@@ -232,7 +233,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Select-SPRObject" {
-        It "Gets data from $script:mylist and excludes other data" {
+        It -Skip "Gets data from $script:mylist and excludes other data" {
             $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Select-SPRObject -Property 'Title as Test1234'
             $results | Get-Member -Name Title | Should -Be $null
             $results | Get-Member -Name Test1234 | Should -Not -Be $null
