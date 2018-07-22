@@ -40,31 +40,27 @@ param (
 Set-Location $ModuleBase
 Import-Module "$ModuleBase\SPReplicator.psd1"
 
-if (-not $Finalize) {
-    $alltests = @()
-    #$alltests += Get-ChildItem "$ModuleBase\tests\InModule.Help.Tests.ps1"
-    $alltests += Get-ChildItem "$ModuleBase\tests\Integration.Online.Tests.ps1"
-    Invoke-Pester $alltests | Export-Clixml -Path "$ModuleBase\$TestFile"
-}
-else {
-    $results = @(Get-ChildItem -Path "$ModuleBase\PesterResults*.xml" | Import-Clixml)
-    #$totalcount = $results | Select-Object -ExpandProperty TotalCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-    $failedcount = $results | Select-Object -ExpandProperty FailedCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-    if ($failedcount -gt 0) {
-        $faileditems = $results | Select-Object -ExpandProperty TestResult | Where-Object { $_.Passed -notlike $True }
-        if ($faileditems) {
-            Write-Warning "Failed tests summary:"
-            $faileditems | ForEach-Object {
-                $name = $_.Name
-                [pscustomobject]@{
-                    Describe = $_.Describe
-                    Context  = $_.Context
-                    Name     = "It $name"
-                    Result   = $_.Result
-                    Message  = $_.FailureMessage
-                }
-            } | Sort-Object Describe, Context, Name, Result, Message | Format-List
-            throw "$failedcount tests failed."
-        }
+$alltests = @()
+#$alltests += Get-ChildItem "$ModuleBase\tests\InModule.Help.Tests.ps1"
+$alltests += Get-ChildItem "$ModuleBase\tests\Integration.Online.Tests.ps1"
+$results = Invoke-Pester $alltests -PassThru
+
+#$totalcount = $results | Select-Object -ExpandProperty TotalCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+$failedcount = $results | Select-Object -ExpandProperty FailedCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+if ($failedcount -gt 0) {
+    $faileditems = $results | Select-Object -ExpandProperty TestResult | Where-Object { $_.Passed -notlike $True }
+    if ($faileditems) {
+        Write-Warning "Failed tests summary:"
+        $faileditems | ForEach-Object {
+            $name = $_.Name
+            [pscustomobject]@{
+                Describe = $_.Describe
+                Context  = $_.Context
+                Name     = "It $name"
+                Result   = $_.Result
+                Message  = $_.FailureMessage
+            }
+        } | Sort-Object Describe, Context, Name, Result, Message | Format-List
+        throw "$failedcount tests failed."
     }
 }
