@@ -14,6 +14,7 @@
         </TN>
         <MS>
           <S N="Title">Hello</S>
+          <Nil N="ComplianceAssetId" />
           <S N="TestColumn">Sample Data</S>
           <Nil N="Scoopty" />
           <Nil N="EmployeePicture" />
@@ -24,6 +25,7 @@
         <TNRef RefId="1" />
         <MS>
           <S N="Title">Hello2</S>
+          <Nil N="ComplianceAssetId" />
           <S N="TestColumn">Sample Data2</S>
           <Nil N="Scoopty" />
           <Nil N="EmployeePicture" />
@@ -34,6 +36,7 @@
         <TNRef RefId="1" />
         <MS>
           <S N="Title">Hello3</S>
+          <Nil N="ComplianceAssetId" />
           <S N="TestColumn">Sample Data3</S>
           <Nil N="Scoopty" />
           <Nil N="EmployeePicture" />
@@ -44,6 +47,7 @@
         <TNRef RefId="1" />
         <MS>
           <S N="Title">ScooptyScoop</S>
+          <Nil N="ComplianceAssetId" />
           <S N="TestColumn">ScooptyData</S>
           <Nil N="Scoopty" />
           <Nil N="EmployeePicture" />

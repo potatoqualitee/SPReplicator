@@ -7,8 +7,6 @@ if ($PSVersionTable.PSEdition -eq "Core") {
     return
 }
 
-#$PSDefaultParameterValues = @{ '*:EnableException' = $true }
-
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         $script:startingconfig = Get-SPRConfig
@@ -24,6 +22,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $oldvalue = $script:startingconfig | Where-Object Name -eq location
         $results = Set-SPRConfig -Name location -Value $oldvalue.Value
     }
+    
     Context "Connect-SPRSite" {
         It "Connects to a site" {
             $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
@@ -32,10 +31,18 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Connect-SPRSite" {
+        It "Connects to a site" {
+            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
+            $results.Url | Should -Be "$script:onlinesite"
+            $results.RequestTimeout | Should -Be 180000
+        }
+    }
+    
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
-            $results.Url | Should -Be $script:onlinesite
+            $results.Url | Should -Be "$script:onlinesite"
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -134,12 +141,20 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
         }
-        if ($env:COMPUTERNAME -eq "workstationx") {
-            It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
-                $results = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | Add-SPRListItem -ListName $script:mylist
-                $results.Title | Should -Be 'Hello SQL'
-                $results.TestColumn | Should -Be 'Sample SQL Data'
+        
+        It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
+            if ($PSVersionTable.PSEdition -ne "Core" -and (Get-Command Invoke-DbaSqlQuery -ErrorAction SilentlyContinue)) {
+                $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
             }
+            else {
+                $dt = New-Object System.Data.Datatable
+                [void]$dt.Columns.Add("Title")
+                [void]$dt.Columns.Add("TestColumn")
+                [void]$dt.Rows.Add("Hello SQL", "Sample SQL Data")
+            }
+            $results = $dt | Add-SPRListItem -ListName $script:mylist
+            $results.Title | Should -Be 'Hello SQL'
+            $results.TestColumn | Should -Be 'Sample SQL Data'
         }
         
         It "Autocreates new list" {
@@ -273,6 +288,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     Context "Set-SPRConfig" {
         It "Sets some configs" {
+            $script:currentconfig = Get-SPRConfig
             $results = Set-SPRConfig -Name location -Value Test
             $results.Value | Should -Be 'Test'
             $results = Get-SPRConfig

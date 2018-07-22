@@ -15,6 +15,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $oldvalue = $script:currentconfig | Where-Object Name -eq location
         $results = Set-SPRConfig -Name location -Value $oldvalue.Value
     }
+    
     Context "Connect-SPRSite" {
         It "Connects to a site" {
             $results = Connect-SPRSite -Site $script:site
