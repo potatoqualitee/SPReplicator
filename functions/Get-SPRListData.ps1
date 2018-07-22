@@ -85,6 +85,18 @@ Function Get-SPRListData {
         }
         
         foreach ($list in $InputObject) {
+            if ($list -is [Microsoft.SharePoint.Client.View]) {
+                $listview = $list.ListObject.Views.GetByTitle($list.Title)
+                $list = $list.ListObject
+                $list.Context.Load($listview)
+                $list.Context.ExecuteQuery()
+                $caml = New-Object Microsoft.SharePoint.Client.CamlQuery
+                $caml.ViewXml = "<View><Query>$($listview.ViewQuery)</Query></View>"
+                $listItems = $list.GetItems($caml)
+                $list.Context.Load($listItems)
+                $list.Context.ExecuteQuery()
+            }
+            
             try {
                 Write-PSFMessage -Level Verbose -Message "Performing GetItems"
                 if ($Id) {
@@ -107,7 +119,7 @@ Function Get-SPRListData {
                     $list.Context.Load($listItems)
                     $list.Context.ExecuteQuery()
                 }
-                else {
+                elseif (-not $listitems) {
                     $listItems = $list.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
                     $list.Context.Load($listItems)
                     $list.Context.ExecuteQuery()

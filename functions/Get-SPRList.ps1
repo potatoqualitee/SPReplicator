@@ -87,12 +87,12 @@
                         $lists = $server.Web.Lists
                         $server.Load($lists)
                         $server.ExecuteQuery()
-
                         $list = $lists | Where-Object Title -eq $currentlist
                         if ($list) {
                             Write-PSFMessage -Level Verbose -Message "Getting $currentlist from $($server.Url)"
                             $server.Load($list)
                             $server.ExecuteQuery()
+                            Add-Member -InputObject $list -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
                             $list | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
                         }
                     }

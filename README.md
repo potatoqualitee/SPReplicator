@@ -316,7 +316,7 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 * Explore extracting files from attachments
 * Consider since
 * AsUser (force modify create/modified column)
-* Delete as view
+
 
 ## MAYBE WONT DO
 
