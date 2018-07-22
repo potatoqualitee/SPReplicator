@@ -6,7 +6,8 @@ if ($PSVersionTable.PSEdition -eq "Core") {
     Stop-PSFFunction -Message "SharePoint Online not supported in Core :("
     return
 }
-$PSDefaultParameterValues = @{ '*:EnableException' = $true }
+
+#$PSDefaultParameterValues = @{ '*:EnableException' = $true }
 
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
