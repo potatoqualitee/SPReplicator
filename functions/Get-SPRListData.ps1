@@ -21,6 +21,9 @@ Function Get-SPRListData {
 .PARAMETER Id
     Return only rows with specific IDs
 
+.PARAMETER View
+    Return only rows from a specific view
+    
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
@@ -48,6 +51,11 @@ Function Get-SPRListData {
     Get-SPRListData -Site sharepoint2016 -ListName 'My List' -Id 100, 101, 105
 
     Gets list items with ID 100, 101 and 105
+    
+.EXAMPLE
+    Get-SPRListData -Site sharepoint2016 -ListName 'My List' -View 'My Tasks'
+
+    Gets list items included in the view My Tasks
 #>
     [CmdletBinding()]
     param (
@@ -57,6 +65,7 @@ Function Get-SPRListData {
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [string]$View,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -87,6 +96,17 @@ Function Get-SPRListData {
                         $list.Context.ExecuteQuery()
                         $listItems += $list.GetItemById($number)
                     }
+                }
+                elseif ($View) {
+                    # ALMOST
+                    $listview = $list.Views.GetByTitle($View)
+                    $list.Context.Load($listview)
+                    $list.Context.ExecuteQuery()
+                    $caml = New-Object Microsoft.SharePoint.Client.CamlQuery
+                    $caml.ViewXml = $listview.ViewQuery
+                    $listItems = $list.GetItems($caml)
+                    $list.Context.Load($listItems)
+                    $list.Context.ExecuteQuery()
                 }
                 else {
                     $listItems = $list.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
