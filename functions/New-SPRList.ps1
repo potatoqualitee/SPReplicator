@@ -110,7 +110,7 @@
                     $List.Update()
                     Write-PSFMessage -Level Verbose -Message "Executing query"
                     $server.ExecuteQuery()
-                    $global:spsite | Get-SPRList -ListName $ListName | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
+                    Get-SPRList -ListName $ListName
                 }
             }
             catch {

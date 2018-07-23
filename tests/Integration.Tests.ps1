@@ -19,10 +19,16 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:site -EnableException | Should -Not throw
+            $results = Connect-SPRSite -Site $script:site -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
+            $erz | Should -Be $null
+            $warn | Should -Be $null
             $results.Url | Should -Be "https://$script:site"
             $results.RequestTimeout | Should -Be 180000
         }
+    }
+    
+    if ($erz -or $warn) {
+        throw "no more, test failed"
     }
     
     Context "Get-SPRConnectedSite" {
@@ -126,21 +132,19 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
         }
-        if ($env:COMPUTERNAME -eq "workstationx") {
-            It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
-                if ($PSVersionTable.PSEdition -ne "Core") {
-                    $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
-                }
-                else {
-                    $dt = New-Object System.Data.Datatable
-                    [void]$dt.Columns.Add("Title")
-                    [void]$dt.Columns.Add("TestColumn")
-                    [void]$dt.Rows.Add("Hello SQL", "Sample SQL Data")
-                }
-                $results = $dt | Add-SPRListItem -ListName $script:mylist
-                $results.Title | Should -Be 'Hello SQL'
-                $results.TestColumn | Should -Be 'Sample SQL Data'
+        It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
+            if ($PSVersionTable.PSEdition -ne "Core" -and $env:COMPUTERNAME -eq "workstationx") {
+                $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
             }
+            else {
+                $dt = New-Object System.Data.Datatable
+                [void]$dt.Columns.Add("Title")
+                [void]$dt.Columns.Add("TestColumn")
+                [void]$dt.Rows.Add("Hello SQL", "Sample SQL Data")
+            }
+            $results = $dt | Add-SPRListItem -ListName $script:mylist
+            $results.Title | Should -Be 'Hello SQL'
+            $results.TestColumn | Should -Be 'Sample SQL Data'
         }
         
         It "Autocreates new list" {
@@ -155,7 +159,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             
             $results = Get-SPRList -Site $script:site -ListName $newlistname
             $results | Should -Not -Be $null
-            $results | Remove-SPRList -Confirm:$false
+            $results | Remove-SPRList -Site $script:site -ListName $newlistname -Confirm:$false
         }
     }
     
