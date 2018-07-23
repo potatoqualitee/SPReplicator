@@ -25,10 +25,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
-    if (-not $results) {
-        throw "no more, test failed"
-    }
-    
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite

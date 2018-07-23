@@ -26,10 +26,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
+            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -EnableException | Should -Not throw
             $results.Url | Should -Be $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
+    }
+    
+    if (-not $results) {
+        throw "no more, test failed"
     }
     
     Context "Get-SPRConnectedSite" {
