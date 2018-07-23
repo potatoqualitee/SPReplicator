@@ -6,6 +6,9 @@
 .DESCRIPTION
     Returns a SharePoint list object.
 
+.PARAMETER WebName
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -45,7 +48,9 @@
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string[]]$ListName,
-        [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$WebName,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
@@ -55,24 +60,28 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
+                $null = Connect-SPRSite -Site $Site -Credential $Credential
             }
-            elseif ($global:spsite) {
-                $InputObject = $global:spsite
+            
+            if ($WebName) {
+                $InputObject = Get-SPRWeb -WebName $WebName
             }
-            else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
+            elseif ($global:spweb) {
+                $InputObject = $global:spweb
+            }
+            
+            if (-not $InputObject) {
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site, WebName or run Connect-SPRSite"
                 return
             }
         }
 
-        foreach ($server in $InputObject) {
+        foreach ($server in $InputObject.Context) {
             if (-not $ListName) {
                 try {
-                    $web = $server.Web
-                    $server.Load($web)
+                    $server.Load($global:spweb)
                     $server.ExecuteQuery()
-                    $lists = $server.Web.Lists
+                    $lists = $global:spweb.Lists
                     $server.Load($lists)
                     $server.ExecuteQuery()
                     $lists | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
@@ -84,7 +93,9 @@
             else {
                 foreach ($currentlist in $ListName) {
                     try {
-                        $lists = $server.Web.Lists
+                        $server.Load($global:spweb)
+                        $server.ExecuteQuery()
+                        $lists = $global:spweb.Lists
                         $server.Load($lists)
                         $server.ExecuteQuery()
                         $list = $lists | Where-Object Title -eq $currentlist

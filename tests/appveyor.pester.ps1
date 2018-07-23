@@ -37,7 +37,7 @@ Set-Location $ModuleBase
 Import-Module "$ModuleBase\SPReplicator.psd1"
 
 $alltests = @()
-#$alltests += Get-ChildItem "$ModuleBase\tests\InModule.Help.Tests.ps1"
+$alltests += Get-ChildItem "$ModuleBase\tests\InModule.Help.Tests.ps1"
 $alltests += Get-ChildItem "$ModuleBase\tests\Integration.Online.Tests.ps1"
 $results = Invoke-Pester $alltests -PassThru
 

@@ -113,13 +113,13 @@
             }
             else {
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding List $ListName")) {
-                    $list = New-SPRList -Site $Site -Credential $Credential -ListName $ListName
+                    $list = New-SPRList -ListName $ListName
                     
                     $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
                     $columns = ($list | Get-SPRColumnDetail).Title
                     $newcolumns = $datatable.Columns | Where-Object ColumnName -NotIn $columns
                     
-                    Write-PSFMessage -Level Debug -Message "All columns: $columns"
+                    Write-PSFMessage -Level Verbose -Message "All columns: $columns"
                     Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
                     
                     foreach ($column in $newcolumns) {

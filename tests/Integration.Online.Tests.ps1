@@ -15,6 +15,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
+        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
     AfterAll {
         $list = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
@@ -161,13 +162,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
             $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-            $results = $object | Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -ListName $newlistname -AutoCreateList
+            $results = $object | Add-SPRListItem -ListName $newlistname -AutoCreateList
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
             
-            $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -ListName $newlistname
+            $results = Get-SPRList -ListName $newlistname
             $results | Should -Not -Be $null
-            $results | Remove-SPRList -Confirm:$false
+            Remove-SPRList -ListName $newlistname -Confirm:$false -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
     }
     
@@ -293,4 +294,5 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
         }
     }
+    Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
 }

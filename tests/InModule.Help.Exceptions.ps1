@@ -1,5 +1,8 @@
-﻿$global:FunctionHelpTestExceptions = @()
+﻿$global:FunctionHelpTestExceptions = @(
+)
 
-$global:HelpTestEnumeratedArrays = @()
+$global:HelpTestEnumeratedArrays = @(
+)
 
-$global:HelpTestSkipParameterType = @{}
+$global:HelpTestSkipParameterType = @{
+}
