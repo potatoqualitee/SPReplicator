@@ -12,8 +12,6 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
     To test help for the commands in a module, place this file in the module folder.
     To test any module from any path, use https://github.com/juneb/PesterTDD/Module.Help.Tests.ps1
 #>
-if ($SkipHelpTest) { return }
-. "$PSScriptRoot\InModule.Help.Exceptions.ps1"
 
 $ModuleBase = Split-Path -Parent $MyInvocation.MyCommand.Path
 
