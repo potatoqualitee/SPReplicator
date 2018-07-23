@@ -26,13 +26,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -EnableException | Should -Not throw
+            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
+            $erz | Should -Be $null
+            $warn | Should -Be $null
             $results.Url | Should -Be $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
     }
     
-    if (-not $results) {
+    if ($erz -or $warn) {
         throw "no more, test failed"
     }
     
