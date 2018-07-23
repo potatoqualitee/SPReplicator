@@ -159,7 +159,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             
             $results = Get-SPRList -Site $script:site -ListName $newlistname
             $results | Should -Not -Be $null
-            $results | Remove-SPRList -Site $script:site -ListName $newlistname -Confirm:$false
+            Remove-SPRList -Site $script:site -ListName $newlistname -Confirm:$false
         }
     }
     
