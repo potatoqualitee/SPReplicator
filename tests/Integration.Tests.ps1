@@ -14,7 +14,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $oldvalue = $script:currentconfig | Where-Object Name -eq location
         $results = Set-SPRConfig -Name location -Value $oldvalue.Value
-        Remove-Item $script:filename -ErrorAction SilentlyContinue
+        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
     
     Context "Connect-SPRSite" {
@@ -63,7 +63,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results = New-SPRList -ListName $script:mylist -WarningAction SilentlyContinue 3>$null
             $results | Should -Be $null
         }
-        #TODO - attempt to create a duplicate list
     }
     
     Context "Get-SPRList" {
