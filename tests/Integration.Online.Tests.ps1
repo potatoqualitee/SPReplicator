@@ -21,13 +21,21 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $oldvalue = $script:startingconfig | Where-Object Name -eq location
         $results = Set-SPRConfig -Name location -Value $oldvalue.Value
+        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
+    
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
+            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
+            $erz | Should -Be $null
+            $warn | Should -Be $null
             $results.Url | Should -Be $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
+    }
+    
+    if ($erz -or $warn) {
+        throw "no more, test failed"
     }
     
     Context "Get-SPRConnectedSite" {
@@ -68,7 +76,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results = New-SPRList -ListName $script:mylist -WarningAction SilentlyContinue 3>$null
             $results | Should -Be $null
         }
-        #TODO - attempt to create a duplicate list
     }
     
     Context "Get-SPRList" {
@@ -132,12 +139,20 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
         }
-        if ($env:COMPUTERNAME -eq "workstationx") {
-            It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
-                $results = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'" | Add-SPRListItem -ListName $script:mylist
-                $results.Title | Should -Be 'Hello SQL'
-                $results.TestColumn | Should -Be 'Sample SQL Data'
+        
+        It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
+            if ($PSVersionTable.PSEdition -ne "Core" -and $env:COMPUTERNAME -eq "workstationx") {
+                $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
             }
+            else {
+                $dt = New-Object System.Data.Datatable
+                [void]$dt.Columns.Add("Title")
+                [void]$dt.Columns.Add("TestColumn")
+                [void]$dt.Rows.Add("Hello SQL", "Sample SQL Data")
+            }
+            $results = $dt | Add-SPRListItem -ListName $script:mylist
+            $results.Title | Should -Be 'Hello SQL'
+            $results.TestColumn | Should -Be 'Sample SQL Data'
         }
         
         It "Autocreates new list" {
@@ -173,7 +188,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Export-SPRListData" {
-        It "Gets data from $script:mylist" {
+        It "Exports data to $script:mylist" {
             if ((Test-Path $script:filename)) {
                 Remove-Item $script:filename
             }
@@ -243,7 +258,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Clear-SPRListData" {
-        It "Removes data from $script:mylist" {
+        It  "Removes data from $script:mylist" {
             $results = Clear-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -Confirm:$false
             Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Should -Be $null
         }
@@ -271,6 +286,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     Context "Set-SPRConfig" {
         It "Sets some configs" {
+            $script:currentconfig = Get-SPRConfig
             $results = Set-SPRConfig -Name location -Value Test
             $results.Value | Should -Be 'Test'
             $results = Get-SPRConfig
