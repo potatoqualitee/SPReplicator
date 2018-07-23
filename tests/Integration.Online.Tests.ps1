@@ -158,7 +158,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         
         It "Autocreates new list" {
             $newlistname = 'Sample test create new list'
-            Remove-SPRList -ListName $newlistname -Confirm:$false -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
             $object = @()
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
