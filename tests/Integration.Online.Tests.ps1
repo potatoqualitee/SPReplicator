@@ -21,15 +21,19 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $oldvalue = $script:startingconfig | Where-Object Name -eq location
         $results = Set-SPRConfig -Name location -Value $oldvalue.Value
-        Remove-Item $script:filename -ErrorAction SilentlyContinue
+        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
     
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
+            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -EnableException | Should -Not throw
             $results.Url | Should -Be $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
+    }
+    
+    if (-not $results) {
+        throw "no more, test failed"
     }
     
     Context "Get-SPRConnectedSite" {
@@ -70,7 +74,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results = New-SPRList -ListName $script:mylist -WarningAction SilentlyContinue 3>$null
             $results | Should -Be $null
         }
-        #TODO - attempt to create a duplicate list
     }
     
     Context "Get-SPRList" {
@@ -136,7 +139,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
         
         It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
-            if ($PSVersionTable.PSEdition -ne "Core" -and (Get-Command Invoke-DbaSqlQuery -ErrorAction SilentlyContinue)) {
+            if ($PSVersionTable.PSEdition -ne "Core" -and $env:COMPUTERNAME -eq "workstationx") {
                 $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
             }
             else {
@@ -183,7 +186,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Export-SPRListData" {
-        It "Gets data from $script:mylist" {
+        It "Exports data to $script:mylist" {
             if ((Test-Path $script:filename)) {
                 Remove-Item $script:filename
             }
@@ -213,7 +216,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Update-SPRListItem" {
-        It -Skip "Updates data from $script:filename" {
+        It "Updates data from $script:filename" {
             # Replace a value to update
             (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
             (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
@@ -223,7 +226,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'ScooptyScoop'
             $results.TestColumn | Should -Be 'ScooptyData'
         }
-        It -Skip "Doesn't update the other rows" {
+        It "Doesn't update the other rows" {
             $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist
             $results.Title | Should -Contain 'ScooptyScoop'
             $results.Title | Should -Contain 'Hello'
@@ -233,7 +236,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Select-SPRObject" {
-        It -Skip "Gets data from $script:mylist and excludes other data" {
+        It "Gets data from $script:mylist and excludes other data" {
             $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Select-SPRObject -Property 'Title as Test1234'
             $results | Get-Member -Name Title | Should -Be $null
             $results | Get-Member -Name Test1234 | Should -Not -Be $null
@@ -253,7 +256,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Clear-SPRListData" {
-        It -Skip "Removes data from $script:mylist" {
+        It  "Removes data from $script:mylist" {
             $results = Clear-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist -Confirm:$false
             Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Should -Be $null
         }
