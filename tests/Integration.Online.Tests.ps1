@@ -46,6 +46,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.RequestTimeout | Should -Be 180000
         }
     }
+    
+    Context "Get-SPRWeb" {
+        It "Gets a web" {
+            $results = Get-SPRWeb | Select-Object -First 1
+            $results.Url | Should -Be $script:onlinesite
+            $results.RecycleBinEnabled | Should -Not -Be $null
+        }
+    }
+    
     Context "Get-SPRListTemplate" {
         It "Gets all template info" {
             $results = Get-SPRListTemplate
@@ -238,12 +247,32 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Get-SPRUser" {
+        It "Gets users from $script:onlinesite"  {
+            $results = Get-SPRUser
+            $results.Title | Should -Contain 'System Account'
+            $results.Title.Count | Should -BeGreaterThan 2
+        }
+    }
+    
     Context "Select-SPRObject" {
         It "Gets data from $script:mylist and excludes other data" {
             $results = Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -ListName $script:mylist | Select-SPRObject -Property 'Title as Test1234'
             $results | Get-Member -Name Title | Should -Be $null
             $results | Get-Member -Name Test1234 | Should -Not -Be $null
             $results.Test1234 | Should -Contain 'ScooptyScoop'
+        }
+    }
+    
+    Context "Update-SPRListItemAuthorEditor" {
+        It "Updates author/editor for a single item on $script:mylist" {
+            $results = Get-SPRListData -ListName $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false
+            $results.Author | Should -Be 'System Account'
+            $results.Editor | Should -Be 'System Account'
+        }
+        It "Doesn't update other things" {
+            $results = Get-SPRListData -ListName $script:mylist
+            $results.Author | Should -Contain $global:spsite.CurrentUser.Title
         }
     }
     
