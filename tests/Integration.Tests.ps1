@@ -23,7 +23,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results = Connect-SPRSite -Site $script:site -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
             $erz | Should -Be $null
             $warn | Should -Be $null
-            $results.Url | Should -Be "https://$script:site"
+            $results.Url | Should -Be $script:site
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -35,7 +35,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
-            $results.Url | Should -Be "https://$script:site"
+            $results.Url | Should -Be $script:site
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -43,7 +43,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRWeb" {
         It "Gets a web" {
             $results = Get-SPRWeb | Select-Object -First 1
-            $results.Url | Should -Be "https://$script:site"
+            $results.Url | Should -Be $script:site
             $results.RecycleBinEnabled | Should -Not -Be $null
         }
     }
