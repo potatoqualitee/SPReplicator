@@ -30,9 +30,6 @@
 .PARAMETER InputObject
     Allows piping from Get-SPRListData.
 
-.PARAMETER AllowNulls
-    Update fields to null values, otherwise, it'll skip.
-    
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
 
@@ -70,12 +67,12 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [switch]$AllowNulls,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$EnableException
     )
     begin {
+        $script:updates = @()
         function Update-Row {
             [cmdletbinding()]
             param (
@@ -93,13 +90,16 @@
                             $fieldupdate = $UpdateItem[$fieldname]
                         }
                         
-                        if (-not $fieldupdate -and -not $AllowNulls) {
-                            continue
-                        }
-                        if (($item.ListItem[$fieldname]) -ne $fieldupdate) {
+                        if (($currentrow.ListItem[$fieldname]) -ne $fieldupdate) {
+                            if ($fieldname -in "Author", "Editor") {
+                                Write-PSFMessage -Level Warning -Message "Please use Update-SPRListItemAuthorEditor to update Author or Editor"
+                            }
+                            else {
+                                $runupdate = $true
+                                $currentrow.ListItem[$fieldname] = $fieldupdate
+                                $currentrow.ListItem.Update()
+                            }
                             Write-PSFMessage -Level Verbose -Message "Updating $fieldname setting to $fieldupdate"
-                            $runupdate = $true
-                            $item.ListItem[$fieldname] = $fieldupdate
                         }
                     }
                     else {
@@ -107,12 +107,7 @@
                     }
                 }
                 if ($runupdate) {
-                    $item.ListItem.Update()
-                    $global:spsite.ExecuteQuery()
-                    $item.ListObject | Get-SPRListData -Id $item.Id
-                }
-                else {
-                    Write-PSFMessage -Level Verbose -Message "Nothing to update for row with id $($item.Id)"
+                    $script:updates += $currentrow
                 }
             }
         }
@@ -154,8 +149,13 @@
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Updating record $($item.Id) from $($list.Title)")) {
                 try {
                     if (-not $Column) {
-                        $Column = $list | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo', 'Order' } | Sort-Object Listname, DisplayName | Select-Object -ExpandProperty Name
-                        $Column += 'Author', 'Editor'
+                        $listcolumns = $list | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo', 'Order' } | Sort-Object Listname, DisplayName
+                        $listcolumns += 'Author', 'Editor'
+                        Write-PSFMessage -Level Verbose -Message "List columns: $($listcolumns.Title)"
+                        $updatecolumns = $updateitem | Get-Member -MemberType *property*
+                        Write-PSFMessage -Level Verbose -Message "Update columns: $($updatecolumns.Name)"
+                        $Column = ($listcolumns.Name | Where-Object { $_ -in $updatecolumns.Name })
+                        Write-PSFMessage -Level Verbose -Message "Column = $Column"
                     }
                     
                     Write-PSFMessage -Level Verbose -Message "Updating $($item.Id) from $($list.Title)"
@@ -165,6 +165,18 @@
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
             }
+        }
+    }
+    end {
+        if ($script:updates.Id) {
+            Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
+            $global:spsite.ExecuteQuery()
+            foreach ($listitem in $script:updates) {
+                Get-SPRListData -ListName $listitem.ListObject.Title -Id $listitem.ListItem.Id
+            }
+        }
+        else {
+            Write-PSFMessage -Level Verbose -Message "Nothing to update"
         }
     }
 }
