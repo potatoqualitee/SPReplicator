@@ -4,6 +4,8 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
+        $oldconfig = Get-SPRConfig -Name location
+        $null = Set-SPRConfig -Name location -Value OnPrem
         $list = Get-SPRList -Site $script:site -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         # all commands set $global:spsite, remove this variable to start from scratch
@@ -12,8 +14,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     AfterAll {
         $list = Get-SPRList -Site $script:site -ListName $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $list | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $oldvalue = $script:currentconfig | Where-Object Name -eq location
-        $results = Set-SPRConfig -Name location -Value $oldvalue.Value
+        $results = Set-SPRConfig -Name location -Value $oldconfig.Value
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
     
@@ -38,6 +39,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.RequestTimeout | Should -Be 180000
         }
     }
+    
+    Context "Get-SPRWeb" {
+        It "Gets a web" {
+            $results = Get-SPRWeb | Select-Object -First 1
+            $results.Url | Should -Be "https://$script:site"
+            $results.RecycleBinEnabled | Should -Not -Be $null
+        }
+    }
+    
     Context "Get-SPRListTemplate" {
         It "Gets all template info" {
             $results = Get-SPRListTemplate

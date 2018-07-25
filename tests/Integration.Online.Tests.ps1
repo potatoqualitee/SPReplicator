@@ -46,6 +46,15 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.RequestTimeout | Should -Be 180000
         }
     }
+    
+    Context "Get-SPRWeb" {
+        It "Gets a web" {
+            $results = Get-SPRWeb | Select-Object -First 1
+            $results.Url | Should -Be $script:onlinesite
+            $results.RecycleBinEnabled | Should -Not -Be $null
+        }
+    }
+    
     Context "Get-SPRListTemplate" {
         It "Gets all template info" {
             $results = Get-SPRListTemplate
