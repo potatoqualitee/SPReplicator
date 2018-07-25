@@ -6,7 +6,7 @@
 .DESCRIPTION
     Updates items from a SharePoint list.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Column
@@ -43,7 +43,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -ListName 'My List' -Site intranet.ad.local | Update-SPRListItem -UpdateObject $updates
+    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItem -UpdateObject $updates
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Prompts for confirmation.
     
@@ -51,7 +51,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -ListName 'My List' -Site intranet.ad.local | Update-SPRListItem -UpdateObject $updates -KeyColumn SSN -Confirm:$false
+    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItem -UpdateObject $updates -KeyColumn SSN -Confirm:$false
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Does not prompt for confirmation.
     
@@ -60,7 +60,7 @@
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [string[]]$Column,
         [object[]]$UpdateObject,
         [string]$KeyColumn = 'ID',
@@ -115,13 +115,13 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -ListName $ListName -Id $Id
+                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List -Id $Id
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -ListName $ListName -Id $Id
+                $InputObject = Get-SPRListData -List $List -Id $Id
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
@@ -139,17 +139,17 @@
             if (-not $item.ListObject) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
             }
-            $list = $item.ListObject
+            $thislist = $item.ListObject
             $updateitem = $UpdateObject | Where-Object $KeyColumn -eq $item.ListItem.$KeyColumn
             
             if (-not $updateitem) {
                 Write-PSFMessage -Level Verbose -Message "No matches for ID $($item.ListItem.Id)"
                 continue
             }
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Updating record $($item.Id) from $($list.Title)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($list.Title)")) {
                 try {
                     if (-not $Column) {
-                        $listcolumns = $list | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo', 'Order' } | Sort-Object Listname, DisplayName
+                        $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo', 'Order' } | Sort-Object List, DisplayName
                         $listcolumns += 'Author', 'Editor'
                         Write-PSFMessage -Level Verbose -Message "List columns: $($listcolumns.Title)"
                         $updatecolumns = $updateitem | Get-Member -MemberType *property*
@@ -172,7 +172,7 @@
             Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
             $global:spsite.ExecuteQuery()
             foreach ($listitem in $script:updates) {
-                Get-SPRListData -ListName $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
             }
         }
         else {

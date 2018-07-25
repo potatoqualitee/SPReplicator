@@ -1,5 +1,5 @@
 $script:ModuleRoot = $PSScriptRoot
-$script:site = "sharepoint2016"
+$script:site = "https://sharepoint2016"
 $script:mylist = "My Test List"
 $script:filename = "$script:ModuleRoot\$script:mylist.xml"
 $script:onlinesite = "https://netnerds.sharepoint.com"

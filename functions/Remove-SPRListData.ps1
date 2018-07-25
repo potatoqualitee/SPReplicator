@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Id
@@ -36,29 +36,29 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Remove-SPRListData -Site intranet.ad.local -ListName 'My List'
+    Remove-SPRListData -Site intranet.ad.local -List 'My List'
 
     Deletes all items from My List on intranet.ad.local. Prompts for confirmation.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Remove-SPRListData -Confirm:$false
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Remove-SPRListData -Confirm:$false
 
     Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Remove-SPRListData -Confirm:$false
+    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) | Remove-SPRListData -Confirm:$false
 
     Deletes all items from My List by logging into the webapp as ad\user.
 
 .EXAMPLE
-    Remove-SPRListData -Site intranet.ad.local -ListName 'My List'
+    Remove-SPRListData -Site intranet.ad.local -List 'My List'
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [int[]]$Id,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
@@ -70,13 +70,13 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -ListName $ListName -Id $Id
+                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List -Id $Id
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -ListName $ListName -Id $Id
+                $InputObject = Get-SPRListData -List $List -Id $Id
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
@@ -94,15 +94,15 @@
             if (-not $item.ListObject) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
             }
-            $list = $item.ListObject
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Removing record $($item.Id) from $($item.ListObject.Title)")) {
+            $thislist = $item.ListObject
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Removing record $($item.Id) from $($item.ListObject.Title)")) {
                 try {
                     Write-PSFMessage -Level Verbose -Message "Removing $($item.Id) from $($list.Title)"
-                    $list.GetItemById($item.Id).DeleteObject()
+                    $thislist.GetItemById($item.Id).DeleteObject()
                     $global:spsite.ExecuteQuery()
                     [pscustomobject]@{
-                        Site = $list.Context
-                        ListName = $list.Title
+                        Site = $thislist.Context
+                        List = $thislist.Title
                         ItemId = $item.Id
                         Title = $item.Title
                         Status = "Deleted"

@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER WebName
+.PARAMETER Web
     The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
 
 .PARAMETER InputObject
@@ -27,24 +27,24 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRWeb -Site intranet.ad.local -WebName 'My Web'
+    Get-SPRWeb -Site intranet.ad.local -Web 'My Web'
 
     Creates a web service object for My Web on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local | Get-SPRWeb -WebName 'My Web'
+    Connect-SPRSite -Site intranet.ad.local | Get-SPRWeb -Web 'My Web'
 
     Creates a web service object for My Web on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRWeb -Site intranet.ad.local -WebName 'My Web' -Credential (Get-Credential ad\user)
+    Get-SPRWeb -Site intranet.ad.local -Web 'My Web' -Credential (Get-Credential ad\user)
 
     Creates a web service object for My Web and logs into the webapp as ad\user.
 #>
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint web name")]
-        [string[]]$WebName,
+        [string[]]$Web,
         [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -67,7 +67,7 @@
         }
         
         foreach ($server in $InputObject) {
-            if (-not $WebName) {
+            if (-not $Web) {
                 try {
                     $global:spweb = $server.Web
                     $server.Load($global:spweb)
@@ -82,7 +82,7 @@
                 }
             }
             else {
-                foreach ($currentweb in $WebName) {
+                foreach ($currentweb in $Web) {
                     try {
                         $web = $server.Web | Where-Object Title -eq $currentweb
                         if ($web) {

@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER InputObject
@@ -27,24 +27,24 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRColumnDetail -Site intranet.ad.local -ListName 'My List'
+    Get-SPRColumnDetail -Site intranet.ad.local -List 'My List'
 
     Gets column information from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Get-SPRColumnDetail
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Get-SPRColumnDetail
 
      Gets column information from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user)
 
     Gets column information from My List on intranet.ad.local by logging into the webapp as ad\user.
 #>
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -55,26 +55,26 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
 
-        foreach ($list in $InputObject) {
+        foreach ($thislist in $InputObject) {
             try {
-                $list.Context.Load($list.Fields)
-                $list.Context.ExecuteQuery()
-                foreach ($column in $list.Fields) {
+                $thislist.Context.Load($thislist.Fields)
+                $thislist.Context.ExecuteQuery()
+                foreach ($column in $thislist.Fields) {
                     $title = $column.Title
-                    Add-Member -InputObject $column -MemberType NoteProperty -Name ListName -Value $list.Title
+                    Add-Member -InputObject $column -MemberType NoteProperty -Name List -Value $thislist.Title
                     Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
-                    Select-DefaultView -InputObject $column -Property ListName, 'Title as DisplayName', 'StaticName as Name', 'TypeDisplayName as Type', FromBaseType
+                    Select-DefaultView -InputObject $column -Property List, 'Title as DisplayName', 'StaticName as Name', 'TypeDisplayName as Type', FromBaseType
                 }
             }
             catch {

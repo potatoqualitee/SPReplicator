@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER ColumnName
@@ -62,30 +62,30 @@
 
 .EXAMPLE
     Connect-SPRSite -Site intranet.ad.local
-    Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description "One column"
+    Add-SPRColumn -List 'My List' -ColumnName TestColumn -Description "One column"
 
     Adds a text column named TestColumn to 'My List' on intranet.ad.local
 
 .EXAMPLE
-    Add-SPRColumn -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) -ColumnName TestColumn
+    Add-SPRColumn -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) -ColumnName TestColumn
 
     Adds a text column named TestColumn to 'My List' on intranet.ad.local and logs into the site collection as ad\user.
 
 .EXAMPLE
-    Add-SPRColumn -Site intranet.ad.local -ListName List1 -ColumnName Age -Default 40 -Type Integer
+    Add-SPRColumn -Site intranet.ad.local -List List1 -ColumnName Age -Default 40 -Type Integer
 
     Adds a number column named Age to List1 on intranet.ad.local and sets the default value to 40s.
 
 .EXAMPLE
     $xml = "<Field Type='URL' Name='EmployeePicture' StaticName='EmployeePicture' DisplayName='Employee Picture' Format='Image'/>"
-    Get-SPRList -ListName List1 -Site intranet.ad.local | Add-SPRColumn -Xml $xml
+    Get-SPRList -List List1 -Site intranet.ad.local | Add-SPRColumn -Xml $xml
 
     Adds a column named EmployeePicture with the URL datatype to List1 on intranet.ad.local
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [string]$ColumnName,
         [string]$DisplayName,
         [string]$Type = "Text",
@@ -119,13 +119,13 @@
         }
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
@@ -135,10 +135,10 @@
             return
         }
         
-        foreach ($list in $InputObject) {
+        foreach ($thislist in $InputObject) {
             try {
-                $server = $list.Context
-                $server.Load($list.Fields)
+                $server = $thislist.Context
+                $server.Load($thislist.Fields)
                 $server.ExecuteQuery()
 
                 if (-not $Xml) {
@@ -151,15 +151,15 @@
                     $xmldata = [xml]($xml.ToString())
                     $ColumnName = $xmldata.Field.Name
                 }
-                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Added $ColumnName as $Type to $ListName")) {
+                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Added $ColumnName as $Type to $List")) {
                     Write-PSFMessage -Level Verbose -Message $xml
                     Write-PSFMessage -Level Verbose -Message "Added $ColumnName as $Type"
-                    $field = $list.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
-                    $list.Update()
-                    $server.Load($list)
+                    $field = $thislist.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
+                    $thislist.Update()
+                    $server.Load($thislist)
                     $server.ExecuteQuery()
                     
-                    $list | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object guid -Descending | Select-Object -First 1
+                    $thislist | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object guid -Descending | Select-Object -First 1
                 }
             }
             catch {

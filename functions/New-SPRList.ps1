@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER Title
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Description
@@ -44,20 +44,20 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    New-SPRList -Site intranet.ad.local -ListName List1
+    New-SPRList -Site intranet.ad.local -List List1
 
     Creates a list called List1 on intranet.ad.local. Use Add-SPRColumn to add more columns.
 
 .EXAMPLE
     $null = Connect-Site -Site intranet.ad.local
-    New-SPRList -ListName 'My Announcements' -Template Announcements
+    New-SPRList -List 'My Announcements' -Template Announcements
 
     Creates a resuable connection to intranet.ad.local then uses that to create a new list called
     My Announcements using the Announcements. Use Get-SPRListTemplate to find out all templates
     or just tab through the options.
 
 .EXAMPLE
-    New-SPRList -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) -OnQuickLaunch
+    New-SPRList -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) -OnQuickLaunch
 
     Creates a list called List1 on intranet.ad.local and logs into the webapp as ad\user.
 
@@ -66,7 +66,8 @@
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [Alias("List")]
+        [string]$Title,
         [string]$Description,
         [string]$Template = "GenericList",
         [switch]$OnQuickLaunch,
@@ -100,17 +101,17 @@
 
                 Write-PSFMessage -Level Verbose -Message "Creating list"
                 $listinfo = New-Object Microsoft.SharePoint.Client.ListCreationInformation
-                $listinfo.Title = $ListName
+                $listinfo.Title = $Title
                 $templateid = (Get-SPRListTemplate -Name $Template).Id
                 Write-PSFMessage -Level Verbose -Message "Associating templateid $templateid"
                 $listinfo.TemplateType = $templateid
-                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Adding list $ListName")) {
-                    $List = $server.Web.Lists.Add($listinfo)
-                    $List.Description = $Description
-                    $List.Update()
+                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Adding list $Title")) {
+                    $newlist = $server.Web.Lists.Add($listinfo)
+                    $newlist.Description = $Description
+                    $newlist.Update()
                     Write-PSFMessage -Level Verbose -Message "Executing query"
                     $server.ExecuteQuery()
-                    Get-SPRList -ListName $ListName
+                    Get-SPRList -List $Title
                 }
             }
             catch {

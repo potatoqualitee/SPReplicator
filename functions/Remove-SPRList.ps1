@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER InputObject
@@ -33,29 +33,29 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Remove-SPRList -Site intranet.ad.local -ListName 'My List'
+    Remove-SPRList -Site intranet.ad.local -List 'My List'
 
     Removes the list "My List" on intranet.ad.local. Prompts for confirmation.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Remove-SPRList -Confirm:$false
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Remove-SPRList -Confirm:$false
 
     Removes the list "My List" on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Remove-SPRList -Confirm:$false
+    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) | Remove-SPRList -Confirm:$false
 
     Deletes all items from My List by logging into the webapp as ad\user.
 
 .EXAMPLE
-    Remove-SPRList -Site intranet.ad.local -ListName 'My List' -WhatIf
+    Remove-SPRList -Site intranet.ad.local -List 'My List' -WhatIf
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -66,32 +66,34 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
-
+        
         if (-not $InputObject) {
             Stop-PSFFunction -EnableException:$EnableException -Message "No list to delete."
             return
         }
-
-        foreach ($list in $InputObject) {
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Removing list $($list.Title)")) {
+        
+        foreach ($thislist in $InputObject) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Removing list $($list.Title)")) {
                 try {
                     Write-PSFMessage -Level Verbose -Message "Deleting $($list.Title) from $($list.Context)"
-                    $list.DeleteObject()
+                    $dellist = $global:spsite.Web.Lists.GetByTitle($thislist.Title)
+                    $global:spsite.Load($dellist)
+                    $dellist.DeleteObject()
                     $global:spsite.ExecuteQuery()
                     [pscustomobject]@{
-                        Site = $list.Context
-                        ListName = $list.Title
-                        ItemId = $list.Id
+                        Site = $thislist.Context
+                        List = $thislist.Title
+                        ItemId = $thislist.Id
                         Status = "Deleted"
                     }
                 }

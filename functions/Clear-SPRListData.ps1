@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER InputObject
@@ -33,29 +33,29 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Clear-SPRListData -Site intranet.ad.local -ListName 'My List'
+    Clear-SPRListData -Site intranet.ad.local -List 'My List'
 
     Deletes all items from My List on intranet.ad.local. Prompts for confirmation.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Clear-SPRListData -Confirm:$false
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Clear-SPRListData -Confirm:$false
 
      Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user) | Clear-SPRListData -Confirm:$false
+    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) | Clear-SPRListData -Confirm:$false
 
     Deletes all items from My List by logging into the webapp as ad\user.
 
 .EXAMPLE
-    Clear-SPRListData -Site intranet.ad.local -ListName 'My List'
+    Clear-SPRListData -Site intranet.ad.local -List 'My List'
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -66,13 +66,13 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -ListName $ListName
+                $InputObject = Get-SPRListData -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
@@ -82,13 +82,13 @@
             return
         }
 
-        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing all records from $listname")) {
+        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing all records from $List")) {
             try {
                 $InputObject.ListItem.DeleteObject()
                 $global:spsite.ExecuteQuery()
                 [pscustomobject]@{
                     Site = $global:spsite
-                    ListName = $listname
+                    List = $List
                     Status = "All records deleted"
                 }
             }

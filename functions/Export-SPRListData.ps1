@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Path
@@ -30,19 +30,19 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Export-SPRListData -Site intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
+    Export-SPRListData -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
 
     Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
 
 .EXAMPLE
-    Get-SPRListData -ListName 'My List' -Site intranet.ad.local |Export-SPRListData -Path C:\temp\mylist.xml
+    Get-SPRListData -List 'My List' -Site intranet.ad.local |Export-SPRListData -Path C:\temp\mylist.xml
 
     Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
 #>
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [Parameter(Mandatory)]
         [string]$Path,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
@@ -58,13 +58,13 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SprListData -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SprListData -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SprListData -ListName $ListName
+                $InputObject = Get-SprListData -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
