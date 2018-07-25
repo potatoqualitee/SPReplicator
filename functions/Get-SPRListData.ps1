@@ -15,7 +15,7 @@ Function Get-SPRListData {
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Id
@@ -33,34 +33,34 @@ Function Get-SPRListData {
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List'
+    Get-SPRListData -Site intranet.ad.local -List 'My List'
 
     Gets data from My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Get-SPRListData
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Get-SPRListData
 
      Gets data from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user)
 
     Gets data from My List and logs into the webapp as ad\user.
 
 .EXAMPLE
-    Get-SPRListData -Site sharepoint2016 -ListName 'My List' -Id 100, 101, 105
+    Get-SPRListData -Site sharepoint2016 -List 'My List' -Id 100, 101, 105
 
     Gets list items with ID 100, 101 and 105
     
 .EXAMPLE
-    Get-SPRListData -Site sharepoint2016 -ListName 'My List' -View 'My Tasks'
+    Get-SPRListData -Site sharepoint2016 -List 'My List' -View 'My Tasks'
 
     Gets list items included in the view My Tasks
 #>
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [int[]]$Id,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
@@ -73,28 +73,28 @@ Function Get-SPRListData {
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SprList -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SprList -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
         
-        foreach ($list in $InputObject) {
-            if ($list -is [Microsoft.SharePoint.Client.View]) {
-                $listview = $list.ListObject.Views.GetByTitle($list.Title)
-                $list = $list.ListObject
-                $list.Context.Load($listview)
-                $list.Context.ExecuteQuery()
+        foreach ($thislist in $InputObject) {
+            if ($thislist -is [Microsoft.SharePoint.Client.View]) {
+                $listview = $thislist.ListObject.Views.GetByTitle($thislist.Title)
+                $thislist = $thislist.ListObject
+                $thislist.Context.Load($listview)
+                $thislist.Context.ExecuteQuery()
                 $caml = New-Object Microsoft.SharePoint.Client.CamlQuery
                 $caml.ViewXml = "<View><Query>$($listview.ViewQuery)</Query></View>"
-                $listItems = $list.GetItems($caml)
-                $list.Context.Load($listItems)
-                $list.Context.ExecuteQuery()
+                $listItems = $thislist.GetItems($caml)
+                $thislist.Context.Load($listItems)
+                $thislist.Context.ExecuteQuery()
             }
             
             try {
@@ -103,26 +103,26 @@ Function Get-SPRListData {
                     $listItems = @()
                     foreach ($number in $Id) {
                         Write-PSFMessage -Level Verbose -Message "Getting item by ID $number"
-                        $single = $list.GetItemById($number)
-                        $list.Context.Load($single)
-                        $list.Context.ExecuteQuery()
-                        $listItems += $list.GetItemById($number)
+                        $single = $thislist.GetItemById($number)
+                        $thislist.Context.Load($single)
+                        $thislist.Context.ExecuteQuery()
+                        $listItems += $thislist.GetItemById($number)
                     }
                 }
                 elseif ($View) {
-                    $listview = $list.Views.GetByTitle($View)
-                    $list.Context.Load($listview)
-                    $list.Context.ExecuteQuery()
+                    $listview = $thislist.Views.GetByTitle($View)
+                    $thislist.Context.Load($listview)
+                    $thislist.Context.ExecuteQuery()
                     $caml = New-Object Microsoft.SharePoint.Client.CamlQuery
                     $caml.ViewXml = "<View><Query>$($listview.ViewQuery)</Query></View>"
-                    $listItems = $list.GetItems($caml)
-                    $list.Context.Load($listItems)
-                    $list.Context.ExecuteQuery()
+                    $listItems = $thislist.GetItems($caml)
+                    $thislist.Context.Load($listItems)
+                    $thislist.Context.ExecuteQuery()
                 }
                 elseif (-not $listitems) {
-                    $listItems = $list.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
-                    $list.Context.Load($listItems)
-                    $list.Context.ExecuteQuery()
+                    $listItems = $thislist.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
+                    $thislist.Context.Load($listItems)
+                    $thislist.Context.ExecuteQuery()
                 }
                 
                 $fields = $listItems | Select-Object -First 1 -ExpandProperty FieldValues
@@ -136,7 +136,7 @@ Function Get-SPRListData {
                 
                 foreach ($item in $listItems) {
                     $object = $baseobject.PSObject.Copy()
-                    $object.ListObject = $list
+                    $object.ListObject = $thislist
                     $object.ListItem = $item
                     foreach ($fieldName in $item.FieldValues.Keys) {
                         if ($fieldName -in 'Author', 'Editor') {

@@ -17,7 +17,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Path
@@ -41,19 +41,19 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Import-SPRListData -Site intranet.ad.local -ListName 'My List' -Path C:\temp\mylist.xml
+    Import-SPRListData -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
 
     Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
 
 .EXAMPLE
-    Get-SPRListData -Path C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' -Site intranet.ad.local
+    Get-SPRListData -Path C:\temp\mylist.xml | Import-SPRListData -List 'My List' -Site intranet.ad.local
 
     Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [string]$Path,
         [switch]$AutoCreateList,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
@@ -81,7 +81,7 @@
         }
         foreach ($file in $InputObject) {
             try {
-                Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -ListName $ListName -AutoCreateList:$AutoCreateList
+                Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

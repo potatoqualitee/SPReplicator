@@ -6,7 +6,7 @@
 .DESCRIPTION
     Returns a SharePoint list object.
 
-.PARAMETER WebName
+.PARAMETER Web
     The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
 
 .PARAMETER Site
@@ -18,7 +18,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER InputObject
@@ -30,26 +30,26 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRList -Site intranet.ad.local -ListName 'My List'
+    Get-SPRList -Site intranet.ad.local -List 'My List'
 
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local | Get-SPRList -ListName 'My List'
+    Connect-SPRSite -Site intranet.ad.local | Get-SPRList -List 'My List'
 
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRList -Site intranet.ad.local -ListName 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRList -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user)
 
     Creates a web service object for My List and logs into the webapp as ad\user.
 #>
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string[]]$ListName,
+        [string[]]$List,
         [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
-        [string[]]$WebName,
+        [string[]]$Web,
         [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -63,21 +63,21 @@
                 $null = Connect-SPRSite -Site $Site -Credential $Credential
             }
             
-            if ($WebName) {
-                $InputObject = Get-SPRWeb -WebName $WebName
+            if ($Web) {
+                $InputObject = Get-SPRWeb -Web $Web
             }
             elseif ($global:spweb) {
                 $InputObject = $global:spweb
             }
             
             if (-not $InputObject) {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site, WebName or run Connect-SPRSite"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site, Web or run Connect-SPRSite"
                 return
             }
         }
 
         foreach ($server in $InputObject.Context) {
-            if (-not $ListName) {
+            if (-not $List) {
                 try {
                     $server.Load($global:spweb)
                     $server.ExecuteQuery()
@@ -91,20 +91,20 @@
                 }
             }
             else {
-                foreach ($currentlist in $ListName) {
+                foreach ($currentlist in $List) {
                     try {
                         $server.Load($global:spweb)
                         $server.ExecuteQuery()
                         $lists = $global:spweb.Lists
                         $server.Load($lists)
                         $server.ExecuteQuery()
-                        $list = $lists | Where-Object Title -eq $currentlist
-                        if ($list) {
+                        $thislist = $lists | Where-Object Title -eq $currentlist
+                        if ($thislist) {
                             Write-PSFMessage -Level Verbose -Message "Getting $currentlist from $($server.Url)"
-                            $server.Load($list)
+                            $server.Load($thislist)
                             $server.ExecuteQuery()
-                            Add-Member -InputObject $list -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
-                            $list | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
+                            Add-Member -InputObject $thislist -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
+                            $thislist | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
                         }
                     }
                     catch {

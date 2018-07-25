@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER View
@@ -30,29 +30,29 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRListView -Site intranet.ad.local -ListName 'My List'
+    Get-SPRListView -Site intranet.ad.local -List 'My List'
 
     Gets all views from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRList -ListName 'My List' -Site intranet.ad.local | Get-SPRListView
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Get-SPRListView
 
      Gets views from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRListView -Site intranet.ad.local -ListName 'My List' -Credential ad\user
+    Get-SPRListView -Site intranet.ad.local -List 'My List' -Credential ad\user
 
     Gets views from My List and logs into the webapp as ad\user.
     
 .EXAMPLE
-    Get-SPRListView -Site sharepoint2016 -ListName 'My List' -View 'My Tasks'
+    Get-SPRListView -Site sharepoint2016 -List 'My List' -View 'My Tasks'
 
     Gets list items included in the view My Tasks
 #>
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -64,36 +64,36 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SprList -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SprList -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRList -ListName $ListName
+                $InputObject = Get-SPRList -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
         
-        foreach ($list in $InputObject) {
+        foreach ($thislist in $InputObject) {
             try {
                 if ($View) {
-                    $listview = $list.Views.GetByTitle($View)
-                    $list.Context.Load($listview)
-                    $list.Context.ExecuteQuery()
+                    $listview = $thislist.Views.GetByTitle($View)
+                    $thislist.Context.Load($listview)
+                    $thislist.Context.ExecuteQuery()
                 }
                 else {
-                    $listview = $list.Views
-                    $list.Context.Load($list)
-                    $list.Context.Load($listview)
-                    $list.Context.ExecuteQuery()
+                    $listview = $thislist.Views
+                    $thislist.Context.Load($thislist)
+                    $thislist.Context.Load($listview)
+                    $thislist.Context.ExecuteQuery()
                 }
                 
                 foreach ($item in $listview) {
-                    $list.Context.Load($item.ViewFields)
-                    $list.Context.ExecuteQuery()
-                    Add-Member -InputObject $item -MemberType NoteProperty -Name ListObject -Value $list
-                    Select-DefaultView -InputObject $item -Property 'ListObject as ListName', Title, ViewFields, RowLimit, ReadOnlyView, ServerRelativeUrl, ViewQuery, DefaultView
+                    $thislist.Context.Load($item.ViewFields)
+                    $thislist.Context.ExecuteQuery()
+                    Add-Member -InputObject $item -MemberType NoteProperty -Name ListObject -Value $thislist
+                    Select-DefaultView -InputObject $item -Property 'ListObject as List', Title, ViewFields, RowLimit, ReadOnlyView, ServerRelativeUrl, ViewQuery, DefaultView
                 }
             }
             catch {

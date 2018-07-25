@@ -24,7 +24,7 @@ function Select-DefaultView {
     Excludes other properties
     
 EXAMPLE
-    Export-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property Title
+    Export-SPRListData -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property Title
 
     Exports only the title column
 #>    

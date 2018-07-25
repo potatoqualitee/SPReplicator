@@ -11,7 +11,7 @@
 
     Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Credential
@@ -36,12 +36,12 @@
 
 .EXAMPLE
     $csv = Import-Csv -Path C:\temp\listitems.csv
-    Add-SPRListItem -Site intranet.ad.local -ListName 'My List' -InputObject $mycsv
+    Add-SPRListItem -Site intranet.ad.local -List 'My List' -InputObject $mycsv
 
     Adds data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
 
 .EXAMPLE
-    Import-Csv -Path C:\temp\listitems.csv | Add-SPRListItem -Site intranet.ad.local -ListName 'My List'
+    Import-Csv -Path C:\temp\listitems.csv | Add-SPRListItem -Site intranet.ad.local -List 'My List'
 
     Adds data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
 
@@ -50,14 +50,14 @@
     $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
     $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
     $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-    Add-SPRListItem -Site intranet.ad.local -ListName 'My List' -InputObject $object
+    Add-SPRListItem -Site intranet.ad.local -List 'My List' -InputObject $object
 
     Adds data from a custom object $object into the My List SharePoint list, so long as there are matching columns (Title and TestColumn).
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$AutoCreateList,
@@ -104,19 +104,19 @@
         }
     }
     process {
-        $list = Get-SPRList -Site $Site -Credential $Credential -ListName $ListName
+        $thislist = Get-SPRList -Site $Site -Web $Web -Credential $Credential -List $List
         
-        if (-not $list) {
+        if (-not $thislist) {
             if (-not $AutoCreateList) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"
                 return
             }
             else {
-                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding List $ListName")) {
-                    $list = New-SPRList -ListName $ListName
+                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List $List")) {
+                    $thislist = New-SPRList -List $List
                     
                     $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
-                    $columns = ($list | Get-SPRColumnDetail).Title
+                    $columns = ($thislist | Get-SPRColumnDetail).Title
                     $newcolumns = $datatable.Columns | Where-Object ColumnName -NotIn $columns
                     
                     Write-PSFMessage -Level Verbose -Message "All columns: $columns"
@@ -142,36 +142,36 @@
                             default { "Text" }
                         }
                         $cname = $column.ColumnName
-                        $null = $list | Add-SPRColumn -ColumnName $cname -Type $type
+                        $null = $thislist | Add-SPRColumn -ColumnName $cname -Type $type
                     }
                 }
             }
             
-            $columns = $list | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object Listname, DisplayName
+            $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
         }
         
         foreach ($row in $InputObject) {
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding List item $ListName")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List item $List")) {
                 try {
                     
                     $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
-                    $newItem = $list.AddItem($itemCreateInfo)
+                    $newItem = $thislist.AddItem($itemCreateInfo)
                     $newItem = Add-Row -Row $row -ColumnInfo $columns
                     $newItem.update()
-                    $list.Context.Load($newItem)
+                    $thislist.Context.Load($newItem)
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
             }
             
-            Write-PSFMessage -Level Verbose -Message "Queued row for $listname"
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $listname -Action "Adding Batch")) {
+            Write-PSFMessage -Level Verbose -Message "Queued row for $List"
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding Batch")) {
                 try {
                     # Do batch
-                    $list.Context.ExecuteQuery()
+                    $thislist.Context.ExecuteQuery()
                     Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                    Get-SPRListData -ListName $listname -Id $newItem.Id
+                    Get-SPRListData -List $List -Id $newItem.Id
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

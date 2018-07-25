@@ -6,7 +6,7 @@
 .DESCRIPTION
     Updates author (created by) from a SharePoint list.
 
-.PARAMETER ListName
+.PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Username
@@ -40,7 +40,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -ListName 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates
+    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Prompts for confirmation.
     
@@ -48,7 +48,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -ListName 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates -KeyColumn SSN -Confirm:$false
+    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates -KeyColumn SSN -Confirm:$false
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Does not prompt for confirmation.
     
@@ -57,7 +57,7 @@
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$ListName,
+        [string]$List,
         [ValidateSet("Author", "Editor")]
         [string[]]$Column = @("Author", "Editor"),
         [Parameter(HelpMessage = "SharePoint Site Collection")]
@@ -108,13 +108,13 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -ListName $ListName
+                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -ListName $ListName
+                $InputObject = Get-SPRListData -List $List
             }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and ListName pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
@@ -133,7 +133,7 @@
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
             }
             
-            $list = $item.ListObject
+            $thislist = $item.ListObject
             
             if (-not $spuser) {
                 try {
@@ -145,7 +145,7 @@
                 }
             }
             
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $list.Context.Url -Action "Updating record $($item.Id) from $($list.Title) Changing $Column to $($user.LoginName)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($list.Title) Changing $Column to $($user.LoginName)")) {
                 try {
                     Write-PSFMessage -Level Verbose -Message "Updating $($item.Id) from $($list.Title)"
                     Update-Row -Row $item -ColumnNames $Column -UserObject $spuser
@@ -161,7 +161,7 @@
             Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
             $global:spsite.ExecuteQuery()
             foreach ($listitem in $script:updates) {
-                Get-SPRListData -ListName $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
             }
         }
         else {
