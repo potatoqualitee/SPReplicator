@@ -112,7 +112,7 @@
             $global:spweb = $global:spsite.Web
             
             if ($global:spsite.Credentials) {
-                $loginname = Get-SPRUser -UserName $global:spsite.Credentials
+                $loginname = Get-SPRUser -UserName $global:spsite.Credentials.UserName
             }
             else {
                 $username = whoami

@@ -69,13 +69,13 @@
         foreach ($server in $InputObject) {
             if (-not $WebName) {
                 try {
-                    $web = $global:spweb = $server.Web
-                    $server.Load($server.Web)
+                    $global:spweb = $server.Web
+                    $server.Load($global:spweb)
                     $server.ExecuteQuery()
                     if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                        $web = $web | Select-Object -ExcludeProperty Alerts
+                        $global:spweb = $global:spweb | Select-Object -ExcludeProperty Alerts
                     }
-                    $web | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
+                    $global:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
@@ -84,18 +84,16 @@
             else {
                 foreach ($currentweb in $WebName) {
                     try {
-                        $webs = $server.Web
-                        $server.Load($webs)
-                        $server.ExecuteQuery()
-                        $web = $webs | Where-Object Title -eq $currentweb
+                        $web = $server.Web | Where-Object Title -eq $currentweb
                         if ($web) {
                             $global:spweb = $web
-                            $server.Load($server.Web)
+                            $server.Load($global:spweb)
                             $server.ExecuteQuery()
+                            
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                                $web = $web | Select-Object -ExcludeProperty Alerts
+                                $global:spweb = $global:spweb | Select-Object -ExcludeProperty Alerts
                             }
-                            $web | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
+                            $global:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
                         }
                     }
                     catch {

@@ -76,8 +76,6 @@
         foreach ($web in $InputObject) {
             if (-not $UserName) {
                 try {
-                    $global:spsite.Load($web)
-                    $global:spsite.ExecuteQuery()
                     $users = $web.SiteUsers
                     $global:spsite.Load($users)
                     $global:spsite.ExecuteQuery()
@@ -94,21 +92,21 @@
             else {
                 foreach ($user in $UserName) {
                     try {
-                        $users = $web.SiteUsers
-                        $global:spsite.Load($users)
+                        Write-PSFMessage -Level Verbose -Message "Getting $user from $($global:spsite.Url)"
+                        $ensureduser = $global:spweb.EnsureUser($user)
+                        $global:spsite.Load($ensureduser)
                         $global:spsite.ExecuteQuery()
-                        $user = $users | Where-Object { $_.LoginName -contains $username -or $_.Title -contains $username -or $_.Email -contains $username }
+                        Write-PSFMessage -Level Verbose -Message "Got $user from $($global:spsite.Url)"
                         
-                        if ($user) {
-                            Write-PSFMessage -Level Verbose -Message "Getting $($user.Title) from $($global:spsite.Url)"
-                            Add-Member -InputObject $user -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force
+                        if ($ensureduser) {
+                            Add-Member -InputObject $ensureduser -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force
                             
                             # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -eq "Online") {
-                                $user | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                                $ensureduser | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                             }
                             else {
-                                $user | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                                $ensureduser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                             }
                         }
                     }
