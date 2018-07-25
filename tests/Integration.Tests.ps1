@@ -313,6 +313,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Value | Should -Be 'Test'
             $results = Get-SPRConfig
             ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
+            $null = Set-SPRConfig -Name location -Value OnPrem
         }
     }
 }
