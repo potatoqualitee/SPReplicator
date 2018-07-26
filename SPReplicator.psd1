@@ -11,7 +11,7 @@
     RootModule        = 'SPReplicator.psm1'
     
     # Version number of this module.
-    ModuleVersion     = '0.0.7'
+    ModuleVersion     = '0.0.8'
     
     # ID used to uniquely identify this module
     GUID              = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
@@ -23,7 +23,7 @@
     Copyright         = '(c) 2018 Chrissy LeMaire All rights reserved.'
     
     # Description of the functionality provided by this module
-    Description = 'SPReplicator is a PowerShell module that helps replicate SharePoint list data.'
+    Description = 'SPReplicator helps replicate SharePoint list data from CSV, SQL Server, generic PowerShell objects, and other SharePoint lists.'
     
     # Minimum version of the Windows PowerShell engine required by this module
     # PowerShellVersion = ''
@@ -112,7 +112,7 @@
         PSData = @{
             
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @('SharePoint','data','replication','SQLServer','CSV')
+            Tags = @('SharePoint','data','replication','SQLServer','CSV','import','export')
             
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/potatoqualitee/SPReplicator/blob/master/LICENSE'
@@ -140,8 +140,8 @@
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUI22Q5KX1i9mADQ0nBDokqjB+
-# SHKggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2CAZia2zyvfwaTzs3lnnwN9W
+# 3K2ggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -272,22 +272,22 @@
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQU11W0ZH4ScgUGIEiH7h3aUDw4/CgwDQYJKoZIhvcNAQEBBQAE
-# ggEAOqYMD9+gmLUWNjjC5e7+nKNUX6nkBxqyAp/NnhK1yeB/RQgU2X/F80RPXZs3
-# 7mw0M8liwr2XMNTeEI9AjkQCsgtfIqCTNz9r894xRbxCkBRGGQYIGcqhTRXsgqTW
-# 3M/dmxg1YSyFuzfgQkiX4kYrhdyHzeseXuiwaLjsa+2NlRfSO+SrHdIasFC9mllh
-# J0bPmA4nrZT6N/j4r96Dgmy1tJ5x42RT/cgpdWc34OuPCLWh65lhPq0tISQla4HL
-# ibs227rzqECdvix0xLjtMX0V8WG6n36oOAqXRsDMak8mJvoDafzNplVY2p92P6x8
-# aDSg3em/s5grNRb2LR+GUm/DPqGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQUhjE4gaNZi1ZatgU60EXNeiyWOKEwDQYJKoZIhvcNAQEBBQAE
+# ggEABXnvn4Juu0A5z2O2qQw/ZL6dR2AktJ+G4d8rFFyKu4bDeKNjEHl6SwlDreaT
+# nkp7PRxneqc61iaN95XwrDZCHfoeb8vhn7BpX1yxxfxznnZnEBnXBw6X4zlvxdq8
+# PURMN8HuGzzx1pHclC5hedGZkGvOEBrjViVIs3oAvXmkLe9jj1SvzreVBOZnpvLt
+# Bw3O6AFS6jMns7R4KGSE3XRWkg8ORzn7GqnqXQlyzXWRxhJGkfSomUmPdJstCPRY
+# 22nyZStybegoAyM5G1iGIq/ElYhcBBfDuYxE4K0grgHyz5g3PHC8bhuX5B22jqif
+# THV5qOmCHvi3SriffVvZ9jXDi6GCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzI2MTA1OTU2WjAj
-# BgkqhkiG9w0BCQQxFgQUiA1Kg0PDNuFLAomUed1LoI3qnHgwDQYJKoZIhvcNAQEB
-# BQAEggEAknaIaVN7HsFtvSRdJ1QsV8uLD3MVJ7JgDHxajzf/yCqvLvQBUNqO/Uz9
-# wBcLkVNWyl0A6EfGKIR/kOWuwDZ/sOaIzqwO8XlBoRVbTAu3eOp+KZeF+w8rzjII
-# YLNkVvLLXsExbqbh9IlFd1DF7Tg2HKNm2g7dqONgkvDkHYof+dsw5jk9l8Ett5CL
-# 9+UwItxFnUB8fuCYRb+wdQbtCMvqITIvfrZ2hAMjD9a3Bn3D9w96e82zAwh5sKaP
-# pm+Mh+5JCh6UtYa6GFzKjTUjOcZmoPlw2NLjYjYqNN8wpgLjR+6kaOlBzbvS2NmC
-# 3P7QEzOmga5wS1pdWTGYFgpK6PMoZg==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzI2MTEzMTExWjAj
+# BgkqhkiG9w0BCQQxFgQUjvcsoda5NGkoQWeSDkcXRAuClXkwDQYJKoZIhvcNAQEB
+# BQAEggEAD1LfYOAWB0I2/QIbla60Yn4qfLbSE/fXfE9zIux0OJtu0HBWwPpzYpCC
+# RzftTd1P+5Zi6SR6X07APtbyIVqRlTAEW4CoZjXHkKNgcDK27NkFcWSQI4l6pATO
+# VEexP/Y6yQOPZns6DO+UfQkGFIPprT6Tndn0tXk/8C46kQkIdvOPBaCaDN579YkN
+# 9hqIR1E5+d9loRUXlVxy4RccVUfkrms//lwQCjbPBaTlmZQHmaHz3DoDljQmKBe2
+# 7QbBoBuGnCfiSuSA+fzlYx/2eoXBcOUqx39YCa9A/sTWW7f5U39mto5uSwL6l1b4
+# 3YU8bDOJIhMEKE8hRJUNW/kVWxG8Ug==
 # SIG # End signature block

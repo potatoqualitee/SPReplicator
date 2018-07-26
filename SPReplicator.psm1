@@ -3,7 +3,6 @@ Get-ChildItem "$PSScriptRoot\bin\" -Recurse | Unblock-File
 
 if ($PSVersionTable.PSEdition -eq "Core") {
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Portable.dll"
-    #Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Windows.dll"
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Portable.dll"
 }
 else {
@@ -31,8 +30,8 @@ if (-not (Get-PSFConfigValue -FullName SPReplicator.Location)) {
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMmrztDRDT2R0DOau5gLIP+hj
-# +waggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUCoQpzBlO++Iau1W2Ixpv8WDg
+# 6r2ggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -163,22 +162,22 @@ if (-not (Get-PSFConfigValue -FullName SPReplicator.Location)) {
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQUpg7Sf5h7vFJLD5a0yhNMZU6KMZowDQYJKoZIhvcNAQEBBQAE
-# ggEAFFaVPHP8z31JmwAtztldGxtlPxgQFLa5kM9+smOnk7ovRM6KsBQ6qfemBZ/G
-# lE/wdsKoFAfdUaLihXVfqS4Re4jkPID78ubBg9dhT9dWqzrFhcmSbARD4PMgSEDB
-# T2VT6ZtUVqpflUqvHIKPekjY3vu6w6gJVSSwj+t2A6WG8vHnmdqUb7Fy1XGiIy9W
-# ecVk4r0tzywtAFy5+An1Wk5eqmjj4oZ4ekNvTsYwkhhAxOgypQZaDqW1IIZvvzNa
-# urICIQWrwm8m+QKqTTX7xa+/ca8TzU4prdjV5B8/DpIu1UY/9/AfXY8ps20W8Csq
-# qmTg96v2hrOCPlCBEmwmVYgttqGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQU/uyTv/FWyINPWbxFHmZg3Fp/qNswDQYJKoZIhvcNAQEBBQAE
+# ggEAejaC2cQGP8/6mhmAdy6RjmJHizBDz+WizHczjp+SDQm7tPB6VIS5IPNCdqqq
+# Pzx2v8pWDJ8WmOeOH3jkUHSqIV4EbY0Qvr29ShlmwgLbfggTYTvpPKTK8+88wcJ8
+# eanczDYXGoGyjV5NJvHcAusdtMwt1O0VisnAtEQ/YvGDg0ERTwarWTmuNgmMWNdc
+# t4WBC7qXHkUvJgcBLWwod63yufUvhGNPSCh8CN8izCOvTyxkPJNSWwwnBEBWFdBw
+# oI3lsn6F79fnlcDgvKylDeTqaxsdURiGBV6N4pAWfQxBlnsNVyGThsC8c/0Fui6y
+# 7+blAx4PikT2u20hQyKKGFl8saGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzI2MTA1OTU2WjAj
-# BgkqhkiG9w0BCQQxFgQUG5RG+vIg0yUnzFgNPVaHf+7Egi0wDQYJKoZIhvcNAQEB
-# BQAEggEAVO43ramGgR1ZOyV0Gy0QrPDi4j4B5wcNzkVfcEqfRnYjZ93mu/O87pIW
-# F4Fu6emSJ9Rvc1V5jndOxKcu7PEWJRQx2Ttbgck6NrTvUosl2PAiwQXX0cUX8dzE
-# 3VYkB7snKvUnwSUP3JaEXbuTg61YES+gB2ME6+lXuamAqYa41PdjF8H/GHl9u2ro
-# kQ8y+dDaL/HXkWeEMJg3KLjdGfQ5KozFm36b1cxN5L3o5OtYEookTcX/9sT5oFcc
-# FxhaojEiMDckJf8EpiU/W7HE2Ks348+d6ys6K4FCdgb6Rk8ANa69/LKIkn3/wotP
-# //IWH5rbfHv1KtaQarscKtCsdVACbg==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzI2MTEzMTEyWjAj
+# BgkqhkiG9w0BCQQxFgQUCz4+8h72+moJ1r3w3GLXgwSjpfYwDQYJKoZIhvcNAQEB
+# BQAEggEAPMF7JM22dMy2mcErCgVVa1OAXgZ5ephZN154B8dDMGDxAlf+F4cXV1j8
+# SjrkWCG1+TwC8r9n2yaCmsKCPr8oGpBCt2NT7YTHgGogw7Zfzn5n37T6giEsuiq0
+# 7ZcafWA/By53yQXDKPa53w3lX2McJE2xYf7msjKSvyxNtXwAac3CnvEghDzP5FPX
+# xcN4RGGKsn4CrczjryV8QiYcs70VoMwDNvryckuo2H6y4LM3HdGfhKWOJz3xghaK
+# yyd1DGKLyu7tggpCZCNr38wFlQ8S7q7lAJEzda+1RjIkfDs3ThEZS73PgemhrWoG
+# IJrxb/GtyVwa3CBOn6cxtCWNqka4Fw==
 # SIG # End signature block
