@@ -291,6 +291,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         It  "Removes data from $script:mylist" {
             $results = Clear-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Confirm:$false
             Get-SPRListData -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Should -Be $null
+            Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -ExpandProperty ItemCount | Should -Be 0
         }
     }
     

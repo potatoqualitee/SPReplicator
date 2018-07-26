@@ -283,6 +283,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         It "Removes data from $script:mylist" {
             $results = Clear-SPRListData -Site $script:site -List $script:mylist -Confirm:$false
             Get-SPRListData -Site $script:site -List $script:mylist | Should -Be $null
+            Get-SPRList -Site $script:site -List $script:mylist | Select-Object -ExpandProperty ItemCount | Should -Be 0
         }
     }
     
