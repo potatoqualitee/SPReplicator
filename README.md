@@ -319,6 +319,7 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 * Explore ListItemCollectionPosition
 * Set column (based off of update, i imagine? then use set in the command?)
 * Move the batches
+* add list view test
 
 ## MAYBE WONT DO
 
