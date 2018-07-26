@@ -10,6 +10,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
+        $originallists = Get-SPRList -Site $script:site
     }
     AfterAll {
         $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
@@ -70,13 +71,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "New-SPRList" {
         It "Creates a new list named $script:mylist" {
-            $results = New-SPRList -List $script:mylist -Description "My List Description"
+            $results = New-SPRList -Title $script:mylist -Description "My List Description"
             $results.Title | Should -Be $script:mylist
             $results.GetType().Name | Should -Be 'List'
             $results.Description | Should -Be "My List Description"
         }
         It "Does not create a duplicate list named $script:mylist" {
-            $results = New-SPRList -List $script:mylist -WarningAction SilentlyContinue 3>$null
+            $results = New-SPRList -Title $script:mylist -WarningAction SilentlyContinue 3>$null
             $results | Should -Be $null
         }
     }
@@ -315,6 +316,31 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results = Get-SPRConfig
             ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
             $null = Set-SPRConfig -Name location -Value OnPrem
+        }
+    }
+}
+
+Describe "$CommandName Final Tests" -Tag "IntegrationTests" {
+    Context "Checking to ensure all original data has remained" {
+        $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
+        $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
+        $results = Set-SPRConfig -Name location -Value $oldconfig.Value
+        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
+        $nowlists = Get-SPRList -Site $script:site
+        $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        
+        It "has the same number of lists as before" {
+            $originallists.Count | Should -Be $nowlists.Count
+        }
+        It "has the same number of items as before" {
+            $originalsum | Should -Be $nowlistssum
+        }
+        
+        foreach ($list in $originallists) {
+            It "$($list.Title) currently exists" {
+                $nowlists.Title | Should -contain $list.Title
+            }
         }
     }
 }
