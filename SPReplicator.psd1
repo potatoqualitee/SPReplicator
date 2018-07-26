@@ -11,7 +11,7 @@
     RootModule        = 'SPReplicator.psm1'
     
     # Version number of this module.
-    ModuleVersion     = '0.0.5'
+    ModuleVersion     = '0.0.7'
     
     # ID used to uniquely identify this module
     GUID              = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
@@ -44,7 +44,7 @@
     # ProcessorArchitecture = ''
     
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.23.77' })
+    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.23.82' })
     
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
@@ -112,7 +112,7 @@
         PSData = @{
             
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @('SharePoint','data','replication','SQLServer')
+            Tags = @('SharePoint','data','replication','SQLServer','CSV')
             
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/potatoqualitee/SPReplicator/blob/master/LICENSE'
@@ -140,8 +140,8 @@
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNpSmpgNYrf3K2F3WEZNLg/hz
-# mIqggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUI22Q5KX1i9mADQ0nBDokqjB+
+# SHKggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -272,22 +272,22 @@
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQU5GgyEnUbiWJ11WVSOydCnf0jBK0wDQYJKoZIhvcNAQEBBQAE
-# ggEAWAytxmiqRacUI9H5n53zQc1C53+v7maTCAsBfOHES90Q5pE0CAf6nDwb+GAX
-# FKMVUAoBiZ8lDuWL6vZ2wuXctfhLK5I1Qrhczjh82edLSHXQoAOUpXcnq/E5kLBf
-# sMD19ZAT7yXRdTwDeNLWhtA3GjxFmUg8+DRhMlzm2OabSirQHoOncgld57oKPfoc
-# kLc4lIgCw+EIuciu/h7qopYP2mGyO4zXbvaRq4k4BqVfQPFsT1rjotp0Mqc+/CP5
-# +GN5U863e22dTc2qjU9gPtBzP2SrlS0MFEMJ+fd7QmiHqUuUNUCDRltIge0GDMOb
-# FJKEAKDcBRGkOrL2jMdvi/So5KGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQU11W0ZH4ScgUGIEiH7h3aUDw4/CgwDQYJKoZIhvcNAQEBBQAE
+# ggEAOqYMD9+gmLUWNjjC5e7+nKNUX6nkBxqyAp/NnhK1yeB/RQgU2X/F80RPXZs3
+# 7mw0M8liwr2XMNTeEI9AjkQCsgtfIqCTNz9r894xRbxCkBRGGQYIGcqhTRXsgqTW
+# 3M/dmxg1YSyFuzfgQkiX4kYrhdyHzeseXuiwaLjsa+2NlRfSO+SrHdIasFC9mllh
+# J0bPmA4nrZT6N/j4r96Dgmy1tJ5x42RT/cgpdWc34OuPCLWh65lhPq0tISQla4HL
+# ibs227rzqECdvix0xLjtMX0V8WG6n36oOAqXRsDMak8mJvoDafzNplVY2p92P6x8
+# aDSg3em/s5grNRb2LR+GUm/DPqGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzIwMTExNjI4WjAj
-# BgkqhkiG9w0BCQQxFgQU0LgembQUt4ZuVYehHrz8QDB7z50wDQYJKoZIhvcNAQEB
-# BQAEggEAcTdGmnJvRo1Jgje7OidQMyzOzxwpDeVnI83E9gMOHdb+MLr9WVO92qTJ
-# jffG+3UG+OFzRHi5lhZttN/ooPYTJ28RLUm57KIiF5DhE78QHaN8xBK4uLAc0Scu
-# EUcuYqlLbRad4tzqWD38FDsDJ0U8S1itku8ndpAfb0WRz5NAo+n5KNCWSYMjzgG9
-# 2BBat/0PTVYIDCoDNtaK5H66ZeP2m3Yt/9Nt2ZFdP3oFiTi/9MJveCrS5iOSJfo4
-# ZpUERw0tBIsg0OSUJOZXglSrBVfM4IiIgW7j/wv6NpayqKmYjSyg+PEqhTGEEvfu
-# UQ7e6kmRqvAUuJH9NFpurTL4Jcrm/g==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzI2MTA1OTU2WjAj
+# BgkqhkiG9w0BCQQxFgQUiA1Kg0PDNuFLAomUed1LoI3qnHgwDQYJKoZIhvcNAQEB
+# BQAEggEAknaIaVN7HsFtvSRdJ1QsV8uLD3MVJ7JgDHxajzf/yCqvLvQBUNqO/Uz9
+# wBcLkVNWyl0A6EfGKIR/kOWuwDZ/sOaIzqwO8XlBoRVbTAu3eOp+KZeF+w8rzjII
+# YLNkVvLLXsExbqbh9IlFd1DF7Tg2HKNm2g7dqONgkvDkHYof+dsw5jk9l8Ett5CL
+# 9+UwItxFnUB8fuCYRb+wdQbtCMvqITIvfrZ2hAMjD9a3Bn3D9w96e82zAwh5sKaP
+# pm+Mh+5JCh6UtYa6GFzKjTUjOcZmoPlw2NLjYjYqNN8wpgLjR+6kaOlBzbvS2NmC
+# 3P7QEzOmga5wS1pdWTGYFgpK6PMoZg==
 # SIG # End signature block
