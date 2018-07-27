@@ -13,6 +13,8 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = Set-SPRConfig -Name location -Value Online
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
+        $originallists = Get-SPRList
+        $originalwebs = Get-SPRWeb
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
@@ -77,13 +79,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "New-SPRList" {
         It "Creates a new list named $script:mylist" {
-            $results = New-SPRList -List $script:mylist -Description "My List Description"
+            $results = New-SPRList -Title $script:mylist -Description "My List Description"
             $results.Title | Should -Be $script:mylist
             $results.GetType().Name | Should -Be 'List'
             $results.Description | Should -Be "My List Description"
         }
         It "Does not create a duplicate list named $script:mylist" {
-            $results = New-SPRList -List $script:mylist -WarningAction SilentlyContinue 3>$null
+            $results = New-SPRList -Title $script:mylist -WarningAction SilentlyContinue 3>$null
             $results | Should -Be $null
         }
     }
@@ -318,11 +320,46 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Set-SPRConfig" {
         It "Sets some configs" {
             $script:currentconfig = Get-SPRConfig
-            $results = Set-SPRConfig -Name location -Value Test
-            $results.Value | Should -Be 'Test'
+            $results = Set-SPRConfig -Name location -Value OnPrem
+            $results.Value | Should -Be 'OnPrem'
             $results = Get-SPRConfig
-            ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
+            ($results | Where-Object Name -eq location).Value | Should -Be 'OnPrem'
         }
     }
     Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
+}
+
+Describe "$CommandName Final Tests" -Tag "Finaltests" {
+    Context "Checking to ensure all original data has remained" {
+        $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -Location Online
+        $nowlists = Get-SPRList
+        $nowwebs = Get-SPRWeb
+        
+        $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        
+        It "Site has the same number of webs as before" {
+            $originalwebs.Count | Should -Be $nowwebs.Count
+        }
+        
+        It "Site has the same number of lists as before" {
+            $originallists.Count | Should -Be $nowlists.Count
+        }
+        It "Lists still have $originalsum items" {
+            $originalsum | Should -Be $nowlistssum
+            $originalsum | Should -BeGreaterThan 0
+        }
+        
+        foreach ($web in $originalwebs) {
+            It "$($web.Title) currently exists" {
+                $nowwebs.Title | Should -contain $web.Title
+            }
+        }
+        
+        foreach ($list in $originallists) {
+            It "$($list.Title) currently exists" {
+                $nowlists.Title | Should -contain $list.Title
+            }
+        }
+    }
 }

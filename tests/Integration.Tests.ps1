@@ -8,9 +8,11 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = Set-SPRConfig -Name location -Value OnPrem
         $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
+        $originallists = Get-SPRList
+        $originalwebs = Get-SPRWeb
+        $originalusers = Get-SPRUser
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
-        $originallists = Get-SPRList -Site $script:site
     }
     AfterAll {
         $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
@@ -292,7 +294,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         It "Removes $script:mylist" {
             $results = Get-SPRList -Site $script:site -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false
             Get-SPRList -Site $script:site -List $script:mylist | Should -Be $null
-            
         }
     }
     Context "Get-SPRLog" {
@@ -311,35 +312,55 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Set-SPRConfig" {
         It "Sets some configs" {
             $script:currentconfig = Get-SPRConfig
-            $results = Set-SPRConfig -Name location -Value Test
-            $results.Value | Should -Be 'Test'
+            $results = Set-SPRConfig -Name location -Value OnPrem
+            $results.Value | Should -Be 'OnPrem'
             $results = Get-SPRConfig
-            ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
-            $null = Set-SPRConfig -Name location -Value OnPrem
+            ($results | Where-Object Name -eq location).Value | Should -Be 'OnPrem'
         }
     }
+    Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
 }
 
-Describe "$CommandName Final Tests" -Tag "IntegrationTests" {
+Describe "$CommandName Final Tests" -Tag "Finaltests" {
     Context "Checking to ensure all original data has remained" {
-        $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
-        $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $results = Set-SPRConfig -Name location -Value $oldconfig.Value
-        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
-        $nowlists = Get-SPRList -Site $script:site
+        $nowlists = Get-SPRList
+        $nowwebs = Get-SPRWeb
+        $nowusers = Get-SPRUser
         $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         
-        It "has the same number of lists as before" {
+        It "Site has the same number of webs as before" {
+            $originalwebs.Count | Should -Be $nowwebs.Count
+        }
+        
+        It "Site has the same number of lists as before" {
             $originallists.Count | Should -Be $nowlists.Count
         }
-        It "has the same number of items as before" {
+        
+        It "Site has the same number of users as before" {
+            $originalusers.Count | Should -Be $nowusers.Count
+        }
+        
+        It "Lists still have $originalsum items" {
             $originalsum | Should -Be $nowlistssum
+            $originalsum | Should -BeGreaterThan 0
+        }
+        
+        foreach ($web in $originalwebs) {
+            It "$($web.Title) currently exists" {
+                $nowwebs.Title | Should -contain $web.Title
+            }
         }
         
         foreach ($list in $originallists) {
             It "$($list.Title) currently exists" {
                 $nowlists.Title | Should -contain $list.Title
+            }
+        }
+        
+        foreach ($user in $originalusers) {
+            It "$($user.Title) currently exists" {
+                $nowusers.Title | Should -contain $user.Title
             }
         }
     }
