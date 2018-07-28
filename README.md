@@ -320,6 +320,7 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 * <del>Add list view test</del>
 * Add logging to export to SP or SQL
 * Explore extracting files from attachments
+* Compare with other importers
 
 ## MAYBE WONT DO
 
