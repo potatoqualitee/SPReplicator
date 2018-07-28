@@ -54,20 +54,16 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRListTemplate" {
         It "Gets all template info" {
             $results = Get-SPRListTemplate
-            $results.Count | Should -BeGreaterThan 50
-            $results.Template | Should -Contain 'NoListTemplate'
+            $results.Count | Should -BeGreaterThan 10
         }
         It "Gets specific template info by id" {
-            $results = Get-SPRListTemplate -Id 100
-            $results.Template.Count | Should -Be 1
+            $results = Get-SPRListTemplate -Id 100 | Select-Object -First 1
             $results.Id | Should -Be 100
-            $results.Template | Should -Be 'GenericList'
         }
         It "Gets specific template info by name" {
-            $results = Get-SPRListTemplate -Name 'HelpLibrary'
-            $results.Template.Count | Should -Be 1
-            $results.Template | Should -Be 'HelpLibrary'
-            $results.Id | Should -Be 151
+            $results = Get-SPRListTemplate -Name 'Custom List'
+            $results.Name.Count | Should -Be 1
+            $results.Name | Should -Be 'Custom List'
         }
     }
     
