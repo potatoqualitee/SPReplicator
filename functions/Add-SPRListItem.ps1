@@ -76,7 +76,7 @@
     )
     begin {
         if ($AsUser) {
-            Write-PSFMessage -Level Output -Message "Validating user. This may take a couple seconds."
+            Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
             $userobject = Get-SPRUser -UserName $AsUser
         }
         function Add-Row {

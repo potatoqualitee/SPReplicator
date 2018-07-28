@@ -29,6 +29,9 @@
     
 .PARAMETER Quiet
     Do not output new item. Makes imports faster; useful for automated imports.
+
+.PARAMETER UserObject
+    Pass a pre-resolved userobject.
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
