@@ -22,7 +22,7 @@
     )
     process {
         if ($global:spsite) {
-            $global:spsite | Select-Object *
+            $global:spsite | Select-Object -Property *
         }
         else {
             Stop-PSFFunction -Message "Not connected"

@@ -70,7 +70,7 @@
             }
             $global:spsite.Dispose()
             Remove-Variable -Name spsite -Scope Global
-            $output
+            Select-Object -InputObject $output
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

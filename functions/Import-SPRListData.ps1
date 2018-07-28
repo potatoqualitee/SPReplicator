@@ -54,7 +54,7 @@
     param (
         [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$List,
-        [string]$Path,
+        [string[]]$Path,
         [switch]$AutoCreateList,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
@@ -81,7 +81,13 @@
         }
         foreach ($file in $InputObject) {
             try {
-                Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList
+                if ($file.length/1MB -gt 100) {
+                    Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList
+                }
+                else {
+                    $items = Import-Clixml -Path $file
+                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items
+                }
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

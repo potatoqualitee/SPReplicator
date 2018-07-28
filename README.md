@@ -312,14 +312,14 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 
 ## TODO
 
-* Add logging to export to SP or SQL
-* Explore extracting files from attachments
 * Create -Since (via caml)
 * AsUser (force modify create/modified column)
-* Explore ListItemCollectionPosition
 * Set column (based off of update, i imagine? then use set in the command?)
-* Move the batches
-* add list view test
+* Explore ListItemCollectionPosition
+* <del>Move the batches</del>
+* <del>Add list view test</del>
+* Add logging to export to SP or SQL
+* Explore extracting files from attachments
 
 ## MAYBE WONT DO
 
