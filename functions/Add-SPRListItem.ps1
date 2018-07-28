@@ -92,11 +92,11 @@
                     
                     # Skip reserved words, so far is only ID
                     if ($fieldname -notin 'ID') {
-                        Write-PSFMessage -Level Verbose -Message "Adding $fieldname to row"
+                        Write-PSFMessage -Level Debug -Message "Adding $fieldname to row"
                         $newItem.set_item($fieldname, $value)
                     }
                     else {
-                        Write-PSFMessage -Level Verbose -Message "Not adding $fieldname to row (reserved name)"
+                        Write-PSFMessage -Level Debug -Message "Not adding $fieldname to row (reserved name)"
                     }
                 }
             }
@@ -157,25 +157,25 @@
                     $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
                     $newItem = $thislist.AddItem($itemCreateInfo)
                     $newItem = Add-Row -Row $row -ColumnInfo $columns
-                    $newItem.update()
+                    $newItem.Update()
                     $thislist.Context.Load($newItem)
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
+                Write-PSFMessage -Level Verbose -Message "Queued row for $List"
             }
-            
-            Write-PSFMessage -Level Verbose -Message "Queued row for $List"
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding Batch")) {
-                try {
-                    # Do batch
-                    $thislist.Context.ExecuteQuery()
-                    Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                    Get-SPRListData -List $List -Id $newItem.Id
-                }
-                catch {
-                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
-                }
+        }
+        
+        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding Batch")) {
+            try {
+                # Do batch
+                $thislist.Context.ExecuteQuery()
+                Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
+                Get-SPRListData -List $List -Id $newItem.Id
+            }
+            catch {
+                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
             }
         }
     }
