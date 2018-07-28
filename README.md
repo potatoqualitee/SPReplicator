@@ -26,7 +26,9 @@ This module can be used for replicating data in a number of ways.
 * Between air gapped (offline) servers that do not have direct access to each other
 * Directly from SharePoint site collection to SharePoint site collection
 * From SQL Server to SharePoint
+* From SharePoint to SQL Server
 * From CSV to SharePoint
+* From SharePoint to CSV
 
 ## Usage examples
 
@@ -318,6 +320,7 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 * Explore ListItemCollectionPosition
 * <del>Move the batches</del>
 * <del>Add list view test</del>
+* Demo video
 * Add logging to export to SP or SQL. Actually, just do SP. Keep things that'd make PBI look cool.
 * Explore extracting files from attachments
 * Explore hooks, such as the check-in or check-out of a document.
