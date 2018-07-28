@@ -318,9 +318,11 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 * Explore ListItemCollectionPosition
 * <del>Move the batches</del>
 * <del>Add list view test</del>
-* Add logging to export to SP or SQL
+* Add logging to export to SP or SQL. Actually, just do SP. Keep things that'd make PBI look cool.
 * Explore extracting files from attachments
-* Compare with other importers
+* Explore hooks, such as the check-in or check-out of a document.
+* File copy using BITS and zips and maybe Microsoft Remote Differential Compression?
+
 
 ## MAYBE WONT DO
 
