@@ -313,7 +313,7 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 ## TODO
 
 * Create -Since (via caml)
-* AsUser (force modify create/modified column)
+* <del>-AsUser (force modify create/modified column)</del>
 * Set column (based off of update, i imagine? then use set in the command?)
 * Explore ListItemCollectionPosition
 * <del>Move the batches</del>

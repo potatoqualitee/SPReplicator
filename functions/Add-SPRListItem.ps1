@@ -25,6 +25,9 @@
 
 .PARAMETER Quiet
     Do not output new item. Makes imports faster; useful for automated imports.
+ 
+.PARAMETER AsUser
+    Add the item as a specific user.
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -68,9 +71,14 @@
         [string]$Site,
         [PSCredential]$Credential,
         [switch]$Quiet,
+        [string]$AsUser,
         [switch]$EnableException
     )
     begin {
+        if ($AsUser) {
+            Write-PSFMessage -Level Output -Message "Validating user. This may take a couple seconds."
+            $userobject = Get-SPRUser -UserName $AsUser
+        }
         function Add-Row {
             [cmdletbinding()]
             param (
@@ -108,6 +116,7 @@
         }
     }
     process {
+        if (Test-PSFFunctionInterrupt) { return }
         $thislist = Get-SPRList -Site $Site -Web $Web -Credential $Credential -List $List
         
         if (-not $thislist) {
@@ -117,7 +126,7 @@
             }
             else {
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List $List")) {
-                    $thislist = New-SPRList -List $List
+                    $thislist = New-SPRList -Title $List
                     
                     $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
                     $columns = ($thislist | Get-SPRColumnDetail).Title
@@ -171,7 +180,11 @@
                 Write-PSFMessage -Level Verbose -Message "Adding new item to $List"
                 $global:spsite.ExecuteQuery()
                 
-                if (-not $Quiet) {
+                if ($AsUser) {
+                    Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
+                    Get-SPRListData -List $List -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
+                }
+                elseif (-not $Quiet) {
                     Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
                     Get-SPRListData -List $List -Id $newItem.Id
                 }

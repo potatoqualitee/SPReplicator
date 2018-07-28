@@ -168,16 +168,16 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Contain 'Sup3'
             $results.TestColumn | Should -Contain 'Sample Sup3'
         }
-        It "Autocreates new list" {
+        It "Autocreates new list and adds new items as user System Account" {
             $newList = 'Sample test create new list'
             $object = @()
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
             $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
-            $results = $object | Add-SPRListItem -Site $script:site -List $newList -AutoCreateList
+            $results = $object | Add-SPRListItem -Site $script:site -List $newList -AutoCreateList -AsUser 'System Account'
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
-            
+            $results.Author | Should -Be 'System Account', 'System Account', 'System Account'
             $results = Get-SPRList -Site $script:site -List $newList
             $results | Should -Not -Be $null
             Remove-SPRList -Site $script:site -List $newList -Confirm:$false

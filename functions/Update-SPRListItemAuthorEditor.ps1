@@ -69,11 +69,11 @@
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
+        [Microsoft.SharePoint.Client.User]$UserObject,
         [switch]$Quiet,
         [switch]$EnableException
     )
     begin {
-        $spuser = $null
         $script:updates = @()
         function Update-Row {
             [cmdletbinding()]
@@ -139,9 +139,9 @@
             
             $thislist = $item.ListObject
             
-            if (-not $spuser) {
+            if (-not $UserObject) {
                 try {
-                    $spuser = Get-SPRUser -Username $Username
+                    $UserObject = Get-SPRUser -Username $Username
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
@@ -152,7 +152,7 @@
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record on $($thislist.Title), changing $Column to $Username")) {
                 try {
                     Write-PSFMessage -Level Debug -Message "Updating $($item.Id) from $($thislist.Title)"
-                    Update-Row -Row $item -ColumnNames $Column -UserObject $spuser
+                    Update-Row -Row $item -ColumnNames $Column -UserObject $UserObject
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
