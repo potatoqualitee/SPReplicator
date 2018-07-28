@@ -69,7 +69,7 @@
         [Alias("List")]
         [string]$Title,
         [string]$Description,
-        [string]$Template = "GenericList",
+        [string]$Template = "Custom List",
         [switch]$OnQuickLaunch,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,

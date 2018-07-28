@@ -1,10 +1,10 @@
 ﻿Function Get-SPRListTemplate {
 <#
 .SYNOPSIS
-    Get list of SharePoint templates.
+    Get list of native and custom SharePoint templates.
 
 .DESCRIPTION
-    Get list of SharePoint templates.
+    Get list of native and custom SharePoint templates.
 
 .PARAMETER Id
     Return only templates with specific IDs
@@ -12,6 +12,9 @@
 .PARAMETER Name
     Return only templates with specific names
 
+.PARAMETER InputObject
+    Piped input from a web
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -36,40 +39,48 @@
     param (
         [int[]]$Id,
         [string[]]$Name,
+        [Microsoft.SharePoint.Client.Web[]]$InputObject,
         [switch]$EnableException
     )
     process {
-        # string description = Enumerations.GetEnumDescription((MyEnum)value);
         try {
-            $class = [Microsoft.SharePoint.Client.ListTemplateType]
+            if (-not $InputObject) {
+                if ($Site) {
+                    $null = Connect-SPRSite -Site $Site -Credential $Credential
+                }
+                
+                if ($Web) {
+                    $InputObject = Get-SPRWeb -Web $Web
+                }
+                elseif ($global:spweb) {
+                    $InputObject = $global:spweb
+                }
+                
+                if (-not $InputObject) {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site, Web or run Connect-SPRSite"
+                    return
+                }
+            }
+            
+            $global:spsite.Load($global:spweb.ListTemplates)
+            $global:spsite.Load($global:spsite.Site)
+            $customtemplates = $global:spsite.Site.GetCustomListTemplates($global:spweb)
+            $global:spsite.Load($customtemplates)
+            $global:spsite.ExecuteQuery()
+            
+            # long story as to why it's done this way
+            $templates = $customtemplates, $global:spweb.ListTemplates | Select-DefaultView -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
+            
             if ($Id) {
-                foreach ($template in [System.Enum]::GetNames($class)) {
-                    $number = [int][System.Enum]::Parse($class, $template)
-                    if ($number -in $Id) {
-                        [pscustomobject]@{
-                            ID       = $number
-                            Template = $template
-                        }
-                    }
-                }
+                $templates | Where-Object Id -in $Id
             }
-            elseif ($Name) {
-                foreach ($template in [System.Enum]::GetNames($class)) {
-                    if ($template -in $name) {
-                        [pscustomobject]@{
-                            ID       = [int][System.Enum]::Parse($class, $template)
-                            Template = $template
-                        }
-                    }
-                }
+            
+            if ($Name) {
+                $templates | Where-Object Name -in $Name
             }
-            else {
-                foreach ($template in [System.Enum]::GetNames($class)) {
-                    [pscustomobject]@{
-                        ID = [int][System.Enum]::Parse($class, $template)
-                        Template = $template
-                    }
-                }
+            
+            if (-not $Id -and -not $Name) {
+                $templates
             }
         }
         catch {

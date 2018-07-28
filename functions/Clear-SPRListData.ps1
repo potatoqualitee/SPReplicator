@@ -19,7 +19,7 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER InputObject
-    Allows piping from Get-SPRList or Get-SPRListData
+    Allows piping from Get-SPRList
 
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -43,11 +43,6 @@
      Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) | Clear-SPRListData -Confirm:$false
-
-    Deletes all items from My List by logging into the webapp as ad\user.
-
-.EXAMPLE
     Clear-SPRListData -Site intranet.ad.local -List 'My List'
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
@@ -60,40 +55,63 @@
         [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
-        [object]$InputObject,
+        [Microsoft.SharePoint.Client.List[]]$InputObject,
         [switch]$EnableException
     )
     process {
+        if (-not $InputObject -and -not $List) {
+            Stop-PSFFunction -EnableException:$EnableException -Message "Pipe in a list or specify -List"
+            return
+        }
+        
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -List $List
+                $InputObject = Get-SPRList -List $List
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
         }
-
+        
         if (-not $InputObject) {
-            Stop-PSFFunction -EnableException:$EnableException -Message "No records to delete."
+            Stop-PSFFunction -EnableException:$EnableException -Message "Nothing to delete"
             return
         }
-
-        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing all records from $List")) {
-            try {
-                $InputObject.ListItem.DeleteObject()
-                $global:spsite.ExecuteQuery()
-                [pscustomobject]@{
-                    Site = $global:spsite
-                    List = $List
-                    Status = "All records deleted"
+        
+        foreach ($thislist in $InputObject) {
+            $itemcount = $thislist.ItemCount
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing $itemcount records from $($thislist.Title)")) {
+                try {
+                    $done = $false
+                    while (-not $done) {
+                        $query = [Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery(100, "ID")
+                        $listItems = $thislist.GetItems($query)
+                        $thislist.Context.Load($listItems)
+                        $thislist.Context.ExecuteQuery()
+                        if ($listItems.Count -gt 0) {
+                            for ($i = $listItems.Count - 1; $i -ge 0; $i--) {
+                                $listItems[$i].DeleteObject()
+                            }
+                        }
+                        else {
+                            $done = $true
+                        }
+                    }
+                    $thislist.Context.ExecuteQuery()
+                    [pscustomobject]@{
+                        Site = $thislist.Context.Url
+                        List = $thislist.Title
+                        ItemCount = $itemcount
+                        Status = "All records deleted"
+                    }
                 }
-            }
-            catch {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                }
             }
         }
     }

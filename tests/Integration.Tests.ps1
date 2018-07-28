@@ -8,6 +8,9 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = Set-SPRConfig -Name location -Value OnPrem
         $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
+        $originallists = Get-SPRList
+        $originalwebs = Get-SPRWeb
+        $originalusers = Get-SPRUser
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
     }
@@ -51,32 +54,28 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRListTemplate" {
         It "Gets all template info" {
             $results = Get-SPRListTemplate
-            $results.Count | Should -BeGreaterThan 50
-            $results.Template | Should -Contain 'NoListTemplate'
+            $results.Count | Should -BeGreaterThan 10
         }
         It "Gets specific template info by id" {
-            $results = Get-SPRListTemplate -Id 100
-            $results.Template.Count | Should -Be 1
+            $results = Get-SPRListTemplate -Id 100 | Select-Object -First 1
             $results.Id | Should -Be 100
-            $results.Template | Should -Be 'GenericList'
         }
         It "Gets specific template info by name" {
-            $results = Get-SPRListTemplate -Name 'HelpLibrary'
-            $results.Template.Count | Should -Be 1
-            $results.Template | Should -Be 'HelpLibrary'
-            $results.Id | Should -Be 151
+            $results = Get-SPRListTemplate -Name 'Custom List'
+            $results.Name.Count | Should -Be 1
+            $results.Name | Should -Be 'Custom List'
         }
     }
     
     Context "New-SPRList" {
         It "Creates a new list named $script:mylist" {
-            $results = New-SPRList -List $script:mylist -Description "My List Description"
+            $results = New-SPRList -Title $script:mylist -Description "My List Description"
             $results.Title | Should -Be $script:mylist
             $results.GetType().Name | Should -Be 'List'
             $results.Description | Should -Be "My List Description"
         }
         It "Does not create a duplicate list named $script:mylist" {
-            $results = New-SPRList -List $script:mylist -WarningAction SilentlyContinue 3>$null
+            $results = New-SPRList -Title $script:mylist -WarningAction SilentlyContinue 3>$null
             $results | Should -Be $null
         }
     }
@@ -156,7 +155,19 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'Hello SQL'
             $results.TestColumn | Should -Be 'Sample SQL Data'
         }
-        
+        It "Quietly adds new objects to list" {
+            $object = @()
+            $object += [pscustomobject]@{ Title = 'Sup'; TestColumn = 'Sample Sup'; }
+            $object += [pscustomobject]@{ Title = 'Sup2'; TestColumn = 'Sample Sup2'; }
+            $object += [pscustomobject]@{ Title = 'Sup3'; TestColumn = 'Sample Sup3'; }
+            $results = Add-SPRListItem -Site $script:site -List $script:mylist -InputObject $object -Quiet
+            $results | Should -Be $null
+            $results = Get-SPRListData -Site $script:site -List $script:mylist
+            $results.Title | Should -Contain 'Sup'
+            $results.Title | Should -Contain 'Sup2'
+            $results.Title | Should -Contain 'Sup3'
+            $results.TestColumn | Should -Contain 'Sample Sup3'
+        }
         It "Autocreates new list" {
             $newList = 'Sample test create new list'
             $object = @()
@@ -291,7 +302,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         It "Removes $script:mylist" {
             $results = Get-SPRList -Site $script:site -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false
             Get-SPRList -Site $script:site -List $script:mylist | Should -Be $null
-            
         }
     }
     Context "Get-SPRLog" {
@@ -310,11 +320,56 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Set-SPRConfig" {
         It "Sets some configs" {
             $script:currentconfig = Get-SPRConfig
-            $results = Set-SPRConfig -Name location -Value Test
-            $results.Value | Should -Be 'Test'
+            $results = Set-SPRConfig -Name location -Value OnPrem
+            $results.Value | Should -Be 'OnPrem'
             $results = Get-SPRConfig
-            ($results | Where-Object Name -eq location).Value | Should -Be 'Test'
-            $null = Set-SPRConfig -Name location -Value OnPrem
+            ($results | Where-Object Name -eq location).Value | Should -Be 'OnPrem'
+        }
+    }
+    Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
+}
+
+Describe "$CommandName Final Tests" -Tag "Finaltests" {
+    Context "Checking to ensure all original data has remained" {
+        $nowlists = Get-SPRList
+        $nowwebs = Get-SPRWeb
+        $nowusers = Get-SPRUser
+        $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        
+        It "Site has the same number of webs as before" {
+            $originalwebs.Count | Should -Be $nowwebs.Count
+        }
+        
+        It "Site has the same number of lists as before" {
+            $originallists.Count | Should -Be $nowlists.Count
+        }
+        
+        It "Site has the same number of users as before" {
+            $originalusers.Count | Should -Be $nowusers.Count
+        }
+        
+        It "Lists still have $originalsum items" {
+            $originalsum | Should -Be $nowlistssum
+            $originalsum | Should -BeGreaterThan 0
+        }
+        
+        foreach ($web in $originalwebs) {
+            It "$($web.Title) currently exists" {
+                $nowwebs.Title | Should -contain $web.Title
+            }
+        }
+        
+        foreach ($list in $originallists) {
+            It "$($list.Title) currently exists" {
+                $nowlists.Title | Should -contain $list.Title
+            }
+        }
+        
+        foreach ($user in $originalusers) {
+            It "$($user.Title) currently exists" {
+                $nowusers.Title | Should -contain $user.Title
+            }
         }
     }
 }
