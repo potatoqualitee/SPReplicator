@@ -152,7 +152,7 @@
                     $ColumnName = $xmldata.Field.Name
                 }
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Added $ColumnName as $Type to $List")) {
-                    Write-PSFMessage -Level Verbose -Message $xml
+                    Write-PSFMessage -Level Debug -Message $xml
                     Write-PSFMessage -Level Verbose -Message "Added $ColumnName as $Type"
                     $field = $thislist.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
                     $thislist.Update()
