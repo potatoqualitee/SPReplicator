@@ -167,7 +167,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $object += [pscustomobject]@{ Title = 'Sup'; TestColumn = 'Sample Sup'; }
             $object += [pscustomobject]@{ Title = 'Sup2'; TestColumn = 'Sample Sup2'; }
             $object += [pscustomobject]@{ Title = 'Sup3'; TestColumn = 'Sample Sup3'; }
-            $results = Add-SPRListItem -Site $script:site -List $script:mylist -InputObject $object -Quiet
+            $results = Add-SPRListItem -List $script:mylist -InputObject $object -Quiet
             $results | Should -Be $null
             $results = Get-SPRListData -Site $script:site -List $script:mylist
             $results.Title | Should -Contain 'Sup'
