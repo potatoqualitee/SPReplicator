@@ -6,8 +6,6 @@
 .DESCRIPTION
     Makes it easier to alias columns to select and rename for export.
     
-    This command also enables the ability to change the default view without destroying objects.
-    
     A lot of this is from boe, thanks boe!
     https://learn-powershell.net/2013/08/03/quick-hits-set-the-default-property-display-in-powershell-on-custom-objects/
 

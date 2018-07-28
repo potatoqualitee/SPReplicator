@@ -1,10 +1,10 @@
 function Select-DefaultView {
     <#
 .SYNOPSIS
-    Makes it easier to alias columns to select and rename for export.
+    Allows for easier aliasing and hiding non-default columns without stripping properties like Select-SPRObject
     
 .DESCRIPTION
-    Makes it easier to alias columns to select and rename for export.
+    Allows for easier aliasing and hiding non-default columns without stripping properties like Select-SPRObject
     
     This command also enables the ability to change the default view without destroying objects.
     

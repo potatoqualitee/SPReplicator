@@ -162,7 +162,19 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'Hello SQL'
             $results.TestColumn | Should -Be 'Sample SQL Data'
         }
-        
+        It "Quietly adds new objects to list" {
+            $object = @()
+            $object += [pscustomobject]@{ Title = 'Sup'; TestColumn = 'Sample Sup'; }
+            $object += [pscustomobject]@{ Title = 'Sup2'; TestColumn = 'Sample Sup2'; }
+            $object += [pscustomobject]@{ Title = 'Sup3'; TestColumn = 'Sample Sup3'; }
+            $results = Add-SPRListItem -Site $script:site -List $script:mylist -InputObject $object -Quiet
+            $results | Should -Be $null
+            $results = Get-SPRListData -Site $script:site -List $script:mylist
+            $results.Title | Should -Contain 'Sup'
+            $results.Title | Should -Contain 'Sup2'
+            $results.Title | Should -Contain 'Sup3'
+            $results.TestColumn | Should -Contain 'Sample Sup3'
+        }
         It "Autocreates new list" {
             $newList = 'Sample test create new list'
             $object = @()
