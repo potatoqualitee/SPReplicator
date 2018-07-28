@@ -69,10 +69,10 @@
             $global:spsite.ExecuteQuery()
             
             # long story as to why it's done this way
-            $templates = $customtemplates, $global:spweb.ListTemplates | Select-SPRObject -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
+            $templates = $customtemplates, $global:spweb.ListTemplates | Select-DefaultView -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
             
             if ($Id) {
-                $templates | Where-Object ListTemplateTypeKind -in $Id
+                $templates | Where-Object Id -in $Id
             }
             
             if ($Name) {
