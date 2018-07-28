@@ -200,6 +200,23 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Get-SPRListView" {
+        It "Returns at least one view with some xml" {
+            $results = Get-SPRListView -List $script:mylist
+            $results.List.Title | Should -Be $script:mylist
+            $results.ViewQuery | Should -Not -Be $null
+        }
+        It "Throws if a view doesn't exist" {
+            $null = Get-SPRListData -List $script:mylist -View DoesntExist -WarningAction SilentlyContinue -WarningVariable warning 3>$null
+            $warning | Should -Match "invalid"
+        }
+        It "Works" {
+            $view = Get-SPRListView -List $script:mylist | Where-Object DefaultView | Select-Object -ExpandProperty Title
+            $results = Get-SPRListData -List $script:mylist -View $view
+            $results.Title | Should -Not -Be $null
+        }
+    }
+    
     Context "Export-SPRListData" {
         It "Gets data from $script:mylist" {
             if ((Test-Path $script:filename)) {
