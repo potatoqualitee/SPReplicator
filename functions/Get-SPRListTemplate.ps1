@@ -68,16 +68,20 @@
             $global:spsite.Load($customtemplates)
             $global:spsite.ExecuteQuery()
             
-            $templates = $customtemplates, $global:spweb.ListTemplates
+            # long story as to why it's done this way
+            $templates = $customtemplates, $global:spweb.ListTemplates | Select-SPRObject -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
             
-            if ($id) {
-                $templates = $templates | Where-Object ListTemplateTypeKind -in $id
+            if ($Id) {
+                $templates | Where-Object ListTemplateTypeKind -in $Id
             }
+            
             if ($Name) {
-                $templates = $templates | Where-Object Name -in $name
+                $templates | Where-Object Name -in $Name
             }
             
-            $templates | Select-SPRObject -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
+            if (-not $Id -and -not $Name) {
+                $templates
+            }
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
