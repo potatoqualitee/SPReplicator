@@ -27,6 +27,9 @@
 .PARAMETER InputObject
     Allows piping from Get-SPRListData.
     
+.PARAMETER Quiet
+    Do not output new item. Makes imports faster; useful for automated imports.
+    
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
 
@@ -66,6 +69,7 @@
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
+        [switch]$Quiet,
         [switch]$EnableException
     )
     begin {
@@ -85,7 +89,7 @@
                 $runupdate = $false
                 foreach ($fieldname in $ColumnNames) {
                     if (($currentrow.ListItem[$fieldname].Id) -ne $UserObject.Id) {
-                        Write-PSFMessage -Level Verbose -Message "Updating $fieldname setting to $UserObject"
+                        Write-PSFMessage -Level Debug -Message "Updating $fieldname setting to $UserObject"
                         $runupdate = $true
                         if ($fieldname -eq "Author") {
                             #IMPORTANT: Must be same name to get author updated
@@ -145,9 +149,9 @@
                 }
             }
             
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($list.Title) Changing $Column to $($user.LoginName)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record on $($thislist.Title), changing $Column to $Username")) {
                 try {
-                    Write-PSFMessage -Level Verbose -Message "Updating $($item.Id) from $($list.Title)"
+                    Write-PSFMessage -Level Debug -Message "Updating $($item.Id) from $($thislist.Title)"
                     Update-Row -Row $item -ColumnNames $Column -UserObject $spuser
                 }
                 catch {
@@ -160,8 +164,10 @@
         if ($script:updates.Id) {
             Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
             $global:spsite.ExecuteQuery()
-            foreach ($listitem in $script:updates) {
-                Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+            if (-not $Quiet) {
+                foreach ($listitem in $script:updates) {
+                    Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                }
             }
         }
         else {
