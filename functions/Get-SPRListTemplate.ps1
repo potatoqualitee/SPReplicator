@@ -1,10 +1,10 @@
 ﻿Function Get-SPRListTemplate {
 <#
 .SYNOPSIS
-    Get list of SharePoint templates.
+    Get list of native and custom SharePoint templates.
 
 .DESCRIPTION
-    Get list of SharePoint templates.
+    Get list of native and custom SharePoint templates.
 
 .PARAMETER Id
     Return only templates with specific IDs
@@ -12,6 +12,9 @@
 .PARAMETER Name
     Return only templates with specific names
 
+.PARAMETER InputObject
+    Piped input from a web
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -36,41 +39,45 @@
     param (
         [int[]]$Id,
         [string[]]$Name,
+        [Microsoft.SharePoint.Client.Web[]]$InputObject,
         [switch]$EnableException
     )
     process {
-        # string description = Enumerations.GetEnumDescription((MyEnum)value);
         try {
-            $class = [Microsoft.SharePoint.Client.ListTemplateType]
-            if ($Id) {
-                foreach ($template in [System.Enum]::GetNames($class)) {
-                    $number = [int][System.Enum]::Parse($class, $template)
-                    if ($number -in $Id) {
-                        [pscustomobject]@{
-                            ID       = $number
-                            Template = $template
-                        }
-                    }
+            if (-not $InputObject) {
+                if ($Site) {
+                    $null = Connect-SPRSite -Site $Site -Credential $Credential
+                }
+                
+                if ($Web) {
+                    $InputObject = Get-SPRWeb -Web $Web
+                }
+                elseif ($global:spweb) {
+                    $InputObject = $global:spweb
+                }
+                
+                if (-not $InputObject) {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site, Web or run Connect-SPRSite"
+                    return
                 }
             }
-            elseif ($Name) {
-                foreach ($template in [System.Enum]::GetNames($class)) {
-                    if ($template -in $name) {
-                        [pscustomobject]@{
-                            ID       = [int][System.Enum]::Parse($class, $template)
-                            Template = $template
-                        }
-                    }
-                }
+            
+            $global:spsite.Load($global:spweb.ListTemplates)
+            $global:spsite.Load($global:spsite.Site)
+            $customtemplates = $global:spsite.Site.GetCustomListTemplates($global:spweb)
+            $global:spsite.Load($customtemplates)
+            $global:spsite.ExecuteQuery()
+            
+            $templates = $customtemplates, $global:spweb.ListTemplates
+            
+            if ($id) {
+                $templates = $templates | Where-Object ListTemplateTypeKind -in $id
             }
-            else {
-                foreach ($template in [System.Enum]::GetNames($class)) {
-                    [pscustomobject]@{
-                        ID = [int][System.Enum]::Parse($class, $template)
-                        Template = $template
-                    }
-                }
+            if ($Name) {
+                $templates = $templates | Where-Object Name -in $name
             }
+            
+            $templates | Select-SPRObject -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
