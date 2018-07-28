@@ -23,6 +23,9 @@
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
+.PARAMETER Quiet
+    Do not output new item. Makes imports faster; useful for automated imports.
+    
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
 
@@ -64,6 +67,7 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [switch]$Quiet,
         [switch]$EnableException
     )
     begin {
@@ -158,24 +162,19 @@
                     $newItem = $thislist.AddItem($itemCreateInfo)
                     $newItem = Add-Row -Row $row -ColumnInfo $columns
                     $newItem.Update()
-                    $thislist.Context.Load($newItem)
+                    $global:spsite.Load($newItem)
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
-                Write-PSFMessage -Level Verbose -Message "Queued row for $List"
-            }
-        }
-        
-        if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding Batch")) {
-            try {
-                # Do batch
-                $thislist.Context.ExecuteQuery()
-                Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                Get-SPRListData -List $List -Id $newItem.Id
-            }
-            catch {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                
+                Write-PSFMessage -Level Verbose -Message "Adding new item to $List"
+                $global:spsite.ExecuteQuery()
+                
+                if (-not $Quiet) {
+                    Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
+                    Get-SPRListData -List $List -Id $newItem.Id
+                }
             }
         }
     }
