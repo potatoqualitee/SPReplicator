@@ -88,7 +88,7 @@
                 $null = $loglist | Add-SPRColumn -ColumnName FinishTime -Type DateTime -Description "Time of Import or Export"
                 $null = $loglist | Add-SPRColumn -ColumnName ItemCount -Type Integer -Description "Count of all items"
                 $null = $loglist | Add-SPRColumn -ColumnName Result -Description "Success or Failure"
-                $null = $loglist | Add-SPRColumn -ColumnName Type -Description "Import or Export"
+                $null = $loglist | Add-SPRColumn -ColumnName Type -Description "Import, Export or Clear"
                 $null = $loglist | Add-SPRColumn -ColumnName Message -Type Note -Description "Failure messages"
                 $null = $loglist | Add-SPRColumn -ColumnName URL -Xml "<Field Type='URL' Name='URL' StaticName='URL' DisplayName='URL' Format='Hyperlink'/>"
                 Get-SPRList -List $Title
