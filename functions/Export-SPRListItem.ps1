@@ -21,6 +21,9 @@
 .PARAMETER Path
     The target xml file location.
 
+.PARAMETER LogToList
+    You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
+  
 .PARAMETER InputObject
     Allows piping from Get-SPRList or Get-SPRListItem
 
@@ -48,6 +51,7 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [Microsoft.SharePoint.Client.List]$LogToList,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -64,6 +68,7 @@
                 $InputObject = Get-SPRListItem -List $List
             }
             else {
+                $failure = $true
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
                 return
             }
@@ -82,7 +87,36 @@
             Get-ChildItem -Path $Path -ErrorAction Stop
         }
         catch {
+            $failure = $true
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+        }
+        
+        ###########################################################################
+        if ($LogToList) {
+            $thislist = $collection | Select-Object -First 1 -ExpandProperty ListObject
+            if ($thislist) {
+                $thislist.Context.Load($thislist)
+                $thislist.Context.ExecuteQuery()
+                $thislist.Context.Load($thislist.RootFolder)
+                $thislist.Context.ExecuteQuery()
+                $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+            }
+            if ($failure) {
+                $result = "Failed"
+                $errormessage = Get-PSFMessage -Errors | Select-Object -Last 1 -ExpandProperty Message
+            }
+            else {
+                $result = "Succeeded"
+            }
+            [pscustomobject]@{
+                Title      = $thislist.Title
+                ItemCount  = $data.Count
+                Result     = $result
+                Type       = "Export"
+                URL        = $url
+                FinishTime = Get-Date
+                Message    = $errormessage
+            } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
 }
