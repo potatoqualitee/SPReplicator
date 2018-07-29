@@ -77,7 +77,15 @@ Get-ADUser -Filter * | Add-SPRListItem -List ADList -AutoCreateList
 
 ```
 
-The rest of the commands, you can see in screenshots.
+
+## Selected screenshots
+
+![image](https://user-images.githubusercontent.com/8278033/42564673-1ceca0a4-849d-11e8-8f6b-22c1a0aad1e1.png)
+![image](https://user-images.githubusercontent.com/8278033/42570287-227a3c4a-84af-11e8-9e5a-4dc6e9f2f4af.png)
+![image](https://user-images.githubusercontent.com/8278033/42570505-d060d8be-84af-11e8-948d-f97888611346.png)
+![image](https://user-images.githubusercontent.com/8278033/42570634-3f2478fa-84b0-11e8-8ab7-3c996d29021d.png)
+![image](https://user-images.githubusercontent.com/8278033/42782751-8915d362-88e5-11e8-801e-5987ff7dc89f.png)
+![image](https://user-images.githubusercontent.com/8278033/42567935-19fcb8ac-84a7-11e8-9b48-0da67dd2ce0f.png)
 
 ## Command summaries
 
@@ -90,16 +98,12 @@ Creates a reusable SharePoint Client Context object that lets you use and manage
 Connect-SPRSite -Site https://sharepoint2016
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42564673-1ceca0a4-849d-11e8-8f6b-22c1a0aad1e1.png)
-
 ## Disconnect-SPRSite
 Disconnects a SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
 
 ```powershell
 Disconnect-SPRSite
 ```
-
-![image](https://user-images.githubusercontent.com/8278033/42565445-292606ce-849f-11e8-94ee-3986c54441de.png)
 
 ## Get-SPRConnectedSite
 Returns the connected SharePoint Site Collection.
@@ -108,16 +112,12 @@ Returns the connected SharePoint Site Collection.
 Get-SPRConnectedSite
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42572134-b452d4a6-84b4-11e8-9a1e-834c1170a925.png)
-
 ## Add-SPRColumn
 Adds a column to a SharePoint list.
 
 ```powershell
 Add-SPRColumn -List 'My List' -ColumnName TestColumn -Description Awesome
 ```
-
-![image](https://user-images.githubusercontent.com/8278033/42560633-c61f0a78-8492-11e8-9ac2-f3b772d8b8dc.png)
 
 ## Add-SPRListItem
 Adds items to a SharePoint list from various sources. CSV, generic objects, exported lists.
@@ -133,25 +133,17 @@ $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
 $object | Add-SPRListItem -List 'My List'
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42570287-227a3c4a-84af-11e8-9e5a-4dc6e9f2f4af.png)
-
 ```powershell
 # You can even import from a SQL Server database. Note again the Title and TestColumn columns
 Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"  | 
 Add-SPRListItem -List 'My List'
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42570441-9a4b0466-84af-11e8-87fc-c04b545e18c9.png)
-
 This is particularly cool. List doesn't exist? Auto-create it! Note, it mostly defaults to text rows so use this sparingly.
 ```powershell
 Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL',TestColumn = 'Sample SQL Data'"  | 
 Add-SPRListItem -List BrandNewList -AutoCreateList
 ```
-
-![image](https://user-images.githubusercontent.com/8278033/42570505-d060d8be-84af-11e8-948d-f97888611346.png)
-
-![image](https://user-images.githubusercontent.com/8278033/42570634-3f2478fa-84b0-11e8-8ab7-3c996d29021d.png)
 
 ## Update-SPRListData
 Updates modified items in a SharePoint list.
@@ -161,8 +153,6 @@ Updates modified items in a SharePoint list.
 $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
 Get-SPRListItem -List 'My List' | Update-SPRListItem -UpdateObject $updates -Confirm:$false
 ```
-
-![image](https://user-images.githubusercontent.com/8278033/42782751-8915d362-88e5-11e8-801e-5987ff7dc89f.png)
 
 ## Clear-SPRListItems
 Deletes all items from a SharePoint list.
@@ -175,10 +165,6 @@ Clear-SPRListItems -List 'My List'
 Clear-SPRListItems -List 'My List' -Confirm:$false
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42567696-4798dc4c-84a6-11e8-947e-58bff29bbd89.png)
-
-![image](https://user-images.githubusercontent.com/8278033/42567757-7b428f84-84a6-11e8-8863-b654c59044c2.png)
-
 ## Export-SPRListItem
 Exports all items from a SharePoint list to a file.
 
@@ -190,14 +176,6 @@ Export-SPRListItem -List 'My List' -Path C:\temp\mylist.xml
 Get-SPRListItem -List 'My List' | Where Title -match Hello2 | Export-SPRListItem -Path C:\temp\hello2.xml
 ```
 
-The entire list
-
-![image](https://user-images.githubusercontent.com/8278033/42569683-0dda065a-84ad-11e8-8edc-d35058e4e00c.png)
-
-And only some items
-
-![image](https://user-images.githubusercontent.com/8278033/42569711-271efd96-84ad-11e8-8aaa-071c1bbd33a9.png)
-
 ## Get-SPRColumnDetail
 Returns information (Name, DisplayName, Data type) about columns in a SharePoint list.
 
@@ -205,16 +183,12 @@ Returns information (Name, DisplayName, Data type) about columns in a SharePoint
 Get-SPRColumnDetail -List 'My List'
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42567935-19fcb8ac-84a7-11e8-9b48-0da67dd2ce0f.png)
-
 ## Get-SPRList
 Returns a SharePoint list object.
 
 ```powershell
 Get-SPRList -List 'My List'
 ```
-
-![image](https://user-images.githubusercontent.com/8278033/42568030-65cde896-84a7-11e8-8a7f-a730f4f26344.png)
 
 ## Get-SPRListItem
 Returns data from a SharePoint list.
@@ -227,18 +201,12 @@ Get-SPRListItem -List 'My List'
 Get-SPRListItem -List 'My List' -Id 1
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42566521-91a9a7d4-84a2-11e8-9a96-f6765ad3a8aa.png)
-
-![image](https://user-images.githubusercontent.com/8278033/42566593-c7494f70-84a2-11e8-8c1f-17c2054b4b8f.png)
-
 ## Get-SPRListTemplate
 Get list of SharePoint templates.
 
 ```powershell
 Get-SPRListTemplate
 ```
-
-![image](https://user-images.githubusercontent.com/8278033/42564578-d33b9870-849c-11e8-9977-73d061f5d58c.png)
 
 ## Import-SPRListItem
 Imports all items from a file into a SharePoint list.
@@ -254,11 +222,6 @@ Get-ChildItem C:\temp\mylist.xml | Import-SPRListItem -List 'My List'
 dir 'C:\temp\My List.xml' | Import-SPRListItem -List Test -AutoCreateList
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42569956-fb412f40-84ad-11e8-9c25-d7b06470301e.png)
-
-![image](https://user-images.githubusercontent.com/8278033/42579927-092a00ca-84c5-11e8-81e4-2ac501227c71.png)
-
-
 ## New-SPRList
 Creates a new SharePoint list.
 
@@ -269,9 +232,6 @@ New-SPRList -List List1 -Description "My awesome list"
 # Create a document library
 New-SPRList -List 'My Documents' -Template DocumentLibrary
 ```
-![image](https://user-images.githubusercontent.com/8278033/42560182-c8fd276c-8491-11e8-8c2e-2234b249439c.png)
-
-![image](https://user-images.githubusercontent.com/8278033/42560506-826f8cee-8492-11e8-89a5-0b1eaac26a95.png)
 
 ## Remove-SPRList
  Deletes lists from a SharePoint site collection.
@@ -283,7 +243,6 @@ Remove-SPRList -List List1
 # Positive you're deleting the list you want? Add -Confirm:$false to avoid confirmation prompts.
 Remove-SPRList -List List2 -Confirm:$false
 ```
-![image](https://user-images.githubusercontent.com/8278033/42563954-32927cfa-849b-11e8-9ab1-3b973ff098e7.png)
 
 ## Remove-SPRListItem
 Deletes items from a SharePoint list.
@@ -296,10 +255,6 @@ Get-SPRListItem -List 'My List' -Id 44, 45 | Remove-SPRListItem
 Get-SPRListItem -List 'My List' | Where Title -match Hello | Remove-SPRListItem -Confirm:$false
 ```
 
-![image](https://user-images.githubusercontent.com/8278033/42569305-c7273e68-84ab-11e8-85eb-2d34610e5220.png)
-
-![image](https://user-images.githubusercontent.com/8278033/42569374-0952af20-84ac-11e8-88c7-eaf7c0664a82.png)
-
 ## Select-SPRObject
 Makes it easier to alias columns to select and rename for export.
  
@@ -309,8 +264,6 @@ Makes it easier to alias columns to select and rename for export.
 
 Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
 ```
-
-![image](https://user-images.githubusercontent.com/8278033/43017926-91910924-8bf3-11e8-8133-5084b4a685a3.png)
 
 ## TODO
 
@@ -336,7 +289,7 @@ Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Prop
 
 This module comes with integration tests! If you'd like to see how I test the commands, check out [Integration.Tests.ps1](https://github.com/potatoqualitee/SPReplicator/blob/master/tests/Integration.Tests.ps1)
 
-![image](https://user-images.githubusercontent.com/8278033/42579528-41a428e6-84c4-11e8-9bc6-4a987a9679f4.png)
+![image](https://user-images.githubusercontent.com/8278033/43365014-39eee66c-92c1-11e8-91bf-9b6bf8d1032a.png)
 
 ## Learn more
 
