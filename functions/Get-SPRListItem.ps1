@@ -1,4 +1,4 @@
-Function Get-SPRListData {
+Function Get-SPRListItem {
 <#
 .SYNOPSIS
     Returns data from a SharePoint list.
@@ -36,27 +36,27 @@ Function Get-SPRListData {
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -List 'My List'
+    Get-SPRListItem -Site intranet.ad.local -List 'My List'
 
     Gets data from My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRList -List 'My List' -Site intranet.ad.local | Get-SPRListData
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Get-SPRListItem
 
      Gets data from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRListItem -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user)
 
     Gets data from My List and logs into the webapp as ad\user.
 
 .EXAMPLE
-    Get-SPRListData -Site sharepoint2016 -List 'My List' -Id 100, 101, 105
+    Get-SPRListItem -Site sharepoint2016 -List 'My List' -Id 100, 101, 105
 
     Gets list items with ID 100, 101 and 105
     
 .EXAMPLE
-    Get-SPRListData -Site sharepoint2016 -List 'My List' -View 'My Tasks'
+    Get-SPRListItem -Site sharepoint2016 -List 'My List' -View 'My Tasks'
 
     Gets list items included in the view My Tasks
 #>

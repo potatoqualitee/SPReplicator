@@ -1,4 +1,4 @@
-﻿Function Export-SPRListData {
+﻿Function Export-SPRListItem {
 <#
 .SYNOPSIS
     Exports all items from a SharePoint list to a file.
@@ -22,7 +22,7 @@
     The target xml file location.
 
 .PARAMETER InputObject
-    Allows piping from Get-SPRList or Get-SPRListData
+    Allows piping from Get-SPRList or Get-SPRListItem
 
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -30,12 +30,12 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Export-SPRListData -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
+    Export-SPRListItem -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
 
     Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
 
 .EXAMPLE
-    Get-SPRListData -List 'My List' -Site intranet.ad.local |Export-SPRListData -Path C:\temp\mylist.xml
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local |Export-SPRListItem -Path C:\temp\mylist.xml
 
     Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
 #>
@@ -58,10 +58,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SprListData -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SprListData -List $List
+                $InputObject = Get-SPRListItem -List $List
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"

@@ -1,4 +1,4 @@
-﻿Function Clear-SPRListData {
+﻿Function Clear-SPRListItems {
 <#
 .SYNOPSIS
     Deletes all items from a SharePoint list.
@@ -33,17 +33,17 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Clear-SPRListData -Site intranet.ad.local -List 'My List'
+    Clear-SPRListItems -Site intranet.ad.local -List 'My List'
 
     Deletes all items from My List on intranet.ad.local. Prompts for confirmation.
 
 .EXAMPLE
-    Get-SPRList -List 'My List' -Site intranet.ad.local | Clear-SPRListData -Confirm:$false
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Clear-SPRListItems -Confirm:$false
 
      Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Clear-SPRListData -Site intranet.ad.local -List 'My List'
+    Clear-SPRListItems -Site intranet.ad.local -List 'My List'
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
