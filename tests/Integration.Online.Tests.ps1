@@ -13,7 +13,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = Set-SPRConfig -Name location -Value Online
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $originallists = Get-SPRList
+        $originallists = Get-SPRList | Where-Object Title -ne "SPReplicator"
         $originalwebs = Get-SPRWeb
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
@@ -357,7 +357,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
 Describe "$CommandName Final Tests" -Tag "Finaltests" {
     Context "Checking to ensure all original data has remained" {
         $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -Location Online
-        $nowlists = Get-SPRList
+        $nowlists = Get-SPRList | Where-Object Title -ne "SPReplicator"
         $nowwebs = Get-SPRWeb
         
         $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum

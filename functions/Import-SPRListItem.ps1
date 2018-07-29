@@ -35,6 +35,9 @@
 .PARAMETER InputObject
     Allows piping from Get-ChildItem
 
+.PARAMETER LogToList
+    You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
+  
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
 
@@ -67,6 +70,7 @@
         [PSCredential]$Credential,
         [switch]$Quiet,
         [string]$AsUser,
+        [Microsoft.SharePoint.Client.List]$LogToList,
         [parameter(ValueFromPipeline)]
         [System.IO.FileInfo[]]$InputObject,
         [switch]$EnableException
@@ -90,11 +94,11 @@
         foreach ($file in $InputObject) {
             try {
                 if ($file.length/1MB -gt 100) {
-                    Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet
+                    Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList
                 }
                 else {
                     $items = Import-Clixml -Path $file
-                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet
+                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList
                 }
             }
             catch {

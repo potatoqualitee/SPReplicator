@@ -28,6 +28,9 @@
  
 .PARAMETER AsUser
     Add the item as a specific user.
+ 
+.PARAMETER LogToList
+    You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -72,12 +75,14 @@
         [PSCredential]$Credential,
         [switch]$Quiet,
         [string]$AsUser,
+        [Microsoft.SharePoint.Client.List]$LogToList,
         [switch]$EnableException
     )
     begin {
+        $addcount = 0
         if ($AsUser) {
             Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
-            $userobject = Get-SPRUser -UserName $AsUser
+            $userobject = Get-SPRUser -Site $Site -UserName $AsUser
         }
         function Add-Row {
             [cmdletbinding()]
@@ -121,6 +126,7 @@
         
         if (-not $thislist) {
             if (-not $AutoCreateList) {
+                $failure = $true
                 Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"
                 return
             }
@@ -155,11 +161,17 @@
                             default { "Text" }
                         }
                         $cname = $column.ColumnName
-                        $null = $thislist | Add-SPRColumn -ColumnName $cname -Type $type
+                        
+                        if ([System.Uri]::IsWellFormedUriString(($column.Table.$column | Select-Object -First 1 | Out-String), "Absolute")) {
+                            $xml = "<Field Type='URL' Name='$cname' StaticName='$cname' DisplayName='$cname' Format='Hyperlink'/>"
+                            $null = $thislist | Add-SPRColumn -ColumnName $cname -Xml $xml
+                        }
+                        else {
+                            $null = $thislist | Add-SPRColumn -ColumnName $cname -Type $type
+                        }
                     }
                 }
             }
-            
             $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
         }
         
@@ -172,23 +184,53 @@
                     $newItem = Add-Row -Row $row -ColumnInfo $columns
                     $newItem.Update()
                     $global:spsite.Load($newItem)
+                    
+                    Write-PSFMessage -Level Verbose -Message "Adding new item to $List"
+                    $addcount++
+                    $global:spsite.ExecuteQuery()
+                    
+                    if ($AsUser) {
+                        Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
+                        Get-SPRListItem -List $List -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
+                    }
+                    elseif (-not $Quiet) {
+                        Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
+                        Get-SPRListItem -List $List -Id $newItem.Id
+                    }
                 }
                 catch {
+                    $failure = $true
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
-                }
-                
-                Write-PSFMessage -Level Verbose -Message "Adding new item to $List"
-                $global:spsite.ExecuteQuery()
-                
-                if ($AsUser) {
-                    Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                    Get-SPRListItem -List $List -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
-                }
-                elseif (-not $Quiet) {
-                    Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                    Get-SPRListItem -List $List -Id $newItem.Id
+                    return
                 }
             }
+        }
+    }
+    end {
+        if ($LogToList) {
+            if ($thislist) {
+                $thislist.Context.Load($thislist)
+                $thislist.Context.ExecuteQuery()
+                $thislist.Context.Load($thislist.RootFolder)
+                $thislist.Context.ExecuteQuery()
+                $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+            }
+            if ($failure) {
+                $result = "Failed"
+                $errormessage = Get-PSFMessage -Errors | Select-Object -Last 1 -ExpandProperty Message
+            }
+            else {
+                $result = "Succeeded"
+            }
+            [pscustomobject]@{
+                Title      = $List
+                ItemCount  = $addcount
+                Result     = $result
+                Type       = "Import"
+                URL        = $url
+                FinishTime = Get-Date
+                Message    = $errormessage
+            } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
 }
