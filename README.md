@@ -272,6 +272,11 @@ Makes it easier to alias columns to select and rename for export.
 Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
 ```
 
+## Power BI
+A Power BI Template is included in the bin directory. More coming soon.
+
+![image](https://user-images.githubusercontent.com/8278033/43371078-5b0bb5ae-9326-11e8-839d-ea2022426b8a.png)
+
 ## TODO
 
 * <del>Create -Since (via caml)</del>
