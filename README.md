@@ -314,18 +314,17 @@ Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -
 
 ## TODO
 
-* Create -Since (via caml)
+* <del>Create -Since (via caml)</del>
 * <del>-AsUser (force modify create/modified column)</del>
-* Set column (based off of update, i imagine? then use set in the command?)
-* Explore ListItemCollectionPosition
 * <del>Move the batches</del>
 * <del>Add list view test</del>
+* Set column (based off of update, i imagine? then use set in the command?)
+* Explore ListItemCollectionPosition
 * Demo video
 * Add logging to export to SP or SQL. Actually, just do SP. Keep things that'd make PBI look cool.
 * Explore extracting files from attachments
 * Explore hooks, such as the check-in or check-out of a document.
 * File copy using BITS and zips and maybe Microsoft Remote Differential Compression?
-
 
 ## MAYBE WONT DO
 

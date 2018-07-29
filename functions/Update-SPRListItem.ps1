@@ -27,6 +27,9 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
+.PARAMETER Quiet
+    Do not output new item. Makes imports faster; useful for automated imports.
+    
 .PARAMETER InputObject
     Allows piping from Get-SPRListData.
 
@@ -69,6 +72,7 @@
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
+        [switch]$Quiet,
         [switch]$EnableException
     )
     begin {
@@ -99,11 +103,11 @@
                                 $currentrow.ListItem[$fieldname] = $fieldupdate
                                 $currentrow.ListItem.Update()
                             }
-                            Write-PSFMessage -Level Verbose -Message "Updating $fieldname setting to $fieldupdate"
+                            Write-PSFMessage -Level Debug -Message "Updating $fieldname setting to $fieldupdate"
                         }
                     }
                     else {
-                        Write-PSFMessage -Level Verbose -Message "Not updating $fieldname (reserved name)"
+                        Write-PSFMessage -Level Debug -Message "Not updating $fieldname (reserved name)"
                     }
                 }
                 if ($runupdate) {
@@ -151,9 +155,9 @@
                     if (-not $Column) {
                         $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo', 'Order' } | Sort-Object List, DisplayName
                         $listcolumns += 'Author', 'Editor'
-                        Write-PSFMessage -Level Verbose -Message "List columns: $($listcolumns.Title)"
+                        Write-PSFMessage -Level Debug -Message "List columns: $($listcolumns.Title)"
                         $updatecolumns = $updateitem | Get-Member -MemberType *property*
-                        Write-PSFMessage -Level Verbose -Message "Update columns: $($updatecolumns.Name)"
+                        Write-PSFMessage -Level Debug -Message "Update columns: $($updatecolumns.Name)"
                         $Column = ($listcolumns.Name | Where-Object { $_ -in $updatecolumns.Name })
                         Write-PSFMessage -Level Verbose -Message "Column = $Column"
                     }
@@ -171,8 +175,10 @@
         if ($script:updates.Id) {
             Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
             $global:spsite.ExecuteQuery()
-            foreach ($listitem in $script:updates) {
-                Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+            if (-not $Quiet) {
+                foreach ($listitem in $script:updates) {
+                    Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                }
             }
         }
         else {

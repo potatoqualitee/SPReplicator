@@ -17,12 +17,15 @@ Function Get-SPRListData {
 
 .PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
-
+    
 .PARAMETER Id
     Return only rows with specific IDs
 
 .PARAMETER View
     Return only rows from a specific view
+    
+.PARAMETER Since
+    Show only files modified since a specific date.
     
 .PARAMETER InputObject
     Allows piping from Get-SPRList
@@ -66,11 +69,17 @@ Function Get-SPRListData {
         [string]$Site,
         [PSCredential]$Credential,
         [string]$View,
+        [datetime]$Since,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
     )
     process {
+        if ($View -and $Since) {
+            Stop-PSFFunction -Message "Please specify either View or Since, not both"
+            return
+        }
+        
         if (-not $InputObject) {
             if ($Site) {
                 $InputObject = Get-SprList -Site $Site -Credential $Credential -List $List
@@ -119,7 +128,15 @@ Function Get-SPRListData {
                     $thislist.Context.Load($listItems)
                     $thislist.Context.ExecuteQuery()
                 }
-                elseif (-not $listitems) {
+                elseif ($Since) {
+                    $modifiedsince = $Since.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    $caml = New-Object Microsoft.SharePoint.Client.CamlQuery
+                    $caml.ViewXml = "<View><Query><Where><Gt><FieldRef Name='Modified' /><Value IncludeTimeValue='TRUE' Type='DateTime'>$modifiedsince</Value></Gt></Where></Query></View>"
+                    $listItems = $thislist.GetItems($caml)
+                    $thislist.Context.Load($listItems)
+                    $thislist.Context.ExecuteQuery()
+                }
+                elseif (-not $listview) {
                     $listItems = $thislist.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllItemsQuery())
                     $thislist.Context.Load($listItems)
                     $thislist.Context.ExecuteQuery()
