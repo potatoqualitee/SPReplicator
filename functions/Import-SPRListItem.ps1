@@ -1,4 +1,4 @@
-﻿Function Import-SPRListData {
+﻿Function Import-SPRListItem {
 <#
 .SYNOPSIS
     Imports all items from a file into a SharePoint list.
@@ -47,12 +47,12 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Import-SPRListData -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
+    Import-SPRListItem -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
 
     Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
 
 .EXAMPLE
-    Get-SPRListData -Path C:\temp\mylist.xml | Import-SPRListData -List 'My List' -Site intranet.ad.local
+    Get-SPRListItem -Path C:\temp\mylist.xml | Import-SPRListItem -List 'My List' -Site intranet.ad.local
 
     Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
 #>

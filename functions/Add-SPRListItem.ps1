@@ -182,11 +182,11 @@
                 
                 if ($AsUser) {
                     Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                    Get-SPRListData -List $List -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
+                    Get-SPRListItem -List $List -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
                 }
                 elseif (-not $Quiet) {
                     Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                    Get-SPRListData -List $List -Id $newItem.Id
+                    Get-SPRListItem -List $List -Id $newItem.Id
                 }
             }
         }

@@ -25,7 +25,7 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER InputObject
-    Allows piping from Get-SPRListData.
+    Allows piping from Get-SPRListItem.
     
 .PARAMETER Quiet
     Do not output new item. Makes imports faster; useful for automated imports.
@@ -46,7 +46,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Prompts for confirmation.
     
@@ -54,7 +54,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates -KeyColumn SSN -Confirm:$false
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates -KeyColumn SSN -Confirm:$false
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Does not prompt for confirmation.
     
@@ -115,10 +115,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -List $List
+                $InputObject = Get-SPRListItem -List $List
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
@@ -132,7 +132,7 @@
         }
         
         if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
-            $InputObject = $InputObject | Get-SPRListData
+            $InputObject = $InputObject | Get-SPRListItem
         }
         
         foreach ($item in $InputObject) {
@@ -169,7 +169,7 @@
             $global:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {
-                    Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                    Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
                 }
             }
         }
