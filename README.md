@@ -275,7 +275,7 @@ Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Prop
 ## Power BI
 A Power BI Template is included in the bin directory. More coming soon.
 
-![image](https://user-images.githubusercontent.com/8278033/43371146-8aa31dd8-9327-11e8-80b3-fc52c6591e90.png)
+![image](https://user-images.githubusercontent.com/8278033/43371234-568d7622-9329-11e8-9100-df03d7a442bc.png)
 
 ## TODO
 
