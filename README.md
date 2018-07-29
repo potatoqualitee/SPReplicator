@@ -318,9 +318,10 @@ Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Prop
 * <del>-AsUser (force modify create/modified column)</del>
 * <del>Move the batches</del>
 * <del>Add list view test</del>
+* Update readme to have only selected screenshots and then the video
+* Demo video
 * Set column (based off of update, i imagine? then use set in the command?)
 * Explore ListItemCollectionPosition
-* Demo video
 * Add logging to export to SP or SQL. Actually, just do SP. Keep things that'd make PBI look cool.
 * Explore extracting files from attachments
 * Explore hooks, such as the check-in or check-out of a document.
