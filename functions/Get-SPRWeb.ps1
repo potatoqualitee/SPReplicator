@@ -37,7 +37,7 @@
     Creates a web service object for My Web on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRWeb -Site intranet.ad.local -Web 'My Web' -Credential (Get-Credential ad\user)
+    Get-SPRWeb -Site intranet.ad.local -Web 'My Web' -Credential ad\user
 
     Creates a web service object for My Web and logs into the webapp as ad\user.
 #>

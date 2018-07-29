@@ -40,7 +40,7 @@
     Creates a web service object for My List on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRList -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRList -Site intranet.ad.local -List 'My List' -Credential ad\user
 
     Creates a web service object for My List and logs into the webapp as ad\user.
 #>

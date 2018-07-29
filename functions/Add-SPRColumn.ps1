@@ -67,7 +67,7 @@
     Adds a text column named TestColumn to 'My List' on intranet.ad.local
 
 .EXAMPLE
-    Add-SPRColumn -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) -ColumnName TestColumn
+    Add-SPRColumn -Site intranet.ad.local -List 'My List' -Credential ad\user -ColumnName TestColumn
 
     Adds a text column named TestColumn to 'My List' on intranet.ad.local and logs into the site collection as ad\user.
 

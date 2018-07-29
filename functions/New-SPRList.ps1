@@ -57,7 +57,7 @@
     or just tab through the options.
 
 .EXAMPLE
-    New-SPRList -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) -OnQuickLaunch
+    New-SPRList -Site intranet.ad.local -List 'My List' -Credential ad\user -OnQuickLaunch
 
     Creates a list called List1 on intranet.ad.local and logs into the webapp as ad\user.
 

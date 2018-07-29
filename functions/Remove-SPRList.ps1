@@ -43,7 +43,7 @@
     Removes the list "My List" on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Get-SPRListItem -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) | Remove-SPRList -Confirm:$false
+    Get-SPRListItem -Site intranet.ad.local -List 'My List' -Credential ad\user | Remove-SPRList -Confirm:$false
 
     Deletes all items from My List by logging into the webapp as ad\user.
 
