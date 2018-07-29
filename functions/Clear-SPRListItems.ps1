@@ -18,6 +18,9 @@
 .PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
+.PARAMETER LogToList
+    You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
+    
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
@@ -54,6 +57,7 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [Microsoft.SharePoint.Client.List]$LogToList,
         [parameter(ValueFromPipeline)]
         [Microsoft.SharePoint.Client.List[]]$InputObject,
         [switch]$EnableException
@@ -83,6 +87,7 @@
         }
         
         foreach ($thislist in $InputObject) {
+            $failure = $false
             $itemcount = $thislist.ItemCount
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing $itemcount records from $($thislist.Title)")) {
                 try {
@@ -110,9 +115,36 @@
                     }
                 }
                 catch {
+                    $failure = $true
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
             }
+        }
+        
+        if ($LogToList) {
+            if ($thislist) {
+                $thislist.Context.Load($thislist)
+                $thislist.Context.ExecuteQuery()
+                $thislist.Context.Load($thislist.RootFolder)
+                $thislist.Context.ExecuteQuery()
+                $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+            }
+            if ($failure) {
+                $result = "Failed"
+                $errormessage = Get-PSFMessage -Errors | Select-Object -Last 1 -ExpandProperty Message
+            }
+            else {
+                $result = "Succeeded"
+            }
+            [pscustomobject]@{
+                Title      = $thislist.Title
+                ItemCount  = $itemcount
+                Result     = $result
+                Type       = "Clear"
+                URL        = $url
+                FinishTime = Get-Date
+                Message    = $errormessage
+            } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
 }
