@@ -77,14 +77,21 @@ Get-ADUser -Filter * | Add-SPRListItem -List ADList -AutoCreateList
 
 ```
 
-
 ## Selected screenshots
 
+#### Connect to a site
 ![image](https://user-images.githubusercontent.com/8278033/42564673-1ceca0a4-849d-11e8-8f6b-22c1a0aad1e1.png)
+
+#### Add a generic object to a list
 ![image](https://user-images.githubusercontent.com/8278033/42570287-227a3c4a-84af-11e8-9e5a-4dc6e9f2f4af.png)
+
+#### Add SQL data to a list and auto create the list if it doesn't exist
 ![image](https://user-images.githubusercontent.com/8278033/42570505-d060d8be-84af-11e8-948d-f97888611346.png)
+
+#### This is what it looks like!
 ![image](https://user-images.githubusercontent.com/8278033/42570634-3f2478fa-84b0-11e8-8ab7-3c996d29021d.png)
-![image](https://user-images.githubusercontent.com/8278033/42782751-8915d362-88e5-11e8-801e-5987ff7dc89f.png)
+
+#### Get details about columns to help you format your input/output
 ![image](https://user-images.githubusercontent.com/8278033/42567935-19fcb8ac-84a7-11e8-9b48-0da67dd2ce0f.png)
 
 ## Command summaries
