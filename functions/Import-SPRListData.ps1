@@ -24,8 +24,14 @@
     The target xml file location.
 
 .PARAMETER AutoCreateList
-    Autocreate the SharePoint list if it does not exist
-
+    Autocreate the SharePoint list if it does not exist.
+    
+.PARAMETER AsUser
+    Import the item as a specific user.
+    
+.PARAMETER Quiet
+    Do not output new item. Makes imports faster; useful for automated imports.
+ 
 .PARAMETER InputObject
     Allows piping from Get-ChildItem
 
@@ -59,6 +65,8 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [switch]$Quiet,
+        [string]$AsUser,
         [parameter(ValueFromPipeline)]
         [System.IO.FileInfo[]]$InputObject,
         [switch]$EnableException
@@ -82,11 +90,11 @@
         foreach ($file in $InputObject) {
             try {
                 if ($file.length/1MB -gt 100) {
-                    Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList
+                    Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet
                 }
                 else {
                     $items = Import-Clixml -Path $file
-                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items
+                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet
                 }
             }
             catch {
