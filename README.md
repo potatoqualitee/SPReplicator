@@ -51,10 +51,10 @@ There is no need to assign the output to a variable, as it creates a reusable gl
 Connect-SPRSite -Site https://intranet
 
 # specifying other credentials
-Connect-SPRSite -Site https://intranet -Credential (Get-Credential ad\otheruser)
+Connect-SPRSite -Site https://intranet -Credential ad\otheruser
 
 # using your own account credentials and SP Online
-Connect-SPRSite -Site https://corp.sharepoint.com -Credential (Get-Credential otheruser@corp.onmicrosoft.com)
+Connect-SPRSite -Site https://corp.sharepoint.com -Credential otheruser@corp.onmicrosoft.com
 ```
 
 #### Import to SharePoint List
