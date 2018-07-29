@@ -12,9 +12,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $script:startingconfig = Get-SPRConfig
         $null = Set-SPRConfig -Name location -Value Online
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
+        $thislist = $thislist | Where-Object Title -ne 'SPRLog'
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $originallists = Get-SPRList | Where-Object Title -ne "SPReplicator"
+        $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $originalwebs = Get-SPRWeb
+        if ($env:appveyor) {
+            $loglist = Get-SPRList -List SPRLog
+            $PSDefaultParameterValues = @{ '*:LogToList' = $loglist }
+        }
         # all commands set $global:spsite, remove this variable to start from scratch
         $global:spsite = $null
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
@@ -357,7 +362,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
 Describe "$CommandName Final Tests" -Tag "Finaltests" {
     Context "Checking to ensure all original data has remained" {
         $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -Location Online
-        $nowlists = Get-SPRList | Where-Object Title -ne "SPReplicator"
+        $nowlists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $nowwebs = Get-SPRWeb
         
         $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
