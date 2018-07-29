@@ -37,7 +37,7 @@
     Creates a web service object for My User on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Get-SPRUser -Site intranet.ad.local -UserName 'My User' -Credential (Get-Credential ad\user)
+    Get-SPRUser -Site intranet.ad.local -UserName 'My User' -Credential ad\user
 
     Creates a web service object for My User and logs into the webapp as ad\user.
 #>
