@@ -37,7 +37,7 @@ SPReplicator has a number of commands that help you manage SharePoint lists. You
 #### Export from SharePoint List
 
 ```powershell
-Export-SPRListData -Site https://intranet -ListName Employees -Path \\nas\replicationdata\Employees.csv
+Export-SPRListItem -Site https://intranet -List Employees -Path \\nas\replicationdata\Employees.csv
 ```
 
 #### Establish a session to the SharePoint site
@@ -60,20 +60,20 @@ Connect-SPRSite -Site https://corp.sharepoint.com -Credential otheruser@corp.onm
 #### Import to SharePoint List
 Now that we've established a connection via `Connect-SPRSite`, we no longer need to specify the Site.
 
-We can import data two ways, using `Import-SPRListData` or `Add-SPRListItem`
+We can import data two ways, using `Import-SPRListItem` or `Add-SPRListItem`
 
 ```powershell
 # Import from CSV
-Import-SPRListData -ListName Employees -Path \\nas\replicationdata\Employees.csv
+Import-SPRListItem -List Employees -Path \\nas\replicationdata\Employees.csv
 
 # Import from SQL Server
-Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select fname, lname where id > 100" | Add-SPRListItem -ListName emps
+Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select fname, lname where id > 100" | Add-SPRListItem -List emps
 
 # Import any PowerShell object, really. So long as it has the properly named columns.
-Get-ADUser -Filter * | Select SamAccountName, whateverelse | Add-SPRListItem -ListName ADList
+Get-ADUser -Filter * | Select SamAccountName, whateverelse | Add-SPRListItem -List ADList
 
 # Didn't have time to create a good SharePoint list? Use -AutoCreateList
-Get-ADUser -Filter * | Add-SPRListItem -ListName ADList -AutoCreateList
+Get-ADUser -Filter * | Add-SPRListItem -List ADList -AutoCreateList
 
 ```
 
@@ -114,7 +114,7 @@ Get-SPRConnectedSite
 Adds a column to a SharePoint list.
 
 ```powershell
-Add-SPRColumn -ListName 'My List' -ColumnName TestColumn -Description Awesome
+Add-SPRColumn -List 'My List' -ColumnName TestColumn -Description Awesome
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42560633-c61f0a78-8492-11e8-9ac2-f3b772d8b8dc.png)
@@ -130,7 +130,7 @@ $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
 $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
 $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
 
-$object | Add-SPRListItem -ListName 'My List'
+$object | Add-SPRListItem -List 'My List'
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42570287-227a3c4a-84af-11e8-9e5a-4dc6e9f2f4af.png)
@@ -138,7 +138,7 @@ $object | Add-SPRListItem -ListName 'My List'
 ```powershell
 # You can even import from a SQL Server database. Note again the Title and TestColumn columns
 Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"  | 
-Add-SPRListItem -ListName 'My List'
+Add-SPRListItem -List 'My List'
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42570441-9a4b0466-84af-11e8-87fc-c04b545e18c9.png)
@@ -146,7 +146,7 @@ Add-SPRListItem -ListName 'My List'
 This is particularly cool. List doesn't exist? Auto-create it! Note, it mostly defaults to text rows so use this sparingly.
 ```powershell
 Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL',TestColumn = 'Sample SQL Data'"  | 
-Add-SPRListItem -ListName BrandNewList -AutoCreateList
+Add-SPRListItem -List BrandNewList -AutoCreateList
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42570505-d060d8be-84af-11e8-948d-f97888611346.png)
@@ -159,35 +159,35 @@ Updates modified items in a SharePoint list.
 ```powershell
 # Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml
 $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-Get-SPRListData -ListName 'My List' | Update-SPRListItem -UpdateObject $updates -Confirm:$false
+Get-SPRListItem -List 'My List' | Update-SPRListItem -UpdateObject $updates -Confirm:$false
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42782751-8915d362-88e5-11e8-801e-5987ff7dc89f.png)
 
-## Clear-SPRListData
+## Clear-SPRListItems
 Deletes all items from a SharePoint list.
 
 ```powershell
 # Delete all rows, clearing the list. This will prompt for confirmation.
-Clear-SPRListData -ListName 'My List'
+Clear-SPRListItems -List 'My List'
 
 # Positive you're deleting the rows you want? Add -Confirm:$false to avoid confirmation prompts.
-Clear-SPRListData -ListName 'My List' -Confirm:$false
+Clear-SPRListItems -List 'My List' -Confirm:$false
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42567696-4798dc4c-84a6-11e8-947e-58bff29bbd89.png)
 
 ![image](https://user-images.githubusercontent.com/8278033/42567757-7b428f84-84a6-11e8-8863-b654c59044c2.png)
 
-## Export-SPRListData
+## Export-SPRListItem
 Exports all items from a SharePoint list to a file.
 
 ```powershell
 # Export an entire list
-Export-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+Export-SPRListItem -List 'My List' -Path C:\temp\mylist.xml
 
 # Export only some items
-Get-SPRListData -ListName 'My List' | Where Title -match Hello2 | Export-SPRListData -Path C:\temp\hello2.xml
+Get-SPRListItem -List 'My List' | Where Title -match Hello2 | Export-SPRListItem -Path C:\temp\hello2.xml
 ```
 
 The entire list
@@ -202,7 +202,7 @@ And only some items
 Returns information (Name, DisplayName, Data type) about columns in a SharePoint list.
 
 ```powershell
-Get-SPRColumnDetail -ListName 'My List'
+Get-SPRColumnDetail -List 'My List'
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42567935-19fcb8ac-84a7-11e8-9b48-0da67dd2ce0f.png)
@@ -211,20 +211,20 @@ Get-SPRColumnDetail -ListName 'My List'
 Returns a SharePoint list object.
 
 ```powershell
-Get-SPRList -ListName 'My List'
+Get-SPRList -List 'My List'
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42568030-65cde896-84a7-11e8-8a7f-a730f4f26344.png)
 
-## Get-SPRListData
+## Get-SPRListItem
 Returns data from a SharePoint list.
 
 ```powershell
 # Get the entire list
-Get-SPRListData -ListName 'My List'
+Get-SPRListItem -List 'My List'
 
 # Get only item 1. You could also get -Id 1, 2, 3 and so on.
-Get-SPRListData -ListName 'My List' -Id 1
+Get-SPRListItem -List 'My List' -Id 1
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42566521-91a9a7d4-84a2-11e8-9a96-f6765ad3a8aa.png)
@@ -240,18 +240,18 @@ Get-SPRListTemplate
 
 ![image](https://user-images.githubusercontent.com/8278033/42564578-d33b9870-849c-11e8-9977-73d061f5d58c.png)
 
-## Import-SPRListData
+## Import-SPRListItem
 Imports all items from a file into a SharePoint list.
 
 ```powershell
-# Manually specify the path to the xml file, which was exported from Export-SPRListData
-Import-SPRListData -ListName 'My List' -Path C:\temp\mylist.xml
+# Manually specify the path to the xml file, which was exported from Export-SPRListItem
+Import-SPRListItem -List 'My List' -Path C:\temp\mylist.xml
 
 # Or pipe it in
-Get-ChildItem C:\temp\mylist.xml | Import-SPRListData -ListName 'My List' 
+Get-ChildItem C:\temp\mylist.xml | Import-SPRListItem -List 'My List' 
 
 # You can even automatically create a list if it doesn't exist
-dir 'C:\temp\My List.xml' | Import-SPRListData -ListName Test -AutoCreateList
+dir 'C:\temp\My List.xml' | Import-SPRListItem -List Test -AutoCreateList
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42569956-fb412f40-84ad-11e8-9c25-d7b06470301e.png)
@@ -264,10 +264,10 @@ Creates a new SharePoint list.
 
 ```powershell
 # Create a generic list with a description
-New-SPRList -ListName List1 -Description "My awesome list"
+New-SPRList -List List1 -Description "My awesome list"
 
 # Create a document library
-New-SPRList -ListName 'My Documents' -Template DocumentLibrary
+New-SPRList -List 'My Documents' -Template DocumentLibrary
 ```
 ![image](https://user-images.githubusercontent.com/8278033/42560182-c8fd276c-8491-11e8-8c2e-2234b249439c.png)
 
@@ -278,22 +278,22 @@ New-SPRList -ListName 'My Documents' -Template DocumentLibrary
  
 ```powershell
 # Delete the list and prompt for confirmation.
-Remove-SPRList -ListName List1
+Remove-SPRList -List List1
 
 # Positive you're deleting the list you want? Add -Confirm:$false to avoid confirmation prompts.
-Remove-SPRList -ListName List2 -Confirm:$false
+Remove-SPRList -List List2 -Confirm:$false
 ```
 ![image](https://user-images.githubusercontent.com/8278033/42563954-32927cfa-849b-11e8-9ab1-3b973ff098e7.png)
 
-## Remove-SPRListData
+## Remove-SPRListItem
 Deletes items from a SharePoint list.
 
 ```powershell
 # Delete a couple items and prompt for confirmation.
-Get-SPRListData -ListName 'My List' -Id 44, 45 | Remove-SPRListData
+Get-SPRListItem -List 'My List' -Id 44, 45 | Remove-SPRListItem
 
 # Delete a bunch of items without confirmation.
-Get-SPRListData -ListName 'My List' | Where Title -match Hello | Remove-SPRListData -Confirm:$false
+Get-SPRListItem -List 'My List' | Where Title -match Hello | Remove-SPRListItem -Confirm:$false
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/42569305-c7273e68-84ab-11e8-85eb-2d34610e5220.png)
@@ -307,7 +307,7 @@ Makes it easier to alias columns to select and rename for export.
 # Get two columns, FullName and Created from 'My List'. In the example below, FullName is an alias of Title.
 # This makes it easy to import items.xml to a SharePoint with with a FullName column.
 
-Get-SPRListData -Site intranet.ad.local -ListName 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
+Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
 ```
 
 ![image](https://user-images.githubusercontent.com/8278033/43017926-91910924-8bf3-11e8-8133-5084b4a685a3.png)
