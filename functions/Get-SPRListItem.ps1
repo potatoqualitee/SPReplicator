@@ -156,11 +156,12 @@ Function Get-SPRListItem {
                     $object.ListObject = $thislist
                     $object.ListItem = $item
                     foreach ($fieldName in $item.FieldValues.Keys) {
-                        if ($fieldName -in 'Author', 'Editor') {
+                        $value = $item.FieldValues[$fieldName]
+                        if ($value -match 'Microsoft\.SharePoint\.Client.') {
                             $object.$fieldName = $item.FieldValues[$fieldName].LookupValue
                         }
                         else {
-                            $object.$fieldName = $item.FieldValues[$fieldName]
+                            $object.$fieldName = $value
                         }
                     }
                     Select-DefaultView -InputObject $object -ExcludeProperty Order, ListObject, ListItem, ContentTypeId, _HasCopyDestinations, _CopySource, owshiddenversion, WorkflowVersion, _UIVersion, _UIVersionString, _ModerationStatus, _ModerationComments, InstanceID, WorkflowInstanceID, Last_x0020_Modified, Created_x0020_Date, FSObjType, SortBehavior, FileLeafRef, UniqueId, SyncClientId, ProgId, ScopeId, File_x0020_Type, MetaInfo, _Level, _IsCurrentVersion, ItemChildCount, FolderChildCount, Restricted, AppAuthor, AppEditor
