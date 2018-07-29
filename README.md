@@ -96,7 +96,7 @@ Get-ADUser -Filter * | Add-SPRListItem -List ADList -AutoCreateList
 
 ## Command summaries
 
-In the screenshots and examples below, I'll be connecting to my SharePoint 2016 server, aptly named `https://sharepoint2016`.
+In the examples below, I'll be connecting to my SharePoint 2016 server, aptly named `https://sharepoint2016`.
 
 ## Connect-SPRSite
 Creates a reusable SharePoint Client Context object that lets you use and manage the site collection in Windows PowerShell.
