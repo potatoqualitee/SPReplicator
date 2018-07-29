@@ -17,7 +17,7 @@ Or if you don't have administrative access or want to save it locally (just for 
 Install-Module SPReplicator -Scope CurrentUser
 ```
 
-If you're scheduling tasks via Task Schedule or SQL Server agent, installing the module with administrative privleges is best because it will ensure all users have access via Program Files.
+If you're scheduling tasks via Task Schedule or SQL Server agent, installing the module with administrative privileges is best because it will ensure all users have access via Program Files.
 
 ## Usage scenarios
 
