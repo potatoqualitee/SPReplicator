@@ -81,8 +81,10 @@
             Where-Object {
                 -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments'
             }
+            $spdatatype = $columns| Select-SPRObject -Property Name, 'TypeAsString as Type'
             $columnsnames = $columns.Name | Select-Object -Unique
             $data = $collection | Select-Object -Property $columnsnames
+            Add-Member -InputObject $data -NotePropertyName SPReplicatorDataType -NotePropertyValue $spdatatype
             Export-Clixml -InputObject $data -Path $Path -ErrorAction Stop
             Get-ChildItem -Path $Path -ErrorAction Stop
         }

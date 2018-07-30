@@ -93,6 +93,12 @@
         }
         foreach ($file in $InputObject) {
             try {
+                try {
+                    Import-Clixml -Path $file | Select-Object -ExpandProperty SPReplicatorDataType
+                }
+                catch {
+                    # Don't care because it may or may not exist
+                }
                 if ($file.length/1MB -gt 100) {
                     Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList
                 }
