@@ -31,6 +31,9 @@
  
 .PARAMETER LogToList
     You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
+  
+.PARAMETER DataTypeMap
+    Helps create accurate datatypes when used with -AutoCreateList
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -75,6 +78,7 @@
         [PSCredential]$Credential,
         [switch]$Quiet,
         [string]$AsUser,
+        [object]$DataTypeMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
         [switch]$EnableException
     )
@@ -140,35 +144,54 @@
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List $List")) {
                     $thislist = New-SPRList -Title $List
                     
-                    $datatable = $InputObject | Select-Object -First 1 | ConvertTo-DataTable
-                    $columns = ($thislist | Get-SPRColumnDetail).Title
-                    $newcolumns = $datatable.Columns | Where-Object ColumnName -NotIn $columns
+                    $firstobject = $InputObject | Select-Object -First 1
+                    $datatable = $firstobject | ConvertTo-DataTable
+                    $columns = ($thislist | Get-SPRColumnDetail | Where-Object Title -ne Type).Title
+                    $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns
                     
                     Write-PSFMessage -Level Verbose -Message "All columns: $columns"
                     Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
                     
                     foreach ($column in $newcolumns) {
-                        $type = switch ($column.DataType.Name) {
-                            "Double" { "Number" }
-                            "Int16" { "Number" }
-                            "Int32" { "Number" }
-                            "Int64" { "Number" }
-                            "Single" { "Number" }
-                            "UInt16" { "Number" }
-                            "UInt32" { "Number" }
-                            "UInt64" { "Number" }
-                            "Text" { "Text" }
-                            "Note" { "Note" }
-                            "DateTime" { "DateTime" }
-                            "Boolean" { "Boolean" }
-                            "Number" { "Number" }
-                            "Decimal" { "Currency" }
-                            "Guid" { "Guid" }
-                            default { "Text" }
+                        $type = $null
+                        if ($DataTypeMap) {
+                            $type = $DataTypeMap | Where-Object Name -eq $column | Select-Object -ExpandProperty Type
                         }
+                        if (-not $type) {
+                            $type = switch ($column.DataType.Name) {
+                                "Double" { "Number" }
+                                "Int16" { "Number" }
+                                "Int32" { "Number" }
+                                "Int64" { "Number" }
+                                "Single" { "Number" }
+                                "UInt16" { "Number" }
+                                "UInt32" { "Number" }
+                                "UInt64" { "Number" }
+                                "Text" { "Text" }
+                                "Note" { "Note" }
+                                "DateTime" { "DateTime" }
+                                "Boolean" { "Boolean" }
+                                "Number" { "Number" }
+                                "Decimal" { "Currency" }
+                                "Guid" { "Guid" }
+                                default { "Text" }
+                            }
+                            # trying to make sure it doesn't create the default column too small
+                            # didn't default to Note for sorting reasons
+                            if ($type -eq "Text") {
+                                $tests = $column.Table.$column | Select-Object -First 50
+                                foreach ($test in $tests) {
+                                    $value = $test | Out-String
+                                    if ($value.Length -gt 150) {
+                                        $type = "Note"
+                                    }
+                                }
+                            }
+                        }
+                        
                         $cname = $column.ColumnName
                         
-                        if ([System.Uri]::IsWellFormedUriString(($column.Table.$column | Select-Object -First 1 | Out-String), "Absolute")) {
+                        if ([System.Uri]::IsWellFormedUriString(($column.Table.$column | Select-Object -First 1 | Out-String), "Absolute") -or $type -eq 'URL') {
                             $xml = "<Field Type='URL' Name='$cname' StaticName='$cname' DisplayName='$cname' Format='Hyperlink'/>"
                             $null = $thislist | Add-SPRColumn -ColumnName $cname -Xml $xml
                         }
