@@ -34,7 +34,9 @@
                         $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
                     }
                     else {
-                        $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
+                        # for some reason, this is no longer needed
+                        # $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
+                        $value = $currentrow.$fieldname
                     }
                     
                     # Skip reserved words, so far is only ID
