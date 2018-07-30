@@ -112,7 +112,7 @@
             }
             [pscustomobject]@{
                 Title      = $thislist.Title
-                ItemCount  = $data.Count
+                ItemCount  = ($collection).Count
                 Result     = $result
                 Type       = "Export"
                 URL        = $url
