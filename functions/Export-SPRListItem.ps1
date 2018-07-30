@@ -95,7 +95,7 @@
         
         ###########################################################################
         if ($LogToList) {
-            $thislist = $collection | Select-Object -First 1 -ExpandProperty ListObject
+            $thislist = $InputObject | Select-Object -First 1 -ExpandProperty ListObject
             if ($thislist) {
                 $thislist.Context.Load($thislist)
                 $thislist.Context.ExecuteQuery()
