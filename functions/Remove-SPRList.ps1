@@ -83,7 +83,7 @@
         }
         
         foreach ($thislist in $InputObject) {
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Removing list $($list.Title)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Removing list $($thislist.Title)")) {
                 try {
                     Write-PSFMessage -Level Verbose -Message "Deleting $($list.Title) from $($list.Context)"
                     $dellist = $global:spsite.Web.Lists.GetByTitle($thislist.Title)
