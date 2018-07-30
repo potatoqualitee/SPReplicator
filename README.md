@@ -283,14 +283,16 @@ A Power BI Template is included in the bin directory. More coming soon.
 * <del>-AsUser (force modify create/modified column)</del>
 * <del>Move the batches</del>
 * <del>Add list view test</del>
-* Update readme to have only selected screenshots and then the video
-* Demo video
-* Set column (based off of update, i imagine? then use set in the command?)
-* Explore ListItemCollectionPosition
-* Add logging to export to SP or SQL. Actually, just do SP. Keep things that'd make PBI look cool.
+* <del>Update readme to have only selected screenshots</del>
+* <del>Add logging to export to SP or SQL. Actually, just do SP. Keep things that'd make PBI look cool.</del>
+* Add elapsed
+* Ignore clears in PBI for counts
 * Explore extracting files from attachments
 * Explore hooks, such as the check-in or check-out of a document.
 * File copy using BITS and zips and maybe Microsoft Remote Differential Compression?
+* Demo video
+* Set column (based off of update, i imagine? then use set in the command?)
+* Explore ListItemCollectionPosition
 
 ## MAYBE WONT DO
 
