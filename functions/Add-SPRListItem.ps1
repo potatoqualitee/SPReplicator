@@ -101,10 +101,16 @@
                 foreach ($fieldname in $columns) {
                     $datatype = ($ColumnInfo | Where-Object Name -eq $fieldname).Type
                     if ($type -eq 'DateTime') {
-                        $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
+                        if ($currentrow.$fieldname) {
+                            $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
+                        }
+                        else {
+                            $value = $null
+                        }
                     }
                     else {
                         $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
+                        if ($value.Length -eq 0) { $value = $null }
                     }
                     
                     # Skip reserved words, so far is only ID
