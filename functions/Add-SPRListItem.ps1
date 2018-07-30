@@ -31,6 +31,9 @@
  
 .PARAMETER LogToList
     You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
+  
+.PARAMETER DataTypeMap
+    Helps create accurate datatypes when used with -AutoCreateList
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -75,6 +78,7 @@
         [PSCredential]$Credential,
         [switch]$Quiet,
         [string]$AsUser,
+        [object]$DataTypeMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
         [switch]$EnableException
     )
@@ -142,8 +146,8 @@
                     
                     $firstobject = $InputObject | Select-Object -First 1
                     $datatable = $firstobject | ConvertTo-DataTable
-                    $columns = ($thislist | Get-SPRColumnDetail).Title
-                    $newcolumns = $datatable.Columns | Where-Object ColumnName -NotIn $columns
+                    $columns = ($thislist | Get-SPRColumnDetail | Where-Object Title -ne Type).Title
+                    $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns
                     
                     Write-PSFMessage -Level Verbose -Message "All columns: $columns"
                     Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
@@ -151,7 +155,7 @@
                     foreach ($column in $newcolumns) {
                         $type = $null
                         if ($DataTypeMap) {
-                            $type = $DataTypeMap | Where-Object ColumnName -eq $column | Select-Object -ExpandProperty Type
+                            $type = $DataTypeMap | Where-Object Name -eq $column | Select-Object -ExpandProperty Type
                         }
                         if (-not $type) {
                             $type = switch ($column.DataType.Name) {

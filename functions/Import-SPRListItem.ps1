@@ -94,17 +94,17 @@
         foreach ($file in $InputObject) {
             try {
                 try {
-                    Import-Clixml -Path $file | Select-Object -ExpandProperty SPReplicatorDataType
+                    $datatypemap = Import-Clixml -Path $file | Select-Object -ExpandProperty SPReplicatorDataType
                 }
                 catch {
                     # Don't care because it may or may not exist
                 }
                 if ($file.length/1MB -gt 100) {
-                    Import-Clixml -Path $file | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList
+                    Import-Clixml -Path $file | Select-Object -ExcludeProperty SPReplicatorDataType | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
                 }
                 else {
-                    $items = Import-Clixml -Path $file
-                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList
+                    $items = Import-Clixml -Path $file | Select-Object -ExcludeProperty SPReplicatorDataType
+                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
                 }
             }
             catch {
