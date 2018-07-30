@@ -159,7 +159,7 @@
                     $server.Load($thislist)
                     $server.ExecuteQuery()
                     
-                    $thislist | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object guid -Descending | Select-Object -First 1
+                    $thislist | Get-SPRColumnDetail | Where-Object Name -eq $ColumnName | Sort-Object ID -Descending | Select-Object -First 1
                 }
             }
             catch {

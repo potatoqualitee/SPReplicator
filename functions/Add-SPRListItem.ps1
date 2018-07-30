@@ -146,8 +146,11 @@
                     
                     $firstobject = $InputObject | Select-Object -First 1
                     $datatable = $firstobject | ConvertTo-DataTable
-                    $columns = ($thislist | Get-SPRColumnDetail | Where-Object Title -ne Type).Title
-                    $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns
+                    $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object Title -ne Type
+                    $columns = $listcolumns.Title
+                    $validcolumntypes = @('Number', 'Text', 'Note', 'DateTime', 'Boolean', 'Currency', 'Guid')
+                    $validcolumntypes += (($thislist | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
+                    $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem'
                     
                     Write-PSFMessage -Level Verbose -Message "All columns: $columns"
                     Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
@@ -187,6 +190,10 @@
                                     }
                                 }
                             }
+                        }
+                        
+                        if ($type -notin $validcolumntypes) {
+                            $type = "Text"
                         }
                         
                         $cname = $column.ColumnName
