@@ -88,6 +88,106 @@
             Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
             $userobject = Get-SPRUser -Site $Site -UserName $AsUser
         }
+        
+        function New-SPlist {
+            $thislist = New-SPRList -Title $List
+            
+            $firstobject = $InputObject | Select-Object -First 1
+            
+            if ($firstobject.ListObject) {
+                $columns = $firstobject.ListObject | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
+                $validcolumntypes = (($firstobject.ListObject | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
+                $newcolumns = $firstobject.ListObject | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem', 'Title', 'ID' | Select-Object -ExpandProperty Name
+                $spdatatype = $firstobject.ListObject | Get-SPRColumnDetail | Select-SPRObject -Property Name, 'TypeAsString as Type'
+                
+                if (-not $DataTypeMap) {
+                    $tempdatatype = @()
+                    foreach ($dt in $spdatatype) {
+                        $name = $dt.Name
+                        $type = $dt.Type
+                        if ($type -eq 'User') {
+                            $type = 'Text'
+                        }
+                        $tempdatatype += [pscustomobject]@{
+                            Name = $name
+                            Type = $type
+                        }
+                    }
+                    $DataTypeMap = $tempdatatype
+                }
+            }
+            else {
+                $datatable = $firstobject | ConvertTo-DataTable
+                $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object Title -ne Type
+                $columns = $listcolumns.Title
+                $validcolumntypes = @('Number', 'Text', 'Note', 'DateTime', 'Boolean', 'Currency', 'Guid', 'Choice')
+                $validcolumntypes += (($thislist | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
+                $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem', 'Title', 'ID'
+            }
+            
+            Write-PSFMessage -Level Verbose -Message "All columns: $columns"
+            Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
+            
+            foreach ($column in $newcolumns) {
+                $type = $null
+                if ($DataTypeMap) {
+                    $type = $DataTypeMap | Where-Object Name -eq $column | Select-Object -ExpandProperty Type
+                }
+                if (-not $type) {
+                    $type = switch ($column.DataType.Name) {
+                        "Double" { "Number" }
+                        "Int16" { "Number" }
+                        "Int32" { "Number" }
+                        "Int64" { "Number" }
+                        "Single" { "Number" }
+                        "UInt16" { "Number" }
+                        "UInt32" { "Number" }
+                        "UInt64" { "Number" }
+                        "Text" { "Text" }
+                        "Note" { "Note" }
+                        "DateTime" { "DateTime" }
+                        "Boolean" { "Boolean" }
+                        "Number" { "Number" }
+                        "Decimal" { "Currency" }
+                        "Guid" { "Guid" }
+                        default { "Text" }
+                    }
+                    # trying to make sure it doesn't create the default column too small
+                    # didn't default to Note for sorting reasons
+                    if ($type -eq "Text") {
+                        $tests = $column.Table.$column | Select-Object -First 50
+                        foreach ($test in $tests) {
+                            $value = $test | Out-String
+                            if ($value.Length -gt 150) {
+                                $type = "Note"
+                            }
+                        }
+                    }
+                }
+                
+                if ($type -notin $validcolumntypes -or (-not $AllowUserField -and $type -eq 'User')) {
+                    $type = "Note"
+                }
+                
+                if ($column.ColumnName) {
+                    $cname = $column.ColumnName
+                }
+                else {
+                    $cname = $column
+                }
+                
+                
+                if ([System.Uri]::IsWellFormedUriString(($column.Table.$column | Select-Object -First 1 | Out-String), "Absolute") -or $type -eq 'URL') {
+                    $xml = "<Field Type='URL' Name='$cname' StaticName='$cname' DisplayName='$cname' Format='Hyperlink'/>"
+                    $null = $thislist | Add-SPRColumn -ColumnName $cname -Xml $xml
+                }
+                else {
+                    $null = $thislist | Add-SPRColumn -ColumnName $cname -Type $type
+                }
+            }
+            return $thislist
+        }
+        
         function Add-Row {
             [cmdletbinding()]
             param (
@@ -95,11 +195,17 @@
                 [object[]]$ColumnInfo
             )
             foreach ($currentrow in $row) {
-                $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
                 
-                if (-not $columns) {
-                    $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq Property | Select-Object -ExpandProperty Name |
-                    Where-Object { $_ -notin 'RowError', 'RowState', 'Table', 'ItemArray', 'HasErrors' }
+                if ($currentrow.ListObject) {
+                    $columns = $currentrow.ListObject | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
+                }
+                else {
+                    $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
+                    
+                    if (-not $columns) {
+                        $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq Property | Select-Object -ExpandProperty Name |
+                        Where-Object { $_ -notin 'RowError', 'RowState', 'Table', 'ItemArray', 'HasErrors' }
+                    }
                 }
                 
                 foreach ($fieldname in $columns) {
@@ -123,7 +229,7 @@
                     }
                     
                     # Skip reserved words, so far is only ID
-                    if ($fieldname -notin 'ID','SPReplicatorDataType') {
+                    if ($fieldname -notin 'ID', 'SPReplicatorDataType') {
                         Write-PSFMessage -Level Debug -Message "Adding $fieldname to row"
                         $newItem.set_item($fieldname, $value)
                     }
@@ -147,70 +253,7 @@
             }
             else {
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List $List")) {
-                    $thislist = New-SPRList -Title $List
-                    
-                    $firstobject = $InputObject | Select-Object -First 1
-                    $datatable = $firstobject | ConvertTo-DataTable
-                    $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object Title -ne Type
-                    $columns = $listcolumns.Title
-                    $validcolumntypes = @('Number', 'Text', 'Note', 'DateTime', 'Boolean', 'Currency', 'Guid', 'Choice')
-                    $validcolumntypes += (($thislist | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
-                    $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem', 'Title', 'ID'
-                    
-                    Write-PSFMessage -Level Verbose -Message "All columns: $columns"
-                    Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
-                    
-                    foreach ($column in $newcolumns) {
-                        $type = $null
-                        if ($DataTypeMap) {
-                            $type = $DataTypeMap | Where-Object Name -eq $column | Select-Object -ExpandProperty Type
-                        }
-                        if (-not $type) {
-                            $type = switch ($column.DataType.Name) {
-                                "Double" { "Number" }
-                                "Int16" { "Number" }
-                                "Int32" { "Number" }
-                                "Int64" { "Number" }
-                                "Single" { "Number" }
-                                "UInt16" { "Number" }
-                                "UInt32" { "Number" }
-                                "UInt64" { "Number" }
-                                "Text" { "Text" }
-                                "Note" { "Note" }
-                                "DateTime" { "DateTime" }
-                                "Boolean" { "Boolean" }
-                                "Number" { "Number" }
-                                "Decimal" { "Currency" }
-                                "Guid" { "Guid" }
-                                default { "Text" }
-                            }
-                            # trying to make sure it doesn't create the default column too small
-                            # didn't default to Note for sorting reasons
-                            if ($type -eq "Text") {
-                                $tests = $column.Table.$column | Select-Object -First 50
-                                foreach ($test in $tests) {
-                                    $value = $test | Out-String
-                                    if ($value.Length -gt 150) {
-                                        $type = "Note"
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if ($type -notin $validcolumntypes -or (-not $AllowUserField -and $type -eq 'User')) {
-                            $type = "Note"
-                        }
-                        
-                        $cname = $column.ColumnName
-                        
-                        if ([System.Uri]::IsWellFormedUriString(($column.Table.$column | Select-Object -First 1 | Out-String), "Absolute") -or $type -eq 'URL') {
-                            $xml = "<Field Type='URL' Name='$cname' StaticName='$cname' DisplayName='$cname' Format='Hyperlink'/>"
-                            $null = $thislist | Add-SPRColumn -ColumnName $cname -Xml $xml
-                        }
-                        else {
-                            $null = $thislist | Add-SPRColumn -ColumnName $cname -Type $type
-                        }
-                    }
+                    $thislist = New-SPList
                 }
             }
             $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
