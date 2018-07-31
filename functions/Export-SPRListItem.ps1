@@ -27,6 +27,11 @@
 .PARAMETER InputObject
     Allows piping from Get-SPRList or Get-SPRListItem
 
+.PARAMETER EnableUserField
+    Only relevant when using -AutoCreateList for Imports or Adds.
+    
+    By default, User fields will be exported as string fields. Use this to keep the User field datatype.
+
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -54,6 +59,7 @@
         [Microsoft.SharePoint.Client.List]$LogToList,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
+        [switch]$EnableUserField,
         [switch]$EnableException
     )
     begin {
@@ -73,6 +79,11 @@
                 return
             }
         }
+        
+        if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
+            $InputObject = $InputObject | Get-SPRListItem
+        }
+        
         $collection += $InputObject
     }
     end {
@@ -81,7 +92,24 @@
             Where-Object {
                 -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments'
             }
-            $spdatatype = $columns| Select-SPRObject -Property Name, 'TypeAsString as Type'
+            $spdatatype = $columns | Select-SPRObject -Property Name, 'TypeAsString as Type'
+            
+            if (-not $EnableUserField) {
+                $tempdatatype = @()
+                foreach ($dt in $spdatatype) {
+                    $name = $dt.Name
+                    $type = $dt.Type
+                    if ($type -eq 'User') {
+                        $type = 'Text'    
+                    }
+                    $tempdatatype += [pscustomobject]@{
+                        Name = $name
+                        Type = $type
+                    }
+                }
+                $spdatatype = $tempdatatype
+            }
+            
             $columnsnames = $columns.Name | Select-Object -Unique
             $data = $collection | Select-Object -Property $columnsnames
             Add-Member -InputObject $data -NotePropertyName SPReplicatorDataType -NotePropertyValue $spdatatype
@@ -93,7 +121,6 @@
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
         }
         
-        ###########################################################################
         if ($LogToList) {
             $thislist = $InputObject | Select-Object -First 1 -ExpandProperty ListObject
             if ($thislist) {

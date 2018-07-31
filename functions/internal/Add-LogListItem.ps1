@@ -34,8 +34,6 @@
                         $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
                     }
                     else {
-                        # for some reason, this is no longer needed
-                        # $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                         $value = $currentrow.$fieldname
                     }
                     
