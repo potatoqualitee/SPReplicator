@@ -123,7 +123,7 @@
                     }
                     
                     # Skip reserved words, so far is only ID
-                    if ($fieldname -notin 'ID') {
+                    if ($fieldname -notin 'ID','SPReplicatorDataType') {
                         Write-PSFMessage -Level Debug -Message "Adding $fieldname to row"
                         $newItem.set_item($fieldname, $value)
                     }
@@ -153,7 +153,7 @@
                     $datatable = $firstobject | ConvertTo-DataTable
                     $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object Title -ne Type
                     $columns = $listcolumns.Title
-                    $validcolumntypes = @('Number', 'Text', 'Note', 'DateTime', 'Boolean', 'Currency', 'Guid')
+                    $validcolumntypes = @('Number', 'Text', 'Note', 'DateTime', 'Boolean', 'Currency', 'Guid', 'Choice')
                     $validcolumntypes += (($thislist | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
                     $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem', 'Title', 'ID'
                     
@@ -198,7 +198,7 @@
                         }
                         
                         if ($type -notin $validcolumntypes -or (-not $AllowUserField -and $type -eq 'User')) {
-                            $type = "Text"
+                            $type = "Note"
                         }
                         
                         $cname = $column.ColumnName

@@ -160,6 +160,9 @@ Function Get-SPRListItem {
                         if ($value -match 'Microsoft\.SharePoint\.Client.') {
                             $object.$fieldName = $item.FieldValues[$fieldName].LookupValue
                         }
+                        elseif ($value -is [array]) {
+                            $object.$fieldName = ($value -join ", ")
+                        }
                         else {
                             $object.$fieldName = $value
                         }
