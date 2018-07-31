@@ -224,8 +224,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             }
             $result = Export-SPRListItem -Site $script:site -List $script:mylist -Path $script:filename
             $result.FullName | Should -Be $script:filename
-            $string = Select-String -Pattern 'TestColumn' -Path $result
-            $string.Count | Should -BeGreaterThan 3
         }
     }
     
