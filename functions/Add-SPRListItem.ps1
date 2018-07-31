@@ -77,6 +77,7 @@
         [string]$Site,
         [PSCredential]$Credential,
         [switch]$Quiet,
+        [switch]$AllowUserField,
         [string]$AsUser,
         [object]$DataTypeMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
@@ -113,7 +114,12 @@
                         }
                     }
                     else {
-                        $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
+                        if ($type -ne 'Note') {
+                            $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
+                        }
+                        else {
+                            $value = $currentrow.$fieldname
+                        }
                         if ($value.Length -eq 0) { $value = $null }
                     }
                     
@@ -150,7 +156,7 @@
                     $columns = $listcolumns.Title
                     $validcolumntypes = @('Number', 'Text', 'Note', 'DateTime', 'Boolean', 'Currency', 'Guid')
                     $validcolumntypes += (($thislist | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
-                    $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem'
+                    $newcolumns = $datatable.Columns | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem', 'Title', 'ID'
                     
                     Write-PSFMessage -Level Verbose -Message "All columns: $columns"
                     Write-PSFMessage -Level Verbose -Message "New columns: $newcolumns"
@@ -192,7 +198,7 @@
                             }
                         }
                         
-                        if ($type -notin $validcolumntypes) {
+                        if ($type -notin $validcolumntypes -or (-not $AllowUserField -and $type -eq 'User')) {
                             $type = "Text"
                         }
                         

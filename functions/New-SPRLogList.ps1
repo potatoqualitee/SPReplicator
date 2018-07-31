@@ -85,7 +85,7 @@
         foreach ($server in $InputObject) {
             try {
                 $loglist = New-SPRList -Title $Title -Description $Description
-                $null = $loglist | Add-SPRColumn -ColumnName FinishTime -Type DateTime -Description "Time of Import or Export"
+                $null = $loglist | Add-SPRColumn -ColumnName FinishTime -Type DateTime -Description "Time of action"
                 $null = $loglist | Add-SPRColumn -ColumnName ItemCount -Type Integer -Description "Count of all items"
                 $null = $loglist | Add-SPRColumn -ColumnName Result -Description "Success or Failure"
                 $null = $loglist | Add-SPRColumn -ColumnName Type -Description "Import, Export or Clear"
