@@ -130,6 +130,10 @@
                 $thislist.Context.Load($thislist.RootFolder)
                 $thislist.Context.ExecuteQuery()
                 $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+                $currentuser = $thislist.Context.CurrentUser.ToString()
+            }
+            else {
+                $currentuser = $global:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"
@@ -145,7 +149,7 @@
                 ItemCount = ($collection).Count
                 Result = $result
                 Type  = "Export"
-                RunAs = $thislist.Context.CurrentUser
+                RunAs = $currentuser
                 Duration = $duration
                 URL   = $url
                 FinishTime = Get-Date
