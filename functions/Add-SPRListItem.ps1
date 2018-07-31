@@ -77,7 +77,6 @@
         [string]$Site,
         [PSCredential]$Credential,
         [switch]$Quiet,
-        [switch]$AllowUserField,
         [string]$AsUser,
         [object]$DataTypeMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
