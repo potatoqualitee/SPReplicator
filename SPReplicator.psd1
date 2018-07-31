@@ -11,7 +11,7 @@
     RootModule        = 'SPReplicator.psm1'
     
     # Version number of this module.
-    ModuleVersion     = '0.0.14'
+    ModuleVersion     = '0.0.15'
     
     # ID used to uniquely identify this module
     GUID              = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
@@ -44,7 +44,7 @@
     # ProcessorArchitecture = ''
     
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.23.82' })
+    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.24.85' })
     
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
