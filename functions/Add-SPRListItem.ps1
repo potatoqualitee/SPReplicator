@@ -84,6 +84,7 @@
     )
     begin {
         $addcount = 0
+        $start = Get-Date
         if ($AsUser) {
             Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
             $userobject = Get-SPRUser -Site $Site -UserName $AsUser
@@ -298,6 +299,10 @@
                 $thislist.Context.Load($thislist.RootFolder)
                 $thislist.Context.ExecuteQuery()
                 $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+                $currentuser = $thislist.Context.CurrentUser.ToString()
+            }
+            else {
+                $currentuser = $global:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"
@@ -306,14 +311,18 @@
             else {
                 $result = "Succeeded"
             }
+            $elapsed = (Get-Date) - $start
+            $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
             [pscustomobject]@{
-                Title      = $List
-                ItemCount  = $addcount
-                Result     = $result
-                Type       = "Import"
-                URL        = $url
+                Title     = $List
+                ItemCount = $addcount
+                Result    = $result
+                Type      = "Import"
+                RunAs     = $currentuser
+                Duration  = $duration
+                URL       = $url
                 FinishTime = Get-Date
-                Message    = $errormessage
+                Message   = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }

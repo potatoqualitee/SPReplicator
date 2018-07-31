@@ -64,6 +64,7 @@
     )
     begin {
         $collection = @()
+        $start = Get-Date
     }
     process {
         if (-not $InputObject) {
@@ -100,7 +101,7 @@
                     $name = $dt.Name
                     $type = $dt.Type
                     if ($type -eq 'User') {
-                        $type = 'Text'    
+                        $type = 'Text'
                     }
                     $tempdatatype += [pscustomobject]@{
                         Name = $name
@@ -129,6 +130,10 @@
                 $thislist.Context.Load($thislist.RootFolder)
                 $thislist.Context.ExecuteQuery()
                 $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+                $currentuser = $thislist.Context.CurrentUser.ToString()
+            }
+            else {
+                $currentuser = $global:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"
@@ -137,14 +142,18 @@
             else {
                 $result = "Succeeded"
             }
+            $elapsed = (Get-Date) - $start
+            $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
             [pscustomobject]@{
-                Title      = $thislist.Title
-                ItemCount  = ($collection).Count
-                Result     = $result
-                Type       = "Export"
-                URL        = $url
+                Title = $thislist.Title
+                ItemCount = ($collection).Count
+                Result = $result
+                Type  = "Export"
+                RunAs = $currentuser
+                Duration = $duration
+                URL   = $url
                 FinishTime = Get-Date
-                Message    = $errormessage
+                Message = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }

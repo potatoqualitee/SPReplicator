@@ -60,7 +60,7 @@
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [Alias("List")]
         [string]$Title = "SPReplicator",
-        [string]$Description = "Table to log results from imports and exports",
+        [string]$Description = "Table to log results from imports, exports and clears",
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -89,6 +89,8 @@
                 $null = $loglist | Add-SPRColumn -ColumnName ItemCount -Type Integer -Description "Count of all items"
                 $null = $loglist | Add-SPRColumn -ColumnName Result -Description "Success or Failure"
                 $null = $loglist | Add-SPRColumn -ColumnName Type -Description "Import, Export or Clear"
+                $null = $loglist | Add-SPRColumn -ColumnName Duration -Type Note -Description "The duration of the task"
+                $null = $loglist | Add-SPRColumn -ColumnName RunAs -Type Note -Description "The executing user"
                 $null = $loglist | Add-SPRColumn -ColumnName Message -Type Note -Description "Failure messages"
                 $null = $loglist | Add-SPRColumn -ColumnName URL -Xml "<Field Type='URL' Name='URL' StaticName='URL' DisplayName='URL' Format='Hyperlink'/>"
                 Get-SPRList -List $Title

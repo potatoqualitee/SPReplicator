@@ -87,6 +87,7 @@
         }
         
         foreach ($thislist in $InputObject) {
+            $start = Get-Date
             $failure = $false
             $itemcount = $thislist.ItemCount
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing $itemcount records from $($thislist.Title)")) {
@@ -128,6 +129,10 @@
                 $thislist.Context.Load($thislist.RootFolder)
                 $thislist.Context.ExecuteQuery()
                 $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+                $currentuser = $thislist.Context.CurrentUser.ToString()
+            }
+            else {
+                $currentuser = $global:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"
@@ -136,14 +141,20 @@
             else {
                 $result = "Succeeded"
             }
+            
+            $elapsed = (Get-Date)-$start
+            $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
+            
             [pscustomobject]@{
-                Title      = $thislist.Title
-                ItemCount  = $itemcount
-                Result     = $result
-                Type       = "Clear"
-                URL        = $url
+                Title = $thislist.Title
+                ItemCount = $itemcount
+                Result = $result
+                Type  = "Clear"
+                RunAs = $currentuser
+                Duration = $duration
+                URL   = $url
                 FinishTime = Get-Date
-                Message    = $errormessage
+                Message = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
