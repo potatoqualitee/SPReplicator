@@ -100,10 +100,10 @@
                     # Don't care because it may or may not exist
                 }
                 if ($file.length/1MB -gt 100) {
-                    Import-PSFClixml -Path $file | Select-Object -ExcludeProperty SPReplicatorDataType | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
+                    $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
                 }
                 else {
-                    $items = Import-PSFClixml -Path $file | Select-Object -ExcludeProperty SPReplicatorDataType
+                    $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data
                     Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
                 }
             }

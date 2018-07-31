@@ -112,9 +112,10 @@
             }
             
             $columnsnames = $columns.Name | Select-Object -Unique
-            $data = $collection | Select-Object -Property $columnsnames
-            Add-Member -InputObject $data -NotePropertyName SPReplicatorDataType -NotePropertyValue $spdatatype
-            Export-PSFClixml -InputObject $data -Path $Path -ErrorAction Stop
+            [PSCustomObject]@{
+                SPReplicatorDataType = $spdatatype
+                Data                 = $collection | Select-Object -Property $columnsnames
+            } | Export-PSFClixml -Path $Path
             Get-ChildItem -Path $Path -ErrorAction Stop
         }
         catch {

@@ -236,8 +236,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             }
             $result = Export-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Path $script:filename
             $result.FullName | Should -Be $script:filename
-            $string = Select-String -Pattern 'TestColumn' -Path $result
-            $string.Count | Should -BeGreaterThan 3
         }
     }
     
@@ -253,7 +251,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Add-SPRListItem" {
         It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist).Title.Count
-            $results = Import-CliXml -Path $script:filename | Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist
+            $results = Import-PSFCliXml -Path $script:filename | Select-Object -ExpandProperty Data  | Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist
             (Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist).Title.Count | Should -BeGreaterThan $count
             $results.Title | Should -Contain 'Hello SQL'
         }
@@ -262,9 +260,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Update-SPRListItem" {
         It "Updates data from $script:filename" {
             # Replace a value to update
+            (Import-PSFCliXml -Path $script:filename) | Export-Clixml -Path $script:filename
             (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
             (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
-            $updates = Import-CliXml -Path $script:filename
+            $updates = Import-CliXml -Path $script:filename | Select-Object -ExpandProperty Data
             $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false
             $results.Title.Count | Should -Be 1
             $results.Title | Should -Be 'ScooptyScoop'
