@@ -19,7 +19,7 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Path
-    The target xml file location.
+    The target dat (compressed xml) file location.
 
 .PARAMETER LogToList
     You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
@@ -38,14 +38,14 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Export-SPRListItem -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
+    Export-SPRListItem -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.dat
 
-    Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
+    Exports all items from My List on intranet.ad.local to C:\temp\mylist.dat
 
 .EXAMPLE
-    Get-SPRListItem -List 'My List' -Site intranet.ad.local |Export-SPRListItem -Path C:\temp\mylist.xml
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local |Export-SPRListItem -Path C:\temp\mylist.dat
 
-    Exports all items from My List on intranet.ad.local to C:\temp\mylist.xml
+    Exports all items from My List on intranet.ad.local to C:\temp\mylist.dat
 #>
     [CmdletBinding()]
     param (
@@ -112,9 +112,10 @@
             }
             
             $columnsnames = $columns.Name | Select-Object -Unique
-            $data = $collection | Select-Object -Property $columnsnames
-            Add-Member -InputObject $data -NotePropertyName SPReplicatorDataType -NotePropertyValue $spdatatype
-            Export-Clixml -InputObject $data -Path $Path -ErrorAction Stop
+            [PSCustomObject]@{
+                SPReplicatorDataType = $spdatatype
+                Data                 = $collection | Select-Object -Property $columnsnames
+            } | Export-PSFClixml -Path $Path
             Get-ChildItem -Path $Path -ErrorAction Stop
         }
         catch {

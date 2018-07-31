@@ -21,7 +21,7 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Path
-    The target xml file location.
+    The target dat (compressed xml) file location.
 
 .PARAMETER AutoCreateList
     Autocreate the SharePoint list if it does not exist.
@@ -50,14 +50,14 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Import-SPRListItem -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.xml
+    Import-SPRListItem -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.dat
 
-    Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
+    Imports all items from C:\temp\mylist.dat to My List on intranet.ad.local
 
 .EXAMPLE
-    Get-SPRListItem -Path C:\temp\mylist.xml | Import-SPRListItem -List 'My List' -Site intranet.ad.local
+    Get-SPRListItem -Path C:\temp\mylist.dat | Import-SPRListItem -List 'My List' -Site intranet.ad.local
 
-    Imports all items from C:\temp\mylist.xml to My List on intranet.ad.local
+    Imports all items from C:\temp\mylist.dat to My List on intranet.ad.local
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
@@ -94,16 +94,16 @@
         foreach ($file in $InputObject) {
             try {
                 try {
-                    $datatypemap = Import-Clixml -Path $file | Select-Object -ExpandProperty SPReplicatorDataType
+                    $datatypemap = Import-PSFClixml -Path $file | Select-Object -ExpandProperty SPReplicatorDataType
                 }
                 catch {
                     # Don't care because it may or may not exist
                 }
                 if ($file.length/1MB -gt 100) {
-                    Import-Clixml -Path $file | Select-Object -ExcludeProperty SPReplicatorDataType | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
+                    $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
                 }
                 else {
-                    $items = Import-Clixml -Path $file | Select-Object -ExcludeProperty SPReplicatorDataType
+                    $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data
                     Add-SPRListItem -Site $Site -Credential $Credential -List $List -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
                 }
             }
