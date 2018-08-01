@@ -8,7 +8,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $null = Set-SPRConfig -Name location -Value OnPrem
         $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $originallists = Get-SPRList | Where-Object Title -ne "SPReplicator"
+        $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $originalwebs = Get-SPRWeb
         $originalusers = Get-SPRUser
         # all commands set $global:spsite, remove this variable to start from scratch
@@ -295,6 +295,44 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Set-SPRListFieldValue" {
+        $current = Get-SPRListItem -Site $script:site -List $script:mylist
+        
+        It "Updates a single column on $script:mylist" {
+            $pre = $current | Select-Object -Last 1
+            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -Last 1 | Set-SPRListFieldValue -Column Title -Value ABC -Confirm:$false
+            $pre.Author | Should -Be $results.Author
+            $post = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -Last 1
+            $post.Title | Should -Be 'ABC'
+            $pre.TestColumn | Should -Be $post.TestColumn
+        }
+        It "Doesn't update other things" {
+            $pre = $current | Select-Object -First 1
+            $post = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -First 1
+            $pre.Author | Should -Be $post.Author
+            $pre.Title | Should -Be $post.Title
+            $pre.TestColumn | Should -Be $post.TestColumn
+        }
+    }
+    
+    Context "New-SPRLogList" {
+        It "Creates a new log list" {
+            $results = New-SprLogList -Title SPReplicator
+            $columns = $results | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
+            $columns | Should -Contain "FinishTime"
+            $columns | Should -Contain "ItemCount"
+            $columns | Should -Contain "Result"
+            $columns | Should -Contain "Type"
+            $columns | Should -Contain "Duration"
+            $columns | Should -Contain "RunAs"
+            $columns | Should -Contain "Message"
+            $columns | Should -Contain "URL"
+            $results.Title | Should -Be "SPReplicator"
+            $results.BaseType | Should -Be "GenericList"
+            $results | Remove-SPRList -Confirm:$false
+        }
+    }
+    
     Context "Remove-SPRListItem" {
         It "Removes specific data from $script:mylist" {
             $row = Get-SPRListItem -List $script:mylist -Id $script:id
@@ -347,7 +385,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
 
 Describe "$CommandName Final Tests" -Tag "Finaltests" {
     Context "Checking to ensure all original data has remained" {
-        $nowlists = Get-SPRList | Where-Object Title -ne "SPReplicator"
+        $nowlists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $nowwebs = Get-SPRWeb
         $nowusers = Get-SPRUser
         $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
