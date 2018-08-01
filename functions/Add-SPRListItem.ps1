@@ -6,22 +6,23 @@
 .DESCRIPTION
     Adds items to a SharePoint list.
 
+.PARAMETER List
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
     Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
-.PARAMETER List
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER AutoCreateList
     If a Sharepoint list does not exist, one will be created based off of the guessed column types.
-
-.PARAMETER Web
-    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
 
 .PARAMETER InputObject
     Allows piping from Get-SPRList
@@ -71,16 +72,16 @@
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$List,
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
+        [string[]]$List,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$AutoCreateList,
-        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
-        [string[]]$Web,
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
         [switch]$Quiet,
         [string]$AsUser,
         [object]$DataTypeMap,

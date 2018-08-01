@@ -68,12 +68,14 @@
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [Alias("List")]
         [string]$Title,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [string]$Description,
         [string]$Template = "Custom List",
         [switch]$OnQuickLaunch,
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException

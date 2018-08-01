@@ -58,12 +58,15 @@
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
+        [string[]]$List,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [Alias("List")]
         [string]$Title = "SPReplicator",
         [string]$Description = "Table to log results from imports, exports and clears",
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -85,7 +88,7 @@
         foreach ($server in $InputObject) {
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $script:spsite.Url -Action "Adding List $Title")) {
                 try {
-                    $loglist = New-SPRList -Title $Title -Description $Description
+                    $loglist = New-SPRList -Title $Title -Description $Description -Web $Web
                     $null = $loglist | Add-SPRColumn -ColumnName FinishTime -Type DateTime -Description "Time of action"
                     $null = $loglist | Add-SPRColumn -ColumnName ItemCount -Type Integer -Description "Count of all items"
                     $null = $loglist | Add-SPRColumn -ColumnName Result -Description "Success or Failure"
@@ -97,8 +100,8 @@
                     $view = $loglist | Get-SPRListView
                     $view.ViewQuery = '<OrderBy><FieldRef Name="ID" Ascending="FALSE" /></OrderBy>'
                     $view.Update()
-                    $script:spsite.ExecuteQuery()
-                    Get-SPRList -List $Title
+                    $server.ExecuteQuery()
+                    Get-SPRList -List $Title -Web $Web
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
