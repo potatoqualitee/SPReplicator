@@ -277,28 +277,6 @@ A Power BI Template is included in the bin directory. More coming soon.
 
 ![image](https://user-images.githubusercontent.com/8278033/43371234-568d7622-9329-11e8-9100-df03d7a442bc.png)
 
-## TODO
-
-* <del>Create -Since (via caml)</del>
-* <del>-AsUser (force modify create/modified column)</del>
-* <del>Move the batches</del>
-* <del>Add list view test</del>
-* <del>Update readme to have only selected screenshots</del>
-* <del>Add logging to export to SP or SQL. Actually, just do SP. Keep things that'd make PBI look cool.</del>
-* Add elapsed
-* Ignore clears in PBI for counts
-* Explore extracting files from attachments
-* Explore hooks, such as the check-in or check-out of a document.
-* File copy using BITS and zips and maybe Microsoft Remote Differential Compression?
-* Demo video
-* Set column (based off of update, i imagine? then use set in the command?)
-* Explore ListItemCollectionPosition
-
-## MAYBE WONT DO
-
-* Make a dictionary that tracks what's already been imported
-    * Taken care of by Column Key, but maybe.
-
 ## Pester tested
 
 This module comes with integration tests! If you'd like to see how I test the commands, check out [Integration.Tests.ps1](https://github.com/potatoqualitee/SPReplicator/blob/master/tests/Integration.Tests.ps1)
