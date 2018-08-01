@@ -73,9 +73,9 @@
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string[]]$List,
+        [string]$List,
         [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
-        [string[]]$Web,
+        [string]$Web,
         [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,

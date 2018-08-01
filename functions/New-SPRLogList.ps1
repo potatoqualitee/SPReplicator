@@ -58,14 +58,13 @@
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string[]]$List,
+        [Alias("List")]
+        [string]$Title = "SPReplicator",
         [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
         [string[]]$Web,
         [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [Alias("List")]
-        [string]$Title = "SPReplicator",
         [string]$Description = "Table to log results from imports, exports and clears",
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
