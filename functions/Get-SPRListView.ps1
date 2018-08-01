@@ -51,14 +51,14 @@
 #>
     [CmdletBinding()]
     param (
-        [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$List,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
         [string]$View,
         [parameter(ValueFromPipeline)]
-        [object]$InputObject,
+        [Microsoft.SharePoint.Client.List[]]$InputObject,
         [switch]$EnableException
     )
     process {

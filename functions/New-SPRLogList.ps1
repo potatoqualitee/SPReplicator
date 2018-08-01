@@ -93,6 +93,10 @@
                 $null = $loglist | Add-SPRColumn -ColumnName RunAs -Type Note -Description "The executing user"
                 $null = $loglist | Add-SPRColumn -ColumnName Message -Type Note -Description "Failure messages"
                 $null = $loglist | Add-SPRColumn -ColumnName URL -Xml "<Field Type='URL' Name='URL' StaticName='URL' DisplayName='URL' Format='Hyperlink'/>"
+                $view = $loglist | Get-SPRListView
+                $view.ViewQuery = '<OrderBy><FieldRef Name="ID" Ascending="FALSE" /></OrderBy>'
+                $view.Update()
+                $global:spsite.ExecuteQuery()
                 Get-SPRList -List $Title
             }
             catch {
