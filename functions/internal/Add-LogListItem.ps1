@@ -40,7 +40,15 @@
                     # Skip reserved words, so far is only ID
                     if ($fieldname -notin 'ID') {
                         Write-PSFMessage -Level Debug -Message "Adding $fieldname to row"
-                        $newItem.set_item($fieldname, $value)
+                        if ($fieldname -eq "URL") {
+                            $url = New-Object Microsoft.SharePoint.Client.FieldUrlValue
+                            $url.Url = $value
+                            $url.Description = $row.Title
+                            $newItem.set_item($fieldname, $url)
+                        }
+                        else {
+                            $newItem.set_item($fieldname, $value)
+                        }
                     }
                     else {
                         Write-PSFMessage -Level Debug -Message "Not adding $fieldname to row (reserved name)"
