@@ -4,6 +4,9 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
+        if ($env:appveyor) {
+            $env:psmodulepath = "$env:psmodulepath; C:\projects"
+        }
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
