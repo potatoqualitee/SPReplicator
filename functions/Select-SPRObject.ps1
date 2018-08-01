@@ -22,12 +22,12 @@
     Excludes other properties
     
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property 'Title as FullName', Created
+    Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property 'Title as FullName', Created
     
     Returns two visible columns, Name and Created. Name is an alias of Title.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
+    Get-SPRListItem -Site intranet.ad.local -List 'My List' | Select-SPRObject -Property 'Title as FullName', Created | Export-SPRObject -Path C:\temp\items.xml
     
     Returns two visible columns, Name and Created. Name is an alias of FullName.
     

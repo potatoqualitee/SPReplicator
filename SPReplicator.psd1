@@ -11,7 +11,7 @@
     RootModule        = 'SPReplicator.psm1'
     
     # Version number of this module.
-    ModuleVersion     = '0.0.10'
+    ModuleVersion     = '0.0.18'
     
     # ID used to uniquely identify this module
     GUID              = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
@@ -44,7 +44,7 @@
     # ProcessorArchitecture = ''
     
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.23.82' })
+    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.24.85' })
     
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
@@ -65,19 +65,19 @@
     FunctionsToExport = @(
         'Add-SPRListItem',
         'Add-SPRColumn',
-        'Clear-SPRListData',
+        'Clear-SPRListItems',
         'Connect-SPRSite',
         'Disconnect-SPRSite',
-        'Export-SPRListData',
+        'Export-SPRListItem',
         'Get-SPRColumnDetail',
         'Get-SPRList',
-        'Get-SPRListData',
+        'Get-SPRListItem',
         'Get-SPRListTemplate',
         'Get-SPRConnectedSite',
-        'Import-SPRListData',
+        'Import-SPRListItem',
         'New-SPRList',
         'Remove-SPRList'
-        'Remove-SPRListData',
+        'Remove-SPRListItem',
         'Update-SPRListItem',
         'Get-SPRLog',
         'Get-SPRConfig',
@@ -86,7 +86,8 @@
         'Get-SPRUser',
         'Get-SPRWeb',
         'Update-SPRListItemAuthorEditor',
-        'Get-SPRListView'
+        'Get-SPRListView',
+        'New-SPRLogList'
     )
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -141,8 +142,8 @@
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU76wysjXCn6faESjzSrv7coJV
-# Ke6ggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5xM151kzm1K1phkTEe9iivWg
+# s1CggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -273,22 +274,22 @@
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQU04n9eySirWBb1VJ6L3X+HGynnvAwDQYJKoZIhvcNAQEBBQAE
-# ggEAhtJTbDx5NLa8IutKrJOsZxM6jurlqiaZBcrhqM4oXXwjcgA6HD6wP5tFgfBM
-# sdInRWG1CQm851fi/EnvJBn+KsDXxyu84OQD2tNq4DTicilec36HYJnWRsqnYV2s
-# HDkQRShyCN3HXEwd3e77E03GQnpNvj1TjrJtj4Hfp3Z0WkXXwJnT76ohNACnIS1J
-# UBP/K3wyX8C7RoLNm8NDnDj8U7hVnGvfCtN6kPravx5aBQIXjuV0brmgBSMn1VAh
-# AlAX8M3VLbZB8ebO9cs+0m6kEtIoi1xRVrwjx52szjaGdjnqwoBtFsJQfbErCNeY
-# DMvKevvKKFlxHQRbCVERT5l3N6GCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQUY/EJlm78JUA+CpR0az9KyVTanmMwDQYJKoZIhvcNAQEBBQAE
+# ggEAGKf6CKNpwmBV2KrewyBYAIY2rch0iQu6UL8Lh7uJyRpJM4ee4/hFngHT6L7e
+# s3Nvw/xobnIqzfxRMxTD4f7ddLSuqQNq5qjBbJa60OCi+YslPs8v3oZWQLndfRpi
+# Mv9BCthbbR04Tz8hkluWKB89GGjGZSZNmdSawd1rwua8+ks9hPjvpOhD2KSiiySy
+# Si66q6ZfwkbmK8gG6/nZJp3XYhoc0nF+IT7wanisnVuHqI+uPhQaMYSpvr6+vHsn
+# ok7rMe3EH/brxKr2wslFZ5bEM+jecgI2GBqZl2mI5jHHZRLLJ2IYH9CPk2QPpAbd
+# ze/XovfuNFIBaw/jHOJOSxd1SKGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzI3MTEwMDE3WjAj
-# BgkqhkiG9w0BCQQxFgQUF49x8ZasqtTRpSh8ijCQBUTc5aowDQYJKoZIhvcNAQEB
-# BQAEggEAKjJ4aF9zZXO23UTCYrJGudXIW8IC4EEwus3mf8Rp8W2E9Bl5U06GNckQ
-# W8UcPeQTHocoDct0cfQco1rZrS+yiPtv3T8EFu9qlrIqs+PwjaXIiSBHsJKChpc4
-# 36fwQqn706ckrchN9BToMBMkL0/aVWL0kvpphkIBrYjHX7F169WOZkl0VWJzkfqd
-# lCJYmmdndZeo/vHp0ZYpQ+Ffot13sTm/RKQQYb4cjdmxaMKyqlqrXOYFCB5OCzrD
-# w+i9YfxtsIuAveEzuq6epJ07HKVe2UBpjiY7wOE0T3tzf/u0XIUklS3ze3Pfeyev
-# kWf1hLRfCD8cvIb2D4oOwoEA0XWQaA==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwNzMxMTQxMzAwWjAj
+# BgkqhkiG9w0BCQQxFgQUzP4EOnFPGQqQGug2lHpyRPb4krYwDQYJKoZIhvcNAQEB
+# BQAEggEAHw63ny7g8+0Hf2MNF5IvCy1p/zB/LHtt/sqNAgvtu3Tqs4rBTrOOcKta
+# biriKY/7YoQwdtu90E7zk5fiQbNdmOw2l1Mz78Ud4TVovS0fwFuUSPGYtE57Fy0P
+# lNqa26pSUVnFsGX90IlEqkuQq4v9KKrhC3HsXXbgd9ty6M64su+7INFnn+9wz/GL
+# OOqiKw+2k5hyKv755yJeJ3mpIfiwHi9oVfx7Pv838WZRFYy/Ipwvta/d3FPUHEJn
+# ruFKCKIo7yR68/wA9aZCpIR4VCo7mfEOz2tarGAt1mlW3OjwG7KnNgsIVgmeR9gR
+# VA1QIZKx+G3SlcGAXDfcihwqI2Q1PA==
 # SIG # End signature block

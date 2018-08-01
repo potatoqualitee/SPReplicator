@@ -38,7 +38,7 @@
     Creates a web service object for intranet.ad.local using the formal and complete address.
 
 .EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local -Credential (Get-Credential ad\user)
+    Connect-SPRSite -Site intranet.ad.local -Credential ad\user
 
     Creates a web service object and logs into the webapp as ad\user.
 

@@ -1,4 +1,4 @@
-﻿Function Remove-SPRListData {
+﻿Function Remove-SPRListItem {
 <#
 .SYNOPSIS
     Deletes items from a SharePoint list.
@@ -22,7 +22,7 @@
     Removes only rows with specific IDs.
 
 .PARAMETER InputObject
-    Allows piping from Get-SPRListData.
+    Allows piping from Get-SPRListItem.
 
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -36,22 +36,22 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Remove-SPRListData -Site intranet.ad.local -List 'My List'
+    Remove-SPRListItem -Site intranet.ad.local -List 'My List'
 
     Deletes all items from My List on intranet.ad.local. Prompts for confirmation.
 
 .EXAMPLE
-    Get-SPRList -List 'My List' -Site intranet.ad.local | Remove-SPRListData -Confirm:$false
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Remove-SPRListItem -Confirm:$false
 
     Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user) | Remove-SPRListData -Confirm:$false
+    Get-SPRListItem -Site intranet.ad.local -List 'My List' -Credential ad\user | Remove-SPRListItem -Confirm:$false
 
     Deletes all items from My List by logging into the webapp as ad\user.
 
 .EXAMPLE
-    Remove-SPRListData -Site intranet.ad.local -List 'My List'
+    Remove-SPRListItem -Site intranet.ad.local -List 'My List'
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
@@ -70,10 +70,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List -Id $Id
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Id $Id
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -List $List -Id $Id
+                $InputObject = Get-SPRListItem -List $List -Id $Id
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
@@ -87,7 +87,7 @@
         }
         
         if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
-            $InputObject = $InputObject | Get-SPRListData
+            $InputObject = $InputObject | Get-SPRListItem
         }
         
         foreach ($item in $InputObject) {

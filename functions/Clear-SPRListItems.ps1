@@ -1,4 +1,4 @@
-﻿Function Clear-SPRListData {
+﻿Function Clear-SPRListItems {
 <#
 .SYNOPSIS
     Deletes all items from a SharePoint list.
@@ -18,6 +18,9 @@
 .PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
+.PARAMETER LogToList
+    You can log imports and export results to a list. Note this has to be a list from Get-SPRList.
+    
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
@@ -33,17 +36,17 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Clear-SPRListData -Site intranet.ad.local -List 'My List'
+    Clear-SPRListItems -Site intranet.ad.local -List 'My List'
 
     Deletes all items from My List on intranet.ad.local. Prompts for confirmation.
 
 .EXAMPLE
-    Get-SPRList -List 'My List' -Site intranet.ad.local | Clear-SPRListData -Confirm:$false
+    Get-SPRList -List 'My List' -Site intranet.ad.local | Clear-SPRListItems -Confirm:$false
 
      Deletes all items from My List on intranet.ad.local. Does not prompt for confirmation.
 
 .EXAMPLE
-    Clear-SPRListData -Site intranet.ad.local -List 'My List'
+    Clear-SPRListItems -Site intranet.ad.local -List 'My List'
 
     No actions are performed but informational messages will be displayed about the items that would be deleted from the My List list.
 #>
@@ -54,6 +57,7 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [Microsoft.SharePoint.Client.List]$LogToList,
         [parameter(ValueFromPipeline)]
         [Microsoft.SharePoint.Client.List[]]$InputObject,
         [switch]$EnableException
@@ -83,6 +87,8 @@
         }
         
         foreach ($thislist in $InputObject) {
+            $start = Get-Date
+            $failure = $false
             $itemcount = $thislist.ItemCount
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing $itemcount records from $($thislist.Title)")) {
                 try {
@@ -110,9 +116,46 @@
                     }
                 }
                 catch {
+                    $failure = $true
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
             }
+        }
+        
+        if ($LogToList) {
+            if ($thislist) {
+                $thislist.Context.Load($thislist)
+                $thislist.Context.ExecuteQuery()
+                $thislist.Context.Load($thislist.RootFolder)
+                $thislist.Context.ExecuteQuery()
+                $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
+                $currentuser = $thislist.Context.CurrentUser.ToString()
+            }
+            else {
+                $currentuser = $global:spsite.CurrentUser.ToString()
+            }
+            if ($failure) {
+                $result = "Failed"
+                $errormessage = Get-PSFMessage -Errors | Select-Object -Last 1 -ExpandProperty Message
+            }
+            else {
+                $result = "Succeeded"
+            }
+            
+            $elapsed = (Get-Date)-$start
+            $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
+            
+            [pscustomobject]@{
+                Title = $thislist.Title
+                ItemCount = $itemcount
+                Result = $result
+                Type  = "Clear"
+                RunAs = $currentuser
+                Duration = $duration
+                URL   = $url
+                FinishTime = Get-Date
+                Message = $errormessage
+            } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
 }

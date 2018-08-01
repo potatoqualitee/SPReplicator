@@ -25,7 +25,13 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER InputObject
-    Allows piping from Get-SPRListData.
+    Allows piping from Get-SPRListItem.
+    
+.PARAMETER Quiet
+    Do not output new item. Makes imports faster; useful for automated imports.
+
+.PARAMETER UserObject
+    Pass a pre-resolved userobject.
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -40,7 +46,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Prompts for confirmation.
     
@@ -48,7 +54,7 @@
 
 .EXAMPLE
     $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListData -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates -KeyColumn SSN -Confirm:$false
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates -KeyColumn SSN -Confirm:$false
 
     Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Does not prompt for confirmation.
     
@@ -66,10 +72,11 @@
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
+        [Microsoft.SharePoint.Client.User]$UserObject,
+        [switch]$Quiet,
         [switch]$EnableException
     )
     begin {
-        $spuser = $null
         $script:updates = @()
         function Update-Row {
             [cmdletbinding()]
@@ -85,7 +92,7 @@
                 $runupdate = $false
                 foreach ($fieldname in $ColumnNames) {
                     if (($currentrow.ListItem[$fieldname].Id) -ne $UserObject.Id) {
-                        Write-PSFMessage -Level Verbose -Message "Updating $fieldname setting to $UserObject"
+                        Write-PSFMessage -Level Debug -Message "Updating $fieldname setting to $UserObject"
                         $runupdate = $true
                         if ($fieldname -eq "Author") {
                             #IMPORTANT: Must be same name to get author updated
@@ -108,10 +115,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListData -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List
             }
             elseif ($global:spsite) {
-                $InputObject = Get-SPRListData -List $List
+                $InputObject = Get-SPRListItem -List $List
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
@@ -125,7 +132,7 @@
         }
         
         if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
-            $InputObject = $InputObject | Get-SPRListData
+            $InputObject = $InputObject | Get-SPRListItem
         }
         
         foreach ($item in $InputObject) {
@@ -135,9 +142,9 @@
             
             $thislist = $item.ListObject
             
-            if (-not $spuser) {
+            if (-not $UserObject) {
                 try {
-                    $spuser = Get-SPRUser -Username $Username
+                    $UserObject = Get-SPRUser -Username $Username
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
@@ -145,10 +152,10 @@
                 }
             }
             
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($list.Title) Changing $Column to $($user.LoginName)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record on $($thislist.Title), changing $Column to $Username")) {
                 try {
-                    Write-PSFMessage -Level Verbose -Message "Updating $($item.Id) from $($list.Title)"
-                    Update-Row -Row $item -ColumnNames $Column -UserObject $spuser
+                    Write-PSFMessage -Level Debug -Message "Updating $($item.Id) from $($thislist.Title)"
+                    Update-Row -Row $item -ColumnNames $Column -UserObject $UserObject
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
@@ -160,8 +167,10 @@
         if ($script:updates.Id) {
             Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
             $global:spsite.ExecuteQuery()
-            foreach ($listitem in $script:updates) {
-                Get-SPRListData -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+            if (-not $Quiet) {
+                foreach ($listitem in $script:updates) {
+                    Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                }
             }
         }
         else {

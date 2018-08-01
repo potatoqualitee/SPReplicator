@@ -1,10 +1,10 @@
-﻿Function New-SPRList {
+﻿Function New-SPRLogList {
 <#
 .SYNOPSIS
-    Creates a new SharePoint list.
+    Creates a new SharePoint list for SPRelicate Logs.
 
 .DESCRIPTION
-    Creates a new SharePoint list.
+    Creates a new SharePoint list for SPRelicate Logs.
 
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
@@ -19,15 +19,7 @@
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Description
-    The description for the list
-
-.PARAMETER Template
-    The SharePoint list template that is used to build the new list. By default, SharePoint "GenericList".
-
-    This parameter auto-completes for your convenience.
-
-.PARAMETER OnQuickLaunch
-    Adds list to Quick Launch
+    The description for the list.
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRSite
@@ -44,20 +36,20 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    New-SPRList -Site intranet.ad.local -List List1
+    New-SPRLogList -Site intranet.ad.local -List List1
 
     Creates a list called List1 on intranet.ad.local. Use Add-SPRColumn to add more columns.
 
 .EXAMPLE
     $null = Connect-Site -Site intranet.ad.local
-    New-SPRList -List 'My Announcements' -Template Announcements
+    New-SPRLogList -List 'My Announcements' -Template Announcements
 
     Creates a resuable connection to intranet.ad.local then uses that to create a new list called
     My Announcements using the Announcements. Use Get-SPRListTemplate to find out all templates
     or just tab through the options.
 
 .EXAMPLE
-    New-SPRList -Site intranet.ad.local -List 'My List' -Credential ad\user -OnQuickLaunch
+    New-SPRLogList -Site intranet.ad.local -List 'My List' -Credential ad\user -OnQuickLaunch
 
     Creates a list called List1 on intranet.ad.local and logs into the webapp as ad\user.
 
@@ -67,10 +59,8 @@
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [Alias("List")]
-        [string]$Title,
-        [string]$Description,
-        [string]$Template = "Custom List",
-        [switch]$OnQuickLaunch,
+        [string]$Title = "SPReplicator",
+        [string]$Description = "Table to log results from imports, exports and clears",
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -91,28 +81,19 @@
                 return
             }
         }
-
+        
         foreach ($server in $InputObject) {
             try {
-                Write-PSFMessage -Level Verbose -Message "Loading up all lists"
-                $lists = $server.Web.Lists
-                $server.Load($lists)
-                $server.ExecuteQuery()
-
-                Write-PSFMessage -Level Verbose -Message "Creating list"
-                $listinfo = New-Object Microsoft.SharePoint.Client.ListCreationInformation
-                $listinfo.Title = $Title
-                $templateid = (Get-SPRListTemplate -Name $Template).Id
-                Write-PSFMessage -Level Verbose -Message "Associating templateid $templateid"
-                $listinfo.TemplateType = $templateid
-                if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Adding list $Title")) {
-                    $newlist = $server.Web.Lists.Add($listinfo)
-                    $newlist.Description = $Description
-                    $newlist.Update()
-                    Write-PSFMessage -Level Verbose -Message "Executing query"
-                    $server.ExecuteQuery()
-                    Get-SPRList -List $Title
-                }
+                $loglist = New-SPRList -Title $Title -Description $Description
+                $null = $loglist | Add-SPRColumn -ColumnName FinishTime -Type DateTime -Description "Time of action"
+                $null = $loglist | Add-SPRColumn -ColumnName ItemCount -Type Integer -Description "Count of all items"
+                $null = $loglist | Add-SPRColumn -ColumnName Result -Description "Success or Failure"
+                $null = $loglist | Add-SPRColumn -ColumnName Type -Description "Import, Export or Clear"
+                $null = $loglist | Add-SPRColumn -ColumnName Duration -Type Note -Description "The duration of the task"
+                $null = $loglist | Add-SPRColumn -ColumnName RunAs -Type Note -Description "The executing user"
+                $null = $loglist | Add-SPRColumn -ColumnName Message -Type Note -Description "Failure messages"
+                $null = $loglist | Add-SPRColumn -ColumnName URL -Xml "<Field Type='URL' Name='URL' StaticName='URL' DisplayName='URL' Format='Hyperlink'/>"
+                Get-SPRList -List $Title
             }
             catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

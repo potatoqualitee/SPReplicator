@@ -31,7 +31,7 @@
     Creates a web service object for intranet.ad.local using the formal and complete address.
 
 .EXAMPLE
-    Disconnect-SPRSite -Site intranet.ad.local -Credential (Get-Credential ad\user)
+    Disconnect-SPRSite -Site intranet.ad.local -Credential ad\user
 
     Creates a web service object and logs into the webapp as ad\user.
 
@@ -70,7 +70,7 @@
             }
             $global:spsite.Dispose()
             Remove-Variable -Name spsite -Scope Global
-            $output
+            Select-Object -InputObject $output
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

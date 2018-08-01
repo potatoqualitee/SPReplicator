@@ -37,7 +37,7 @@
      Gets column information from My List on intranet.ad.local.
 
 .EXAMPLE
-    Get-SPRListData -Site intranet.ad.local -List 'My List' -Credential (Get-Credential ad\user)
+    Get-SPRListItem -Site intranet.ad.local -List 'My List' -Credential ad\user
 
     Gets column information from My List on intranet.ad.local by logging into the webapp as ad\user.
 #>
