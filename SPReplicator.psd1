@@ -79,7 +79,6 @@
         'Remove-SPRList'
         'Remove-SPRListItem',
         'Update-SPRListItem',
-        'Get-SPRLog',
         'Get-SPRConfig',
         'Set-SPRConfig',
         'Select-SPRObject',
