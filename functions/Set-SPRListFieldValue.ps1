@@ -127,7 +127,7 @@ Connects to  https://school.sharepoint.com as user ad\user then changes Grade to
             
             $thislist = $item.ListObject
             
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($list.Title)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($thislist.Title)")) {
                 try {
                     Update-Row -Row $item -ColumnNames $Column -Value $value
                 }

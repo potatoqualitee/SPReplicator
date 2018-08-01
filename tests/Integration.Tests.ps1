@@ -66,6 +66,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "New-SPRList" {
+        It "Supports WhatIf" {
+            $results = New-SPRList -Title $script:mylist -Description "My List Description" -WhatIf
+            $results | Should -Be $null
+        }
         It "Creates a new list named $script:mylist" {
             $results = New-SPRList -Title $script:mylist -Description "My List Description"
             $results.Title | Should -Be $script:mylist
@@ -92,6 +96,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Add-SPRColumn" {
+        It "Supports WhatIf" {
+            $results = Add-SPRColumn -List $script:mylist -ColumnName TestColumn -Description "One column" -WhatIf
+            $results | Should -Be $null
+        }
         It "Adds a column named TestColumn" {
             $results = Add-SPRColumn -List $script:mylist -ColumnName TestColumn -Description "One column"
             $results.List | Should -Be $script:mylist
@@ -130,6 +138,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Add-SPRListItem" {
+        It "Supports WhatIf" {
+            $object = @()
+            $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
+            $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
+            $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
+            $results = Add-SPRListItem -Site $script:site -List $script:mylist -InputObject $object -WhatIf
+            $results | Should -Be $null
+        }
         It "Adds generic objects to list" {
             $object = @()
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
@@ -226,6 +242,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Import-SPRListItem" {
+        It "Supports WhatIf" {
+            $results = Import-SPRListItem -Site $script:site -List $script:mylist -Path $script:filename -WhatIf
+            $results | Should -Be $null
+        }
         It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -Site $script:site -List $script:mylist).Title.Count
             $results = Import-SPRListItem -Site $script:site -List $script:mylist -Path $script:filename
@@ -244,12 +264,17 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Update-SPRListItem" {
+        (Import-PSFCliXml -Path $script:filename) | Export-Clixml -Path $script:filename
+        (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
+        (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
+        $updates = Import-CliXml -Path $script:filename | Select-Object -ExpandProperty Data
+        
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Updates data from $script:filename" {
             # Replace a value to update
-            (Import-PSFCliXml -Path $script:filename) | Export-Clixml -Path $script:filename
-            (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
-            (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
-            $updates = Import-CliXml -Path $script:filename | Select-Object -ExpandProperty Data
             $results = Get-SPRListItem -Site $script:site -List $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false
             $results.Title.Count | Should -Be 1
             $results.Title | Should -Be 'ScooptyScoop'
@@ -282,6 +307,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Update-SPRListItemAuthorEditor" {
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Updates author/editor for a single item on $script:mylist" {
             $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false
             $results.Author | Should -Be 'System Account'
@@ -294,6 +323,11 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Set-SPRListFieldValue" {
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -Last 1 | Set-SPRListFieldValue -Column Title -Value ABC -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
+        
         $current = Get-SPRListItem -Site $script:site -List $script:mylist
         
         It "Updates a single column on $script:mylist" {
@@ -314,6 +348,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "New-SPRLogList" {
+        It "Supports WhatIf" {
+            $results = New-SprLogList -Title SPReplicator -WhatIf
+            $results | Should -Be $null
+        }
         It "Creates a new log list" {
             $results = New-SprLogList -Title SPReplicator
             $columns = $results | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
@@ -332,6 +370,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Remove-SPRListItem" {
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -List $script:mylist | Where-Object Id -in $script:id | Remove-SPRListItem -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Removes specific data from $script:mylist" {
             $row = Get-SPRListItem -List $script:mylist -Id $script:id
             $row | Should -Not -Be $null
@@ -343,6 +385,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Clear-SPRListItems" {
+        It "Supports WhatIf" {
+            $results = Clear-SPRListItems -Site $script:site -List $script:mylist -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Removes data from $script:mylist" {
             $results = Clear-SPRListItems -Site $script:site -List $script:mylist -Confirm:$false
             Get-SPRListItem -Site $script:site -List $script:mylist | Should -Be $null
@@ -351,6 +397,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Remove-SPRList" {
+        It "Supports WhatIf" {
+            $results = Get-SPRList -Site $script:site -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Removes $script:mylist" {
             $results = Get-SPRList -Site $script:site -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false
             Get-SPRList -Site $script:site -List $script:mylist | Should -Be $null

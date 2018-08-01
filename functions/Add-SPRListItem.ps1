@@ -261,7 +261,7 @@
         }
         
         foreach ($row in $InputObject) {
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List item $List")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Adding List item to $List")) {
                 try {
                     
                     $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation

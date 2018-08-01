@@ -83,25 +83,27 @@
         }
         
         foreach ($server in $InputObject) {
-            try {
-                $loglist = New-SPRList -Title $Title -Description $Description
-                $null = $loglist | Add-SPRColumn -ColumnName FinishTime -Type DateTime -Description "Time of action"
-                $null = $loglist | Add-SPRColumn -ColumnName ItemCount -Type Integer -Description "Count of all items"
-                $null = $loglist | Add-SPRColumn -ColumnName Result -Description "Success or Failure"
-                $null = $loglist | Add-SPRColumn -ColumnName Type -Description "Import, Export or Clear"
-                $null = $loglist | Add-SPRColumn -ColumnName Duration -Type Note -Description "The duration of the task"
-                $null = $loglist | Add-SPRColumn -ColumnName RunAs -Type Note -Description "The executing user"
-                $null = $loglist | Add-SPRColumn -ColumnName Message -Type Note -Description "Failure messages"
-                $null = $loglist | Add-SPRColumn -ColumnName URL -Xml "<Field Type='URL' Name='URL' StaticName='URL' DisplayName='URL' Format='Hyperlink'/>"
-                $view = $loglist | Get-SPRListView
-                $view.ViewQuery = '<OrderBy><FieldRef Name="ID" Ascending="FALSE" /></OrderBy>'
-                $view.Update()
-                $script:spsite.ExecuteQuery()
-                Get-SPRList -List $Title
-            }
-            catch {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
-                return
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $script:spsite.Url -Action "Adding List $Title")) {
+                try {
+                    $loglist = New-SPRList -Title $Title -Description $Description
+                    $null = $loglist | Add-SPRColumn -ColumnName FinishTime -Type DateTime -Description "Time of action"
+                    $null = $loglist | Add-SPRColumn -ColumnName ItemCount -Type Integer -Description "Count of all items"
+                    $null = $loglist | Add-SPRColumn -ColumnName Result -Description "Success or Failure"
+                    $null = $loglist | Add-SPRColumn -ColumnName Type -Description "Import, Export or Clear"
+                    $null = $loglist | Add-SPRColumn -ColumnName Duration -Type Note -Description "The duration of the task"
+                    $null = $loglist | Add-SPRColumn -ColumnName RunAs -Type Note -Description "The executing user"
+                    $null = $loglist | Add-SPRColumn -ColumnName Message -Type Note -Description "Failure messages"
+                    $null = $loglist | Add-SPRColumn -ColumnName URL -Xml "<Field Type='URL' Name='URL' StaticName='URL' DisplayName='URL' Format='Hyperlink'/>"
+                    $view = $loglist | Get-SPRListView
+                    $view.ViewQuery = '<OrderBy><FieldRef Name="ID" Ascending="FALSE" /></OrderBy>'
+                    $view.Update()
+                    $script:spsite.ExecuteQuery()
+                    Get-SPRList -List $Title
+                }
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                    return
+                }
             }
         }
     }

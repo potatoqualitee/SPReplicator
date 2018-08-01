@@ -150,7 +150,7 @@
                 Write-PSFMessage -Level Verbose -Message "No matches for ID $($item.ListItem.Id)"
                 continue
             }
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($list.Title)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) on $($thislist.Title)")) {
                 try {
                     if (-not $Column) {
                         $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object { $_.Type -notin 'Computed', 'Attachments' -and -not $_.ReadOnlyField -and $_.Name -notin 'FileLeafRef', 'MetaInfo', 'Order' } | Sort-Object List, DisplayName
