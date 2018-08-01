@@ -6,6 +6,12 @@
 .DESCRIPTION
     Creates a new SharePoint list for SPRelicate Logs.
 
+.PARAMETER Title
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -14,9 +20,6 @@
 
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
-
-.PARAMETER Title
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Description
     The description for the list.
