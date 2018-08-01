@@ -20,6 +20,9 @@
 .PARAMETER AutoCreateList
     If a Sharepoint list does not exist, one will be created based off of the guessed column types.
 
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
@@ -73,6 +76,8 @@
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$AutoCreateList,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -244,7 +249,7 @@
     }
     process {
         if (Test-PSFFunctionInterrupt) { return }
-        $thislist = Get-SPRList -Site $Site -Web $Web -Credential $Credential -List $List
+        $thislist = Get-SPRList -Site $Site -Credential $Credential -List $List -Web $Web
         
         if (-not $thislist) {
             if (-not $AutoCreateList) {
@@ -276,11 +281,11 @@
                     
                     if ($AsUser) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                        Get-SPRListItem -List $List -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
+                        Get-SPRListItem -List $List -Web $Web -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
                     }
                     elseif (-not $Quiet) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                        Get-SPRListItem -List $List -Id $newItem.Id
+                        Get-SPRListItem -List $List -Web $Web -Id $newItem.Id
                     }
                 }
                 catch {
@@ -314,15 +319,15 @@
             $elapsed = (Get-Date) - $start
             $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
             [pscustomobject]@{
-                Title     = $List
-                ItemCount = $addcount
-                Result    = $result
-                Type      = "Import"
-                RunAs     = $currentuser
-                Duration  = $duration
-                URL       = $url
+                Title      = $List
+                ItemCount  = $addcount
+                Result     = $result
+                Type       = "Import"
+                RunAs      = $currentuser
+                Duration   = $duration
+                URL        = $url
                 FinishTime = Get-Date
-                Message   = $errormessage
+                Message    = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
