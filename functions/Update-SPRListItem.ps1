@@ -162,7 +162,6 @@
                         Write-PSFMessage -Level Verbose -Message "Column = $Column"
                     }
                     
-                    Write-PSFMessage -Level Verbose -Message "Updating $($item.Id) from $($list.Title)"
                     Update-Row -Row $item -ColumnNames $Column -UpdateItem $updateitem
                 }
                 catch {
@@ -173,7 +172,7 @@
     }
     end {
         if ($script:updates.Id) {
-            Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
+            Write-PSFMessage -Level Debug -Message "Executing ExecuteQuery"
             $script:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {

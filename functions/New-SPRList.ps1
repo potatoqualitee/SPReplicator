@@ -109,7 +109,7 @@
                     $newlist = $server.Web.Lists.Add($listinfo)
                     $newlist.Description = $Description
                     $newlist.Update()
-                    Write-PSFMessage -Level Verbose -Message "Executing query"
+                    Write-PSFMessage -Level Debug -Message "Executing query"
                     $server.ExecuteQuery()
                     Get-SPRList -List $Title
                 }
