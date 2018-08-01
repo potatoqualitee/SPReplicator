@@ -240,7 +240,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Import-SPRListItem" {
-        It "imports data from $script:filename" {
+        It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist).Title.Count
             $results = Import-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Path $script:filename
             $results.Title | Should -Contain 'Hello SQL'
@@ -303,7 +303,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
         It "Doesn't update other things" {
             $results = Get-SPRListItem -List $script:mylist
-            $results.Author | Should -Contain $script:spsite.CurrentUser.Title
+            $results.Author | Should -Contain (Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred).CurrentUser.Title
         }
     }
     
