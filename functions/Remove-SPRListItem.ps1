@@ -78,7 +78,7 @@
                 $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -Id $Id
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRListItem -List $List -Web $Web -Id $Id
+                $InputObject = Get-SPRListItem -List $List -Web $Web -Id $Id -Credential $Credential
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"

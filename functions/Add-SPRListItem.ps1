@@ -93,7 +93,7 @@
         $start = Get-Date
         if ($AsUser) {
             Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
-            $userobject = Get-SPRUser -Site $Site -UserName $AsUser
+            $userobject = Get-SPRUser -Site $Site -UserName $AsUser -Credential $Credential
         }
         
         function New-SPlist {

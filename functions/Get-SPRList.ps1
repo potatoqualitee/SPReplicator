@@ -64,7 +64,7 @@
             }
             
             if ($Web) {
-                $InputObject = Get-SPRWeb -Web $Web
+                $InputObject = Get-SPRWeb -Web $Web -Credential $Credential
             }
             elseif ($script:spweb) {
                 $InputObject = $script:spweb

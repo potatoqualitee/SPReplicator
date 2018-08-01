@@ -86,18 +86,24 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
+                $null = Connect-SPRSite -Site $Site -Credential $Credential
+                $InputObject = $script:spweb
             }
-            elseif ($script:spsite) {
-                $InputObject = $script:spsite
+            
+            if ($Web) {
+                $InputObject = Get-SPRWeb -Web $Web -Credential $Credential
             }
-            else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
+            elseif ($script:spweb) {
+                $InputObject = $script:spweb
+            }
+            
+            if (-not $InputObject) {
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site, Web or run Connect-SPRSite"
                 return
             }
         }
-
-        foreach ($server in $InputObject) {
+        
+        foreach ($server in $InputObject.Context) {
             try {
                 Write-PSFMessage -Level Verbose -Message "Loading up all lists"
                 $lists = $server.Web.Lists
