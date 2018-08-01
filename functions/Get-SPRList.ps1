@@ -66,8 +66,8 @@
             if ($Web) {
                 $InputObject = Get-SPRWeb -Web $Web
             }
-            elseif ($global:spweb) {
-                $InputObject = $global:spweb
+            elseif ($script:spweb) {
+                $InputObject = $script:spweb
             }
             
             if (-not $InputObject) {
@@ -79,9 +79,9 @@
         foreach ($server in $InputObject.Context) {
             if (-not $List) {
                 try {
-                    $server.Load($global:spweb)
+                    $server.Load($script:spweb)
                     $server.ExecuteQuery()
-                    $lists = $global:spweb.Lists
+                    $lists = $script:spweb.Lists
                     $server.Load($lists)
                     $server.ExecuteQuery()
                     $lists | Select-DefaultView -Property Id, Title, Description, ItemCount, BaseType, Created
@@ -93,9 +93,9 @@
             else {
                 foreach ($currentlist in $List) {
                     try {
-                        $server.Load($global:spweb)
+                        $server.Load($script:spweb)
                         $server.ExecuteQuery()
-                        $lists = $global:spweb.Lists
+                        $lists = $script:spweb.Lists
                         $server.Load($lists)
                         $server.ExecuteQuery()
                         $thislist = $lists | Where-Object Title -eq $currentlist

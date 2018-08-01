@@ -11,8 +11,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $originalwebs = Get-SPRWeb
         $originalusers = Get-SPRUser
-        # all commands set $global:spsite, remove this variable to start from scratch
-        $global:spsite = $null
     }
     AfterAll {
         $thislist = Get-SPRList -Site $script:site -List $script:mylist -WarningAction SilentlyContinue 3> $null
@@ -81,7 +79,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Get-SPRList" {
-        $global:spsite = $null
+        $script:spsite = $null
         It "Gets a list named $script:mylist with a basetype GenericList" {
             $results = Get-SPRList -Site $script:site -List $script:mylist
             $results.Title | Should -Be $script:mylist
@@ -228,7 +226,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Import-SPRListItem" {
-        It "imports data from $script:filename" {
+        It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -Site $script:site -List $script:mylist).Title.Count
             $results = Import-SPRListItem -Site $script:site -List $script:mylist -Path $script:filename
             $results.Title | Should -Contain 'Hello SQL'
@@ -290,8 +288,8 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Editor | Should -Be 'System Account'
         }
         It "Doesn't update other things" {
-            $results = Get-SPRListItem -Site $script:site -List $script:mylist
-            $results.Author | Should -Contain $global:spsite.CurrentUser.Title
+            $results = Get-SPRListItem -List $script:mylist
+            $results.Author | Should -Contain (Connect-SPRSite -Site $script:site).CurrentUser.Title
         }
     }
     

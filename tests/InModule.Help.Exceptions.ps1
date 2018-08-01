@@ -1,8 +1,8 @@
-﻿$global:FunctionHelpTestExceptions = @(
+﻿$script:FunctionHelpTestExceptions = @(
 )
 
-$global:HelpTestEnumeratedArrays = @(
+$script:HelpTestEnumeratedArrays = @(
 )
 
-$global:HelpTestSkipParameterType = @{
+$script:HelpTestSkipParameterType = @{
 }

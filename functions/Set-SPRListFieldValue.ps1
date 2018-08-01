@@ -102,7 +102,7 @@ Connects to  https://school.sharepoint.com as user ad\user then changes Grade to
             if ($Site) {
                 $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List
             }
-            elseif ($global:spsite) {
+            elseif ($script:spsite) {
                 $InputObject = Get-SPRListItem -List $List
             }
             else {
@@ -140,7 +140,7 @@ Connects to  https://school.sharepoint.com as user ad\user then changes Grade to
     end {
         if ($script:updates.Id) {
             Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
-            $global:spsite.ExecuteQuery()
+            $script:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {
                     Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id

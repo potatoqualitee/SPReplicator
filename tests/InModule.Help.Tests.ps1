@@ -27,7 +27,7 @@ foreach ($command in $commands) {
     $commandName = $command.Name
 
     # Skip all functions that are on the exclusions list
-    if ($global:FunctionHelpTestExceptions -contains $commandName) { continue }
+    if ($script:FunctionHelpTestExceptions -contains $commandName) { continue }
 
     # The module-qualified command fails on Microsoft.PowerShell.Archive cmdlets
     $Help = Get-Help $commandName -ErrorAction SilentlyContinue

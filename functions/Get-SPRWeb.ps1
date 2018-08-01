@@ -57,8 +57,8 @@
             if ($Site) {
                 $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
             }
-            elseif ($global:spsite) {
-                $InputObject = $global:spsite
+            elseif ($script:spsite) {
+                $InputObject = $script:spsite
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -69,13 +69,13 @@
         foreach ($server in $InputObject) {
             if (-not $Web) {
                 try {
-                    $global:spweb = $server.Web
-                    $server.Load($global:spweb)
+                    $script:spweb = $server.Web
+                    $server.Load($script:spweb)
                     $server.ExecuteQuery()
                     if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                        $global:spweb = $global:spweb | Select-Object -ExcludeProperty Alerts
+                        $script:spweb = $script:spweb | Select-Object -ExcludeProperty Alerts
                     }
-                    $global:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
+                    $script:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
@@ -86,14 +86,14 @@
                     try {
                         $web = $server.Web | Where-Object Title -eq $currentweb
                         if ($web) {
-                            $global:spweb = $web
-                            $server.Load($global:spweb)
+                            $script:spweb = $web
+                            $server.Load($script:spweb)
                             $server.ExecuteQuery()
                             
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                                $global:spweb = $global:spweb | Select-Object -ExcludeProperty Alerts
+                                $script:spweb = $script:spweb | Select-Object -ExcludeProperty Alerts
                             }
-                            $global:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
+                            $script:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
                         }
                     }
                     catch {

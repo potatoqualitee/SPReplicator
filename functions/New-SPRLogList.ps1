@@ -73,8 +73,8 @@
             if ($Site) {
                 $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
             }
-            elseif ($global:spsite) {
-                $InputObject = $global:spsite
+            elseif ($script:spsite) {
+                $InputObject = $script:spsite
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -96,7 +96,7 @@
                 $view = $loglist | Get-SPRListView
                 $view.ViewQuery = '<OrderBy><FieldRef Name="ID" Ascending="FALSE" /></OrderBy>'
                 $view.Update()
-                $global:spsite.ExecuteQuery()
+                $script:spsite.ExecuteQuery()
                 Get-SPRList -List $Title
             }
             catch {

@@ -58,8 +58,8 @@
                 $null = Connect-SPRSite -Site $Site -Credential $Credential
                 $InputObject = Get-SPRWeb
             }
-            elseif ($global:spweb) {
-                $InputObject = $global:spweb
+            elseif ($script:spweb) {
+                $InputObject = $script:spweb
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -69,7 +69,7 @@
         else {
             if ($InputObject[0] -is [Microsoft.SharePoint.Client.User]) {
                 $UserName = $InputObject.LoginName
-                $InputObject = $global:spweb
+                $InputObject = $script:spweb
             }
         }
         
@@ -77,8 +77,8 @@
             if (-not $UserName) {
                 try {
                     $users = $web.SiteUsers
-                    $global:spsite.Load($users)
-                    $global:spsite.ExecuteQuery()
+                    $script:spsite.Load($users)
+                    $script:spsite.ExecuteQuery()
                     # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
                     if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
                         $users = $users | Select-Object -ExcludeProperty Alerts
@@ -92,11 +92,11 @@
             else {
                 foreach ($user in $UserName) {
                     try {
-                        Write-PSFMessage -Level Verbose -Message "Getting $user from $($global:spsite.Url)"
-                        $ensureduser = $global:spweb.EnsureUser($user)
-                        $global:spsite.Load($ensureduser)
-                        $global:spsite.ExecuteQuery()
-                        Write-PSFMessage -Level Verbose -Message "Got $user from $($global:spsite.Url)"
+                        Write-PSFMessage -Level Verbose -Message "Getting $user from $($script:spsite.Url)"
+                        $ensureduser = $script:spweb.EnsureUser($user)
+                        $script:spsite.Load($ensureduser)
+                        $script:spsite.ExecuteQuery()
+                        Write-PSFMessage -Level Verbose -Message "Got $user from $($script:spsite.Url)"
                         
                         if ($ensureduser) {
                             Add-Member -InputObject $ensureduser -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force

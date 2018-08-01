@@ -68,7 +68,7 @@
     process {
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         try {
-            $global:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
+            $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
             
             if ($Credential) {
                 if (-not $Location) {
@@ -76,8 +76,8 @@
                 }
                 
                 if ($Location -eq "Onprem") {
-                    $global:spsite.Credentials = $Credential.GetNetworkCredential()
-                    Add-Member -InputObject $global:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
+                    $script:spsite.Credentials = $Credential.GetNetworkCredential()
+                    Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
                     
                 }
                 else {
@@ -87,41 +87,41 @@
                     }
                     else {
                         $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($Credential.UserName, $Credential.Password)
-                        $global:spsite.Credentials = $credentials
-                        Add-Member -InputObject $global:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+                        $script:spsite.Credentials = $credentials
+                        Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
                     }
                 }
             }
             
-            if ($global:spsite.HasPendingRequest) {
-                $global:spsite.ExecuteQueryAsync().Wait()
+            if ($script:spsite.HasPendingRequest) {
+                $script:spsite.ExecuteQueryAsync().Wait()
             }
             
-            Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
+            Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
             
-            if (-not $global:spsite.ExecuteQuery) {
+            if (-not $script:spsite.ExecuteQuery) {
                 # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
-                Add-Member -InputObject $global:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
-                    if ($global:spsite.HasPendingRequest) {
-                        $global:spsite.ExecuteQueryAsync().Wait()
+                Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
+                    if ($script:spsite.HasPendingRequest) {
+                        $script:spsite.ExecuteQueryAsync().Wait()
                     }
                 } -Force
             }
-            $global:spsite.AuthenticationMode = $AuthenticationMode
-            $global:spsite.ExecuteQuery()
-            $global:spweb = $global:spsite.Web
+            $script:spsite.AuthenticationMode = $AuthenticationMode
+            $script:spsite.ExecuteQuery()
+            $script:spweb = $script:spsite.Web
             
-            if ($global:spsite.Credentials) {
-                $loginname = Get-SPRUser -UserName $global:spsite.Credentials.UserName
+            if ($script:spsite.Credentials) {
+                $loginname = Get-SPRUser -UserName $script:spsite.Credentials.UserName
             }
             else {
                 $username = whoami
                 $loginname = Get-SPRUser -UserName $username
             }
             
-            Add-Member -InputObject $global:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
+            Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
             
-            $global:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
+            $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

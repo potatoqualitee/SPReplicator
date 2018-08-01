@@ -268,11 +268,11 @@
                     $newItem = $thislist.AddItem($itemCreateInfo)
                     $newItem = Add-Row -Row $row -ColumnInfo $columns
                     $newItem.Update()
-                    $global:spsite.Load($newItem)
+                    $script:spsite.Load($newItem)
                     
                     Write-PSFMessage -Level Verbose -Message "Adding new item to $List"
                     $addcount++
-                    $global:spsite.ExecuteQuery()
+                    $script:spsite.ExecuteQuery()
                     
                     if ($AsUser) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
@@ -302,7 +302,7 @@
                 $currentuser = $thislist.Context.CurrentUser.ToString()
             }
             else {
-                $currentuser = $global:spsite.CurrentUser.ToString()
+                $currentuser = $script:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"

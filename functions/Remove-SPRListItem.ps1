@@ -72,7 +72,7 @@
             if ($Site) {
                 $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Id $Id
             }
-            elseif ($global:spsite) {
+            elseif ($script:spsite) {
                 $InputObject = Get-SPRListItem -List $List -Id $Id
             }
             else {
@@ -99,7 +99,7 @@
                 try {
                     Write-PSFMessage -Level Verbose -Message "Removing $($item.Id) from $($list.Title)"
                     $thislist.GetItemById($item.Id).DeleteObject()
-                    $global:spsite.ExecuteQuery()
+                    $script:spsite.ExecuteQuery()
                     [pscustomobject]@{
                         Site = $thislist.Context
                         List = $thislist.Title
