@@ -99,13 +99,12 @@
                 $server.Load($lists)
                 $server.ExecuteQuery()
 
-                Write-PSFMessage -Level Verbose -Message "Creating list"
-                $listinfo = New-Object Microsoft.SharePoint.Client.ListCreationInformation
-                $listinfo.Title = $Title
-                $templateid = (Get-SPRListTemplate -Name $Template).Id
-                Write-PSFMessage -Level Verbose -Message "Associating templateid $templateid"
-                $listinfo.TemplateType = $templateid
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Adding list $Title")) {
+                    $listinfo = New-Object Microsoft.SharePoint.Client.ListCreationInformation
+                    $listinfo.Title = $Title
+                    $templateid = (Get-SPRListTemplate -Name $Template).Id
+                    Write-PSFMessage -Level Verbose -Message "Associating templateid $templateid"
+                    $listinfo.TemplateType = $templateid
                     $newlist = $server.Web.Lists.Add($listinfo)
                     $newlist.Description = $Description
                     $newlist.Update()

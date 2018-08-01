@@ -2,33 +2,20 @@
 Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 . "$PSScriptRoot\constants.ps1"
 
-if ($PSVersionTable.PSEdition -eq "Core") {
-    Stop-PSFFunction -Message "SharePoint Online not supported in Core :("
-    return
-}
-
 Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
-        $script:startingconfig = Get-SPRConfig
+        $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
-        $thislist = $thislist | Where-Object Title -ne 'SPRLog'
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $originalwebs = Get-SPRWeb
-        if ($env:appveyor) {
-            $loglist = Get-SPRList -List SPRLog
-            $PSDefaultParameterValues = @{ '*:LogToList' = $loglist }
-        }
-        # all commands set $script:spsite, remove this variable to start from scratch
-        $script:spsite = $null
-        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
+        $originalusers = Get-SPRUser
     }
     AfterAll {
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $oldvalue = $script:startingconfig | Where-Object Name -eq location
-        $results = Set-SPRConfig -Name location -Value $oldvalue.Value
+        $results = Set-SPRConfig -Name location -Value $oldconfig.Value
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
     
@@ -79,6 +66,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "New-SPRList" {
+        It "Supports WhatIf" {
+            $results = New-SPRList -Title $script:mylist -Description "My List Description" -WhatIf
+            $results | Should -Be $null
+        }
         It "Creates a new list named $script:mylist" {
             $results = New-SPRList -Title $script:mylist -Description "My List Description"
             $results.Title | Should -Be $script:mylist
@@ -105,6 +96,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Add-SPRColumn" {
+        It "Supports WhatIf" {
+            $results = Add-SPRColumn -List $script:mylist -ColumnName TestColumn -Description "One column" -WhatIf
+            $results | Should -Be $null
+        }
         It "Adds a column named TestColumn" {
             $results = Add-SPRColumn -List $script:mylist -ColumnName TestColumn -Description "One column"
             $results.List | Should -Be $script:mylist
@@ -143,6 +138,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Add-SPRListItem" {
+        It "Supports WhatIf" {
+            $object = @()
+            $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
+            $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
+            $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
+            $results = Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -InputObject $object -WhatIf
+            $results | Should -Be $null
+        }
         It "Adds generic objects to list" {
             $object = @()
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
@@ -152,7 +155,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'Hello', 'Hello2', 'Hello3'
             $results.TestColumn | Should -Be 'Sample Data', 'Sample Data2', 'Sample Data3'
         }
-        
         It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
             if ($PSVersionTable.PSEdition -ne "Core" -and $env:COMPUTERNAME -eq "workstationx") {
                 $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
@@ -172,9 +174,9 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             $object += [pscustomobject]@{ Title = 'Sup'; TestColumn = 'Sample Sup'; }
             $object += [pscustomobject]@{ Title = 'Sup2'; TestColumn = 'Sample Sup2'; }
             $object += [pscustomobject]@{ Title = 'Sup3'; TestColumn = 'Sample Sup3'; }
-            $results = Add-SPRListItem -List $script:mylist -InputObject $object -Quiet
+            $results = Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -InputObject $object -Quiet
             $results | Should -Be $null
-            $results = Get-SPRListItem -List $script:mylist
+            $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist
             $results.Title | Should -Contain 'Sup'
             $results.Title | Should -Contain 'Sup2'
             $results.Title | Should -Contain 'Sup3'
@@ -230,16 +232,20 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Export-SPRListItem" {
-        It "Exports data to $script:mylist" {
+        It "Gets data from $script:mylist" {
             if ((Test-Path $script:filename)) {
                 Remove-Item $script:filename
             }
-            $result = Export-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Path $script:filename
+            $result = Export-SPRListItem -List $script:mylist -Path $script:filename
             $result.FullName | Should -Be $script:filename
         }
     }
     
     Context "Import-SPRListItem" {
+        It "Supports WhatIf" {
+            $results = Import-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Path $script:filename -WhatIf
+            $results | Should -Be $null
+        }
         It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist).Title.Count
             $results = Import-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Path $script:filename
@@ -251,19 +257,24 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Add-SPRListItem" {
         It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist).Title.Count
-            $results = Import-PSFCliXml -Path $script:filename | Select-Object -ExpandProperty Data  | Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist
+            $results = Import-PSFCliXml -Path $script:filename | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist
             (Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist).Title.Count | Should -BeGreaterThan $count
             $results.Title | Should -Contain 'Hello SQL'
         }
     }
     
     Context "Update-SPRListItem" {
+        (Import-PSFCliXml -Path $script:filename) | Export-Clixml -Path $script:filename
+        (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
+        (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
+        $updates = Import-CliXml -Path $script:filename | Select-Object -ExpandProperty Data
+        
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Updates data from $script:filename" {
             # Replace a value to update
-            (Import-PSFCliXml -Path $script:filename) | Export-Clixml -Path $script:filename
-            (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
-            (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
-            $updates = Import-CliXml -Path $script:filename | Select-Object -ExpandProperty Data
             $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false
             $results.Title.Count | Should -Be 1
             $results.Title | Should -Be 'ScooptyScoop'
@@ -296,8 +307,12 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Update-SPRListItemAuthorEditor" {
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Updates author/editor for a single item on $script:mylist" {
-            $results = Get-SPRListItem -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false
+            $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false
             $results.Author | Should -Be 'System Account'
             $results.Editor | Should -Be 'System Account'
         }
@@ -308,47 +323,37 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     }
     
     Context "Set-SPRListFieldValue" {
-        $current = Get-SPRListItem -List $script:mylist
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -Last 1 | Set-SPRListFieldValue -Column Title -Value ABC -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
+        
+        $current = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist
         
         It "Updates a single column on $script:mylist" {
             $pre = $current | Select-Object -Last 1
-            $results = Get-SPRListItem -List $script:mylist | Select-Object -Last 1 | Set-SPRListFieldValue -Column Title -Value ABC -Confirm:$false
+            $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -Last 1 | Set-SPRListFieldValue -Column Title -Value ABC -Confirm:$false
             $pre.Author | Should -Be $results.Author
-            $post = Get-SPRListItem -List $script:mylist | Select-Object -Last 1
+            $post = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -Last 1
             $post.Title | Should -Be 'ABC'
             $pre.TestColumn | Should -Be $post.TestColumn
         }
         It "Doesn't update other things" {
             $pre = $current | Select-Object -First 1
-            $post = Get-SPRListItem -List $script:mylist | Select-Object -First 1
+            $post = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -First 1
             $pre.Author | Should -Be $post.Author
             $pre.Title | Should -Be $post.Title
             $pre.TestColumn | Should -Be $post.TestColumn
         }
     }
     
-    Context "Remove-SPRListItem" {
-        It "Removes specific data from $script:mylist" {
-            $row = Get-SPRListItem -List $script:mylist -Id $script:id
-            $row | Should -Not -Be $null
-            $results = Get-SPRListItem -List $script:mylist | Where-Object Id -in $script:id | Remove-SPRListItem -Confirm:$false
-            $results.Site | Should -Not -Be $null
-            $row = Get-SPRListItem -List $script:mylist -Id $script:id  3> $null
-            $row | Should -Be $null
-        }
-    }
-    
-    Context "Clear-SPRListItems" {
-        It  "Removes data from $script:mylist" {
-            $results = Clear-SPRListItems -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Confirm:$false
-            Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Should -Be $null
-            Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -ExpandProperty ItemCount | Should -Be 0
-        }
-    }
-    
     Context "New-SPRLogList" {
+        It "Supports WhatIf" {
+            $results = New-SprLogList -Title SPReplicator -WhatIf
+            $results | Should -Be $null
+        }
         It "Creates a new log list" {
-            $results = New-SprLogList -Site $script:onlinesite -Credential $script:onlinecred
+            $results = New-SprLogList -Title SPReplicator
             $columns = $results | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
             $columns | Should -Contain "FinishTime"
             $columns | Should -Contain "ItemCount"
@@ -364,11 +369,41 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Remove-SPRListItem" {
+        It "Supports WhatIf" {
+            $results = Get-SPRListItem -List $script:mylist | Where-Object Id -in $script:id | Remove-SPRListItem -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
+        It "Removes specific data from $script:mylist" {
+            $row = Get-SPRListItem -List $script:mylist -Id $script:id
+            $row | Should -Not -Be $null
+            $results = Get-SPRListItem -List $script:mylist | Where-Object Id -in $script:id | Remove-SPRListItem -Confirm:$false
+            $results.Site | Should -Not -Be $null
+            $row = Get-SPRListItem -List $script:mylist -Id $script:id  3> $null
+            $row | Should -Be $null
+        }
+    }
+    
+    Context "Clear-SPRListItems" {
+        It "Supports WhatIf" {
+            $results = Clear-SPRListItems -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
+        It "Removes data from $script:mylist" {
+            $results = Clear-SPRListItems -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Confirm:$false
+            Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Should -Be $null
+            Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -ExpandProperty ItemCount | Should -Be 0
+        }
+    }
+    
     Context "Remove-SPRList" {
+        It "Supports WhatIf" {
+            $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false -WhatIf
+            $results | Should -Be $null
+        }
         It "Removes $script:mylist" {
             $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false
             Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Should -Be $null
-            
         }
     }
     Context "Get-SPRLog" {
@@ -387,10 +422,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Set-SPRConfig" {
         It "Sets some configs" {
             $script:currentconfig = Get-SPRConfig
-            $results = Set-SPRConfig -Name location -Value OnPrem
-            $results.Value | Should -Be 'OnPrem'
+            $results = Set-SPRConfig -Name location -Value Online
+            $results.Value | Should -Be 'Online'
             $results = Get-SPRConfig
-            ($results | Where-Object Name -eq location).Value | Should -Be 'OnPrem'
+            ($results | Where-Object Name -eq location).Value | Should -Be 'Online'
         }
     }
     Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
@@ -398,10 +433,9 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
 
 Describe "$CommandName Final Tests" -Tag "Finaltests" {
     Context "Checking to ensure all original data has remained" {
-        $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -Location Online
         $nowlists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $nowwebs = Get-SPRWeb
-        
+        $nowusers = Get-SPRUser
         $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         
@@ -412,6 +446,11 @@ Describe "$CommandName Final Tests" -Tag "Finaltests" {
         It "Site has the same number of lists as before" {
             $originallists.Count | Should -Be $nowlists.Count
         }
+        
+        It "Site has the same number of users as before" {
+            $originalusers.Count | Should -Be $nowusers.Count
+        }
+        
         It "Lists still have $originalsum items" {
             $originalsum | Should -Be $nowlistssum
             $originalsum | Should -BeGreaterThan 0
@@ -426,6 +465,12 @@ Describe "$CommandName Final Tests" -Tag "Finaltests" {
         foreach ($list in $originallists) {
             It "$($list.Title) currently exists" {
                 $nowlists.Title | Should -contain $list.Title
+            }
+        }
+        
+        foreach ($user in $originalusers) {
+            It "$($user.Title) currently exists" {
+                $nowusers.Title | Should -contain $user.Title
             }
         }
     }
