@@ -6,15 +6,18 @@
 .DESCRIPTION
     Updates author (created by) from a SharePoint list.
 
-.PARAMETER List
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
-
 .PARAMETER Username
     The username of the user.
 
 .PARAMETER Column
     List of specific column(s) to be updated. If no columns are specified, we'll try to figure out which fields to update.
-    
+
+.PARAMETER List
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -63,13 +66,15 @@
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$List,
+        [string[]]$List,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [ValidateSet("Author", "Editor")]
         [string[]]$Column = @("Author", "Editor"),
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
         [string]$Username,
-        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [Microsoft.SharePoint.Client.User]$UserObject,
@@ -115,10 +120,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRListItem -List $List
+                $InputObject = Get-SPRListItem -List $List -Web $Web
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
@@ -168,7 +173,7 @@
             $script:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {
-                    Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                    Get-SPRListItem -Web $Web -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
                 }
             }
         }

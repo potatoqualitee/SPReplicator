@@ -6,6 +6,12 @@
 .DESCRIPTION
     Adds a column to a SharePoint list.
 
+.PARAMETER List
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -14,9 +20,6 @@
 
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
-
-.PARAMETER List
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER ColumnName
     The column name.
@@ -85,7 +88,12 @@
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$List,
+        [string[]]$List,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [string]$ColumnName,
         [string]$DisplayName,
         [string]$Type = "Text",
@@ -95,9 +103,6 @@
         [switch]$DoNotAddToDefaultView,
         [ValidateSet("DefaultValue", "AddToDefaultContentType", "AddToNoContentType", "AddToAllContentTypes", "AddFieldInternalNameHint", "AddFieldToDefaultView", "AddFieldCheckDisplayName")]
         [string[]]$FieldOption = "AddFieldInternalNameHint",
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -119,10 +124,10 @@
         }
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List -Web $Web
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRList -List $List
+                $InputObject = Get-SPRList -List $List -Web $Web
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
