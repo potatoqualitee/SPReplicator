@@ -139,7 +139,7 @@ Connects to  https://school.sharepoint.com as user ad\user then changes Grade to
     }
     end {
         if ($script:updates.Id) {
-            Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
+            Write-PSFMessage -Level Debug -Message "Executing ExecuteQuery"
             $script:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {

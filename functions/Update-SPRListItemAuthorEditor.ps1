@@ -154,7 +154,6 @@
             
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record on $($thislist.Title), changing $Column to $Username")) {
                 try {
-                    Write-PSFMessage -Level Debug -Message "Updating $($item.Id) from $($thislist.Title)"
                     Update-Row -Row $item -ColumnNames $Column -UserObject $UserObject
                 }
                 catch {
@@ -165,7 +164,7 @@
     }
     end {
         if ($script:updates.Id) {
-            Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
+            Write-PSFMessage -Level Debug -Message "Executing ExecuteQuery"
             $script:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {

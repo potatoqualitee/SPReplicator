@@ -97,7 +97,6 @@
             $thislist = $item.ListObject
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Removing record $($item.Id) from $($item.ListObject.Title)")) {
                 try {
-                    Write-PSFMessage -Level Verbose -Message "Removing $($item.Id) from $($list.Title)"
                     $thislist.GetItemById($item.Id).DeleteObject()
                     $script:spsite.ExecuteQuery()
                     [pscustomobject]@{
