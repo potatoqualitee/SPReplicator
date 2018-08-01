@@ -17,7 +17,10 @@ Function Get-SPRListItem {
 
 .PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
-    
+   
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Id
     Return only rows with specific IDs
 
@@ -65,6 +68,8 @@ Function Get-SPRListItem {
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$List,
         [int[]]$Id,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -82,10 +87,10 @@ Function Get-SPRListItem {
         
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SprList -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SprList -Site $Site -Credential $Credential -List $List -Web $Web
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRList -List $List
+                $InputObject = Get-SPRList -List $List -Web $Web
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"

@@ -6,6 +6,12 @@
 .DESCRIPTION
     Deletes items from a SharePoint list.
 
+.PARAMETER List
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -14,9 +20,6 @@
 
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
-
-.PARAMETER List
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Id
     Removes only rows with specific IDs.
@@ -58,11 +61,13 @@
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$List,
-        [int[]]$Id,
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
+        [string[]]$List,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [int[]]$Id,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$EnableException
@@ -70,10 +75,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Id $Id
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -Id $Id
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRListItem -List $List -Id $Id
+                $InputObject = Get-SPRListItem -List $List -Web $Web -Id $Id -Credential $Credential
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"

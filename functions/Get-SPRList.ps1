@@ -6,6 +6,9 @@
 .DESCRIPTION
     Returns a SharePoint list object.
 
+.PARAMETER List
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
 .PARAMETER Web
     The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
 
@@ -17,9 +20,6 @@
 
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
-
-.PARAMETER List
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRSite
@@ -64,7 +64,7 @@
             }
             
             if ($Web) {
-                $InputObject = Get-SPRWeb -Web $Web
+                $InputObject = Get-SPRWeb -Web $Web -Credential $Credential
             }
             elseif ($script:spweb) {
                 $InputObject = $script:spweb

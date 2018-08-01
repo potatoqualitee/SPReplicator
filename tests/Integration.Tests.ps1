@@ -428,13 +428,6 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
             Get-SPRList -Site $script:site -List $script:mylist | Should -Be $null
         }
     }
-    Context "Get-SPRLog" {
-        It "Gets some logs" {
-            $results = Get-SPRLog
-            $results.ModuleName | Select-Object -First 1 | Should -Be 'SPReplicator'
-            $results | Measure-Object | Select-Object -ExpandProperty Count | Should -BeGreaterThan 20
-        }
-    }
     Context "Get-SPRConfig" {
         It "Gets some configs" {
             $results = Get-SPRConfig

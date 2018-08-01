@@ -6,6 +6,12 @@
 .DESCRIPTION
     Creates a new SharePoint list.
 
+.PARAMETER Title
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -14,9 +20,6 @@
 
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
-
-.PARAMETER Title
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Description
     The description for the list
@@ -68,12 +71,14 @@
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [Alias("List")]
         [string]$Title,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [string]$Description,
         [string]$Template = "Custom List",
         [switch]$OnQuickLaunch,
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -81,18 +86,24 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
+                $null = Connect-SPRSite -Site $Site -Credential $Credential
+                $InputObject = $script:spweb
             }
-            elseif ($script:spsite) {
-                $InputObject = $script:spsite
+            
+            if ($Web) {
+                $InputObject = Get-SPRWeb -Web $Web -Credential $Credential
             }
-            else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
+            elseif ($script:spweb) {
+                $InputObject = $script:spweb
+            }
+            
+            if (-not $InputObject) {
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site, Web or run Connect-SPRSite"
                 return
             }
         }
-
-        foreach ($server in $InputObject) {
+        
+        foreach ($server in $InputObject.Context) {
             try {
                 Write-PSFMessage -Level Verbose -Message "Loading up all lists"
                 $lists = $server.Web.Lists

@@ -12,6 +12,18 @@
 .PARAMETER Name
     Return only templates with specific names
 
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
+.PARAMETER Site
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
+
+    Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
+    See Get-Help Connect-SPRsite for more information.
+
+.PARAMETER Credential
+    Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
+
 .PARAMETER InputObject
     Piped input from a web
     
@@ -39,6 +51,11 @@
     param (
         [int[]]$Id,
         [string[]]$Name,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [Microsoft.SharePoint.Client.Web[]]$InputObject,
         [switch]$EnableException
     )

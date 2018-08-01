@@ -6,13 +6,17 @@
 .DESCRIPTION
     Adds items to a SharePoint list.
 
+.PARAMETER List
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
     Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
-.PARAMETER List
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
 
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
@@ -68,14 +72,16 @@
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
+        [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$List,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$AutoCreateList,
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
-        [PSCredential]$Credential,
         [switch]$Quiet,
         [string]$AsUser,
         [object]$DataTypeMap,
@@ -87,7 +93,7 @@
         $start = Get-Date
         if ($AsUser) {
             Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
-            $userobject = Get-SPRUser -Site $Site -UserName $AsUser
+            $userobject = Get-SPRUser -Site $Site -UserName $AsUser -Credential $Credential
         }
         
         function New-SPlist {
@@ -244,7 +250,7 @@
     }
     process {
         if (Test-PSFFunctionInterrupt) { return }
-        $thislist = Get-SPRList -Site $Site -Web $Web -Credential $Credential -List $List
+        $thislist = Get-SPRList -Site $Site -Credential $Credential -List $List -Web $Web
         
         if (-not $thislist) {
             if (-not $AutoCreateList) {
@@ -276,11 +282,11 @@
                     
                     if ($AsUser) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                        Get-SPRListItem -List $List -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
+                        Get-SPRListItem -List $List -Web $Web -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
                     }
                     elseif (-not $Quiet) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
-                        Get-SPRListItem -List $List -Id $newItem.Id
+                        Get-SPRListItem -List $List -Web $Web -Id $newItem.Id
                     }
                 }
                 catch {
@@ -314,15 +320,15 @@
             $elapsed = (Get-Date) - $start
             $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
             [pscustomobject]@{
-                Title     = $List
-                ItemCount = $addcount
-                Result    = $result
-                Type      = "Import"
-                RunAs     = $currentuser
-                Duration  = $duration
-                URL       = $url
+                Title      = $List
+                ItemCount  = $addcount
+                Result     = $result
+                Type       = "Import"
+                RunAs      = $currentuser
+                Duration   = $duration
+                URL        = $url
                 FinishTime = Get-Date
-                Message   = $errormessage
+                Message    = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }

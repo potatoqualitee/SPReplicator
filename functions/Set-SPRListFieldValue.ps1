@@ -6,15 +6,18 @@
 .DESCRIPTION
     Updates columns to new valus in a SharePoint list.
 
-.PARAMETER List
-    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
-
 .PARAMETER Value
     The new value
 
 .PARAMETER Column
     List of specific column(s) to be updated.
-    
+
+.PARAMETER List
+    The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
+
+.PARAMETER Web
+    The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
+
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -56,14 +59,16 @@ Connects to  https://school.sharepoint.com as user ad\user then changes Grade to
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
-        [string]$List,
+        [string[]]$List,
+        [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
+        [string[]]$Web,
+        [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
+        [string]$Site,
+        [PSCredential]$Credential,
         [Parameter(Mandatory)]
         [string[]]$Column,
-        [Parameter(HelpMessage = "SharePoint Site Collection")]
-        [string]$Site,
         [Parameter(Mandatory)]
         [string]$Value,
-        [PSCredential]$Credential,
         [Parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$Quiet,
@@ -100,10 +105,10 @@ Connects to  https://school.sharepoint.com as user ad\user then changes Grade to
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRListItem -List $List
+                $InputObject = Get-SPRListItem -List $List -Web $Web
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
@@ -143,7 +148,7 @@ Connects to  https://school.sharepoint.com as user ad\user then changes Grade to
             $script:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {
-                    Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id
+                    Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id -Web $Web
                 }
             }
         }
