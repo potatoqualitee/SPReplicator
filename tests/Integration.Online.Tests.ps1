@@ -67,11 +67,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "New-SPRList" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = New-SPRList -Title $script:mylist -Description "My List Description" -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Creates a new list named $script:mylist" {
-            $results = New-SPRList -Title $script:mylist -Description "My List Description"
+            $results = New-SPRList -Site $script:onlinesite -Credential $script:onlinecred -Title $script:mylist -Description "My List Description"
             $results.Title | Should -Be $script:mylist
             $results.GetType().Name | Should -Be 'List'
             $results.Description | Should -Be "My List Description"
@@ -97,11 +99,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Add-SPRColumn" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Add-SPRColumn -List $script:mylist -ColumnName TestColumn -Description "One column" -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Adds a column named TestColumn" {
-            $results = Add-SPRColumn -List $script:mylist -ColumnName TestColumn -Description "One column"
+            $results = Add-SPRColumn -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -ColumnName TestColumn -Description "One column"
             $results.List | Should -Be $script:mylist
             $results.Name | Should -Be TestColumn
             $results.DisplayName | Should -Be TestColumn
@@ -139,12 +143,14 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Add-SPRListItem" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $object = @()
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
             $object += [pscustomobject]@{ Title = 'Hello3'; TestColumn = 'Sample Data3'; }
             $results = Add-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -InputObject $object -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Adds generic objects to list" {
             $object = @()
@@ -243,8 +249,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Import-SPRListItem" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Import-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Path $script:filename -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist).Title.Count
@@ -270,8 +278,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         $updates = Import-CliXml -Path $script:filename | Select-Object -ExpandProperty Data
         
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Updates data from $script:filename" {
             # Replace a value to update
@@ -308,8 +318,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Update-SPRListItemAuthorEditor" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Updates author/editor for a single item on $script:mylist" {
             $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false
@@ -324,8 +336,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Set-SPRListFieldValue" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist | Select-Object -Last 1 | Set-SPRListFieldValue -Column Title -Value ABC -Confirm:$false -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         
         $current = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist
@@ -349,11 +363,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "New-SPRLogList" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = New-SprLogList -Title SPReplicator -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Creates a new log list" {
-            $results = New-SprLogList -Title SPReplicator
+            $results = New-SprLogList -Site $script:onlinesite -Credential $script:onlinecred -Title SPReplicator
             $columns = $results | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
             $columns | Should -Contain "FinishTime"
             $columns | Should -Contain "ItemCount"
@@ -371,11 +387,13 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Remove-SPRListItem" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Get-SPRListItem -List $script:mylist | Where-Object Id -in $script:id | Remove-SPRListItem -Confirm:$false -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Removes specific data from $script:mylist" {
-            $row = Get-SPRListItem -List $script:mylist -Id $script:id
+            $row = Get-SPRListItem -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Id $script:id
             $row | Should -Not -Be $null
             $results = Get-SPRListItem -List $script:mylist | Where-Object Id -in $script:id | Remove-SPRListItem -Confirm:$false
             $results.Site | Should -Not -Be $null
@@ -386,8 +404,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Clear-SPRListItems" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Clear-SPRListItems -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Confirm:$false -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Removes data from $script:mylist" {
             $results = Clear-SPRListItems -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -Confirm:$false
@@ -398,8 +418,10 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     
     Context "Remove-SPRList" {
         It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false -WhatIf
             $results | Should -Be $null
+            Import-Module SPReplicator -Force
         }
         It "Removes $script:mylist" {
             $results = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List 'My List', $script:mylist | Remove-SPRList -Confirm:$false

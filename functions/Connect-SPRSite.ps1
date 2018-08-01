@@ -120,7 +120,10 @@
             }
             
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
-            
+            $global:SPReplicator = [pscustomobject]@{
+                Web  = $script:spweb
+                Site = $script:spsite
+            }
             $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
         }
         catch {

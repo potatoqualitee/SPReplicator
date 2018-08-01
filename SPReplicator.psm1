@@ -27,6 +27,9 @@ if (-not (Get-PSFConfigValue -FullName SPReplicator.Location)) {
     Set-PSFConfig -Module SPReplicator -Name Location -Value Onprem -Description "Specifies primary location: SharePoint Online (Online) or On-Premises (Onprem)"
 }
 
+$script:spweb = $global:SPReplicator.Web
+$script:spsite = $global:SPReplicator.Site
+
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
