@@ -51,8 +51,8 @@
                 Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
                 $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
             }
-            elseif ($global:spsite) {
-                $InputObject = $global:spsite
+            elseif ($script:spsite) {
+                $InputObject = $script:spsite
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -62,13 +62,13 @@
         try {
             Write-PSFMessage -Level Verbose -Message "Disconnecting to the SharePoint service at $($InputObject.Url)"
             $output = [pscustomobject]@{
-                Url = $global:spsite.Url
-                ServerVersion = $global:spsite.ServerVersion
-                AuthenticationMode = $global:spsite.AuthenticationMode
-                Credential = $global:spsite.Credential
+                Url = $script:spsite.Url
+                ServerVersion = $script:spsite.ServerVersion
+                AuthenticationMode = $script:spsite.AuthenticationMode
+                Credential = $script:spsite.Credential
                 Disconnected = $true
             }
-            $global:spsite.Dispose()
+            $script:spsite.Dispose()
             Remove-Variable -Name spsite -Scope Global
             Select-Object -InputObject $output
         }

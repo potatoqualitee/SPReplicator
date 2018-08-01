@@ -121,7 +121,7 @@
             if ($Site) {
                 $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List
             }
-            elseif ($global:spsite) {
+            elseif ($script:spsite) {
                 $InputObject = Get-SPRList -List $List
             }
             else {

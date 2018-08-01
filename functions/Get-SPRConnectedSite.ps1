@@ -21,8 +21,8 @@
         [switch]$EnableException
     )
     process {
-        if ($global:spsite) {
-            $global:spsite | Select-Object -Property *
+        if ($script:spsite) {
+            $script:spsite | Select-Object -Property *
         }
         else {
             Stop-PSFFunction -Message "Not connected"

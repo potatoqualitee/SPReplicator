@@ -52,8 +52,8 @@
                 if ($Web) {
                     $InputObject = Get-SPRWeb -Web $Web
                 }
-                elseif ($global:spweb) {
-                    $InputObject = $global:spweb
+                elseif ($script:spweb) {
+                    $InputObject = $script:spweb
                 }
                 
                 if (-not $InputObject) {
@@ -62,14 +62,14 @@
                 }
             }
             
-            $global:spsite.Load($global:spweb.ListTemplates)
-            $global:spsite.Load($global:spsite.Site)
-            $customtemplates = $global:spsite.Site.GetCustomListTemplates($global:spweb)
-            $global:spsite.Load($customtemplates)
-            $global:spsite.ExecuteQuery()
+            $script:spsite.Load($script:spweb.ListTemplates)
+            $script:spsite.Load($script:spsite.Site)
+            $customtemplates = $script:spsite.Site.GetCustomListTemplates($script:spweb)
+            $script:spsite.Load($customtemplates)
+            $script:spsite.ExecuteQuery()
             
             # long story as to why it's done this way
-            $templates = $customtemplates, $global:spweb.ListTemplates | Select-DefaultView -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
+            $templates = $customtemplates, $script:spweb.ListTemplates | Select-DefaultView -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
             
             if ($Id) {
                 $templates | Where-Object Id -in $Id

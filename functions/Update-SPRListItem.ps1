@@ -121,7 +121,7 @@
             if ($Site) {
                 $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Id $Id
             }
-            elseif ($global:spsite) {
+            elseif ($script:spsite) {
                 $InputObject = Get-SPRListItem -List $List -Id $Id
             }
             else {
@@ -174,7 +174,7 @@
     end {
         if ($script:updates.Id) {
             Write-PSFMessage -Level Verbose -Message "Executing ExecuteQuery"
-            $global:spsite.ExecuteQuery()
+            $script:spsite.ExecuteQuery()
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {
                     Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id

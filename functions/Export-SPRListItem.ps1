@@ -71,7 +71,7 @@
             if ($Site) {
                 $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List
             }
-            elseif ($global:spsite) {
+            elseif ($script:spsite) {
                 $InputObject = Get-SPRListItem -List $List
             }
             else {
@@ -134,7 +134,7 @@
                 $currentuser = $thislist.Context.CurrentUser.ToString()
             }
             else {
-                $currentuser = $global:spsite.CurrentUser.ToString()
+                $currentuser = $script:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"

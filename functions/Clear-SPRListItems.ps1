@@ -72,7 +72,7 @@
             if ($Site) {
                 $InputObject = Get-SPRList -Site $Site -Credential $Credential -List $List
             }
-            elseif ($global:spsite) {
+            elseif ($script:spsite) {
                 $InputObject = Get-SPRList -List $List
             }
             else {
@@ -90,7 +90,7 @@
             $start = Get-Date
             $failure = $false
             $itemcount = $thislist.ItemCount
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $global:spsite.Url -Action "Removing $itemcount records from $($thislist.Title)")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $script:spsite.Url -Action "Removing $itemcount records from $($thislist.Title)")) {
                 try {
                     $done = $false
                     while (-not $done) {
@@ -132,7 +132,7 @@
                 $currentuser = $thislist.Context.CurrentUser.ToString()
             }
             else {
-                $currentuser = $global:spsite.CurrentUser.ToString()
+                $currentuser = $script:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"
