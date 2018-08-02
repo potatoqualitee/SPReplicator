@@ -39,24 +39,17 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    New-SPRLogList -Site intranet.ad.local -List List1
+    New-SPRLogList -Site intranet.ad.local
 
-    Creates a list called List1 on intranet.ad.local. Use Add-SPRColumn to add more columns.
-
-.EXAMPLE
-    $null = Connect-Site -Site intranet.ad.local
-    New-SPRLogList -List 'My Announcements' -Template Announcements
-
-    Creates a resuable connection to intranet.ad.local then uses that to create a new list called
-    My Announcements using the Announcements. Use Get-SPRListTemplate to find out all templates
-    or just tab through the options.
+    Creates a list titled "SPReplicator" on intranet.ad.local.
 
 .EXAMPLE
-    New-SPRLogList -Site intranet.ad.local -List 'My List' -Credential ad\user -OnQuickLaunch
+    New-SPRLogList -Site intranet.ad.local -Title Logger
+    $loglist = Get-SPRList -List Logger
+    Import-SPRListItem -Site intranet.ad.local -List 'My List' -Path C:\temp\mylist.dat -LogToList $loglist
+    
+    Creates a logging list titled Logger then logs the results from Import-SPRListItem
 
-    Creates a list called List1 on intranet.ad.local and logs into the webapp as ad\user.
-
-    Adds list to Quick Launch
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
