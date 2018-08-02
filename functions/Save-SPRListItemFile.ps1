@@ -38,12 +38,12 @@
 .EXAMPLE
     Save-SPRListItemFile -Site intranet.ad.local -List 'My List' -Path C:\temp
 
-    Saves items from My List on intranet.ad.local to C:\temp\
+    Saves all files (attachments/documents) from My List on intranet.ad.local to C:\temp\
 
 .EXAMPLE
     Get-SPRListItem -List 'My List' -Site intranet.ad.local | Where Title -match 'cupcake' | Save-SPRListItemFile -Path C:\temp\
 
-    Saves items from My List matching cupcake from intranet.ad.local to C:\temp\
+    Saves files (attachments/documents) from My List matching cupcake from intranet.ad.local to C:\temp\
 #>
     [CmdletBinding()]
     param (
