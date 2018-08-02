@@ -88,7 +88,9 @@
         'Get-SPRListView',
         'New-SPRLogList',
         'Set-SPRListFieldValue',
-        'Copy-SPRFile'
+        'Copy-SPRFile',
+        'Get-SPRLogList',
+        'Set-SPRLogList'
     )
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
