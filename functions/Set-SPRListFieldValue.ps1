@@ -45,16 +45,15 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-Get-SPRListItem -List Grades | Where LastName -match LeMaire | Set-SPRListFieldValue -Column Grade -Value A
-    
-Changes Grade to A for all items matching LastName LeMaire in the Grades list 😏. Assumes current site is connected.
- 
+    Get-SPRListItem -List Grades | Where LastName -match LeMaire | Set-SPRListFieldValue -Column Grade -Value A
+        
+    Changes Grade to A for all items matching LastName LeMaire in the Grades list 😏. Assumes current site is connected.
+     
 .EXAMPLE
-Connect-SPRSite -Site https://school.sharepoint.com -Credential ad\user
-Get-SPRListItem -List Grades | Where LastName -match LeMaire | Set-SPRListFieldValue -Column Grade -Value A
+    Connect-SPRSite -Site https://school.sharepoint.com -Credential ad\user
+    Get-SPRListItem -List Grades | Where LastName -match LeMaire | Set-SPRListFieldValue -Column Grade -Value A
 
-Connects to  https://school.sharepoint.com as user ad\user then changes Grade to A for all items matching LastName LeMaire in the Grades list.
-    
+    Connects to  https://school.sharepoint.com as user ad\user then changes Grade to A for all items matching LastName LeMaire in the Grades list.  
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
