@@ -30,6 +30,12 @@ if (-not (Get-PSFConfigValue -FullName SPReplicator.Location)) {
 $script:spweb = $global:SPReplicator.Web
 $script:spsite = $global:SPReplicator.Site
 
+$global:SPReplicator = [pscustomobject]@{
+    Web     = $script:spweb
+    Site    = $script:spsite
+    LogList = $PSDefaultParameterValues['*-SPR*:LogToList']
+}
+
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

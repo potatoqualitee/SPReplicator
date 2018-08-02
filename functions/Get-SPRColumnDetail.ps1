@@ -24,6 +24,9 @@
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
+.PARAMETER Simple
+    Just shows columns that were created by the user
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -48,6 +51,7 @@
         [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [switch]$Simple,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableException
@@ -65,12 +69,13 @@
                 return
             }
         }
-
+        
         foreach ($thislist in $InputObject) {
             try {
                 $thislist.Context.Load($thislist.Fields)
                 $thislist.Context.ExecuteQuery()
                 foreach ($column in $thislist.Fields) {
+                    if ($Simple -and -not ($column.CanBeDeleted -and $column.DisplayName -eq 'Title')) { continue }
                     $title = $column.Title
                     Add-Member -InputObject $column -MemberType NoteProperty -Name List -Value $thislist.Title
                     Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
