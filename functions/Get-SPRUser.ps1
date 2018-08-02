@@ -27,15 +27,19 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRUser -Site intranet.ad.local
+    Get-SPRUser -Site intranet.ad.local -UserName 'My User'
 
-    Gets all users on intranet.ad.local
+    Creates a web service object for My User on intranet.ad.local. Figures out the wsdl address automatically.
 
 .EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local | Get-SPRUser -UserName 'ad\user'
+    Connect-SPRSite -Site intranet.ad.local | Get-SPRUser -UserName 'My User'
 
-    Gets the ad\user SharePoint object on intranet.ad.local.
+    Creates a web service object for My User on intranet.ad.local. Figures out the wsdl address automatically.
 
+.EXAMPLE
+    Get-SPRUser -Site intranet.ad.local -UserName 'My User' -Credential ad\user
+
+    Creates a web service object for My User and logs into the webapp as ad\user.
 #>
     [CmdletBinding()]
     param (

@@ -35,14 +35,9 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Export-SPRListItem -List MyList -Path C:\temp\mylist.dat | Copy-SPRFile -Destination \\nas\dropoff
+    Export-SPRListItem -List MyList -Path C:\temp\mylist.dat | Copy-SPRFile -Destination \\nas\dropoff -Credential ad\user
 
-    Exports a list to a file then copies it to \\nas\dropoff using robocopy
-    
-.EXAMPLE
-    Export-SPRListItem -List MyList -Path C:\temp\mylist.dat | Copy-SPRFile -Destination \\nas\dropoff -Credential ad\user -Method BitsTransfer
-
-    Exports a list to a file then copies it using Start-BitsTransfer to \\nas\dropoff with the credential ad\user
+    Exports a list to a file then copies it to \\nas\dropoff
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (

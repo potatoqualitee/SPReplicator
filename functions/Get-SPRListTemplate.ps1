@@ -33,7 +33,7 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRListTemplate -Site intranet.ad.local
+    Get-SPRListTemplate
 
     Returns all templates and their corresponding numbers
 
