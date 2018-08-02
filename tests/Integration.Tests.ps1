@@ -247,6 +247,22 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
     }
     
+    Context "Copy-SPRFile" {
+        if ((Test-Path $script:filename)) {
+            Remove-Item $script:filename
+        }
+        It "Supports WhatIf" {
+            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
+            $results = Export-SPRListItem -List $script:mylist -Path $script:filename | Copy-SPRFile -Destination "$home\Documents" -WhatIf
+            $results | Should -Be $null
+            Import-Module SPReplicator -Force
+        }
+        It "Successfully copies a file" {
+            $result = Export-SPRListItem -List $script:mylist -Path $script:filename | Copy-SPRFile -Destination "$home\Documents"
+            $result.FullName | Should -Be "$home\Documents\My Test List.xml"
+        }
+    }
+    
     Context "Import-SPRListItem" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
