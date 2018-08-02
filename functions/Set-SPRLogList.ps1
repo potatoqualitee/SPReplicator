@@ -22,15 +22,6 @@
    
 .PARAMETER Web
     The human readable web name. So 'My Web' as opposed to 'MyWeb', unless you named it MyWeb.
-
-.PARAMETER Id
-    Return only rows with specific IDs
-
-.PARAMETER View
-    Return only rows from a specific view
-    
-.PARAMETER Since
-    Show only files modified since a specific date.
     
 .PARAMETER InputObject
     Allows piping from Get-SPRList
@@ -41,9 +32,9 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Set-SPRLogList -Site intranet.ad.local -List 'My List'
+    Set-SPRLogList -Site intranet.ad.local -Web Whatever -List SPReplicator
 
-    Gets data from My List on intranet.ad.local. Figures out the wsdl address automatically.
+    Sets the logging list to SPReplicator in the Whatever web
 #>
     [CmdletBinding()]
     param (
