@@ -74,21 +74,29 @@
         }
         try {
             
-            $columns = $InputObject | Get-SPRColumnDetail
+            $columns = $InputObject | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
+            
+            if ($columns -notcontains 'FinishTime' -and $columns -notcontains 'RunAs') {
+                Stop-PSFFunction -EnableException:$EnableException -Message "List is not an SPReplicator Log list. Use New-SPRLogList to create a new logging list."
+                return
+            }
+            
+            $PSDefaultParameterValues = Get-Variable -Name PSDefaultParameterValues -Scope 2 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value
             
             $command = '*-SPR*:LogToList'
+            
             if ($PSDefaultParameterValues[$command]) {
                 $PSDefaultParameterValues.Remove($command)
             }
             $PSDefaultParameterValues.Add($command, $InputObject)
-            $PSDefaultParameterValues[$command]
+            Set-Variable -Name PSDefaultParameterValues -Scope 2 -Value $PSDefaultParameterValues -ErrorAction SilentlyContinue
             
             $global:SPReplicator = [pscustomobject]@{
                 Web     = $script:spweb
                 Site    = $script:spsite
                 LogList = $PSDefaultParameterValues['*-SPR*:LogToList']
             }
-            
+            Get-SPRLogList
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

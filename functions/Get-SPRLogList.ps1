@@ -21,8 +21,6 @@
         [switch]$EnableException
     )
     process {
-        #Set-Variable -Name PSDefaultParameterValues -Value ($PSDefaultParameterValues += @{ '*-Dba*:SqlCredential' = $cred }) -Scope 1
-        Get-Variable -Name PSDefaultParameterValues -Scope 1
-        #$PSDefaultParameterValues['*-SPR*:LogToList']
+        (Get-Variable -Name PSDefaultParameterValues -Scope 2 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value)['*-SPR*:LogToList']
     }
 }
