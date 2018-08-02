@@ -79,7 +79,7 @@
                     $global:SPReplicator = [pscustomobject]@{
                         Web     = $script:spweb
                         Site    = $script:spsite
-                        LogList = $PSDefaultParameterValues['*-SPR*:LogToList']
+                        LogList = $global:SPReplicator.LogList
                     }
                 }
                 catch {
