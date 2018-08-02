@@ -94,7 +94,7 @@ Get-ADUser -Filter * | Add-SPRListItem -List ADList -AutoCreateList
 #### Get details about columns to help you format your input/output
 ![image](https://user-images.githubusercontent.com/8278033/42567935-19fcb8ac-84a7-11e8-9b48-0da67dd2ce0f.png)
 
-#### Results of built-in logger (New-SPRLogList and `-LogList`)
+#### Results of built-in logger (New-SPRLogList and `-LogToList`)
 
 ![image](https://user-images.githubusercontent.com/8278033/43561352-63b655cc-95b2-11e8-93e0-90926df74d47.png)
 
