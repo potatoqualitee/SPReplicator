@@ -40,7 +40,6 @@
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint list name")]
         [string]$List,
-        [int[]]$Id,
         [Parameter(Position = 1, HelpMessage = "Human-readble SharePoint web name")]
         [string[]]$Web,
         [Parameter(HelpMessage = "SharePoint Site Collection")]
