@@ -75,7 +75,7 @@
                 $thislist.Context.Load($thislist.Fields)
                 $thislist.Context.ExecuteQuery()
                 foreach ($column in $thislist.Fields) {
-                    if ($Simple -and -not ($column.CanBeDeleted -and $column.DisplayName -eq 'Title')) { continue }
+                    if ($Simple -and -not ($column.CanBeDeleted -or $column.StaticName -eq 'Title')) { continue }
                     $title = $column.Title
                     Add-Member -InputObject $column -MemberType NoteProperty -Name List -Value $thislist.Title
                     Add-Member -InputObject $column -MemberType NoteProperty -Name OwsName -Value "ows_$title"
