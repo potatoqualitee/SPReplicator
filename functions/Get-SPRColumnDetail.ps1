@@ -37,12 +37,7 @@
 .EXAMPLE
     Get-SPRList -List 'My List' -Site intranet.ad.local | Get-SPRColumnDetail
 
-     Gets column information from My List on intranet.ad.local.
-
-.EXAMPLE
-    Get-SPRListItem -Site intranet.ad.local -List 'My List' -Credential ad\user
-
-    Gets column information from My List on intranet.ad.local by logging into the webapp as ad\user.
+     Gets column information from My List on intranet.ad.local
 #>
     [CmdletBinding()]
     param (

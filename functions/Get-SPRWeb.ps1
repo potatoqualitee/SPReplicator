@@ -27,14 +27,14 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRWeb -Site intranet.ad.local -Web 'My Web'
+    Get-SPRWeb -Site intranet.ad.local
 
-    Creates a web service object for My Web on intranet.ad.local. Figures out the wsdl address automatically.
+    Gets all webs on intranet.ad.local
 
 .EXAMPLE
     Connect-SPRSite -Site intranet.ad.local | Get-SPRWeb -Web 'My Web'
 
-    Creates a web service object for My Web on intranet.ad.local. Figures out the wsdl address automatically.
+    Gets a SharePoint web object for My Web on intranet.ad.local.
 
 .EXAMPLE
     Get-SPRWeb -Site intranet.ad.local -Web 'My Web' -Credential ad\user

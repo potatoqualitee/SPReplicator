@@ -62,6 +62,11 @@ Function Get-SPRListItem {
     Get-SPRListItem -Site sharepoint2016 -List 'My List' -View 'My Tasks'
 
     Gets list items included in the view My Tasks
+    
+.EXAMPLE
+    Get-SPRListItem -Site sharepoint2016 -List 'My List' -Since (Get-Date).AddDays(-1)
+
+    Gets list items modified or created in the last day.
 #>
     [CmdletBinding()]
     param (
