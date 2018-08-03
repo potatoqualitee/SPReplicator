@@ -97,15 +97,20 @@
         }
         
         function New-SPlist {
-            $thislist = New-SPRList -Title $List
-            
             $firstobject = $InputObject | Select-Object -First 1
-            
             if ($firstobject.ListObject) {
-                $columns = $firstobject.ListObject | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
-                $validcolumntypes = (($firstobject.ListObject | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
-                $newcolumns = $firstobject.ListObject | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem', 'Title', 'ID' | Select-Object -ExpandProperty Name
-                $spdatatype = $firstobject.ListObject | Get-SPRColumnDetail | Select-SPRObject -Property Name, 'TypeAsString as Type'
+                $rowlist = $firstobject.ListObject
+            }
+            if ($firstobject -is [Microsoft.SharePoint.Client.List]) {
+                $rowlist = $InputObject | Select-Object -First 1
+            }
+            
+            $thislist = New-SPRList -Title $List
+            if ($rowlist) {
+                $columns = $rowlist | Get-SPRColumnDetail -Simple | Select-Object -ExpandProperty Name
+                $validcolumntypes = (($rowlist | Get-SPRColumnDetail).TypeAsString | Select-Object -Unique)
+                $newcolumns = $rowlist | Get-SPRColumnDetail -Simple | Where-Object FromBaseType -eq $false | Where-Object ColumnName -notin $columns, 'ListObject', 'ListItem', 'Title', 'ID' | Select-Object -ExpandProperty Name
+                $spdatatype = $rowlist | Get-SPRColumnDetail -Simple | Select-SPRObject -Property Name, 'TypeAsString as Type'
                 
                 if (-not $DataTypeMap) {
                     $tempdatatype = @()
@@ -206,6 +211,9 @@
                 if ($currentrow.ListObject) {
                     $columns = $currentrow.ListObject | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
                 }
+                elseif ($currentrow -is [Microsoft.SharePoint.Client.List]) {
+                    $columns = $currentrow | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
+                }
                 else {
                     $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
                     
@@ -266,10 +274,13 @@
             $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
         }
         
+        if ($InputObject[0] -is [Microsoft.SharePoint.Client.List]) {
+            $InputObject = $InputObject | Get-SPRListItem
+        }
+        
         foreach ($row in $InputObject) {
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Adding List item to $List")) {
                 try {
-                    
                     $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
                     $newItem = $thislist.AddItem($itemCreateInfo)
                     $newItem = Add-Row -Row $row -ColumnInfo $columns
