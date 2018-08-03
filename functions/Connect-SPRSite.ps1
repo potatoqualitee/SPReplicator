@@ -69,7 +69,7 @@
         $hostname = ([System.Uri]$Site).Host
         if (-not $Location) {
             $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
-            $Location = $hash[$hostname]
+            $Location = "$($hash[$hostname])"
             if (-not $Location) {
                 $Location = Get-PSFConfigValue -FullName SPReplicator.Location
             }
