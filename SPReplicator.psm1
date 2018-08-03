@@ -18,10 +18,12 @@ foreach ($function in (Get-ChildItem -Recurse "$PSScriptRoot\functions\*.ps1")) 
 # Register that script block
 Register-PSFTeppScriptblock -Name Template -ScriptBlock { Get-SPRListTemplate | Where-Object Id -ne -1 | Select-Object -ExpandProperty Template }
 Register-PSFTeppScriptblock -Name FieldType -ScriptBlock { [System.Enum]::GetNames([Microsoft.SharePoint.Client.FieldType]) | Where-Object { $PSItem -ne 'Invalid' } | Sort-Object }
+Register-PSFTeppScriptblock -Name Location -ScriptBlock { "OnPrem", "Online" }
 
 # Register the actual auto completer
 Register-PSFTeppArgumentCompleter -Command New-SPRList -Parameter Template -Name Template
 Register-PSFTeppArgumentCompleter -Command Add-SPRColumn -Parameter Type -Name FieldType
+Register-PSFTeppArgumentCompleter -Command Connect-SPRSite -Parameter Location -Name Location
 
 if (-not (Get-PSFConfigValue -FullName SPReplicator.Location)) {
     Set-PSFConfig -Module SPReplicator -Name Location -Value Onprem -Description "Specifies primary location: SharePoint Online (Online) or On-Premises (Onprem)"

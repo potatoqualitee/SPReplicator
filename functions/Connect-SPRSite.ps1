@@ -54,7 +54,6 @@
         [Parameter(Mandatory, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        #[ValidateSet("OnPrem", "Online")]
         [string]$Location,
         [ValidateSet("Default", "FormsAuthentication", "Authentication")]
         [string]$AuthenticationMode = "Default",
