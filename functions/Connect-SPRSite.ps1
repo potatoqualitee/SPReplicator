@@ -133,6 +133,15 @@
                 $loginname = Get-SPRUser -UserName $username
             }
             
+            $script:spsite.Load($script:spweb)
+            $script:spsite.ExecuteQuery()
+            $script:spsite.Load($script:spweb.Lists)
+            $script:spsite.ExecuteQuery()
+            $script:spweb.Lists.Title
+            
+            Register-PSFTeppScriptblock -Name List -ScriptBlock { $script:spweb.Lists.Title }
+            Register-PSFTeppArgumentCompleter -Command (Get-Command -Module SPReplicator).Name -Parameter List -Name List
+            
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
             $global:SPReplicator = [pscustomobject]@{
                 Web     = $script:spweb
@@ -140,6 +149,7 @@
                 LogList = $global:SPReplicator.LogList
             }
             $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
+            
         }
         catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

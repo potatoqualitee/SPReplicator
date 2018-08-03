@@ -16,9 +16,13 @@ foreach ($function in (Get-ChildItem -Recurse "$PSScriptRoot\functions\*.ps1")) 
 
 
 # Register that script block
-Register-PSFTeppScriptblock -Name Template -ScriptBlock { Get-SPRListTemplate | Where-Object Id -ne -1 | Select-Object -ExpandProperty Template }
+Register-PSFTeppScriptblock -Name Template -ScriptBlock {
+    $class = [Microsoft.SharePoint.Client.ListTemplateType]
+    [System.Enum]::GetNames($class)
+}
 Register-PSFTeppScriptblock -Name FieldType -ScriptBlock { [System.Enum]::GetNames([Microsoft.SharePoint.Client.FieldType]) | Where-Object { $PSItem -ne 'Invalid' } | Sort-Object }
 Register-PSFTeppScriptblock -Name Location -ScriptBlock { "OnPrem", "Online" }
+
 
 # Register the actual auto completer
 Register-PSFTeppArgumentCompleter -Command New-SPRList -Parameter Template -Name Template
