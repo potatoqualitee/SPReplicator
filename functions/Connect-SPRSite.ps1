@@ -20,7 +20,7 @@
     Specifies the authentication modes of the client Web request.
 
 .PARAMETER Location
-    Onprem or Online
+    Onprem or Online, this only needs to be set once, then it's cached. See Get-SPRConfig for more information.
     
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -43,7 +43,7 @@
     Creates a web service object and logs into the webapp as ad\user.
 
 .EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local -Credential (Get-Credential me@mycorp.onmicrosoft.com) -Location Online
+    Connect-SPRSite -Site intranet.ad.local -Credential me@mycorp.onmicrosoft.com -Location Online
 
     Creates a connection to SharePoint Online using the credential me@mycorp.onmicrosoft.com
     
@@ -64,6 +64,26 @@
         if ($Site -notmatch 'http') {
             $Site = "https://$Site"
         }
+        
+        # handle online vs onprem
+        $hostname = ([System.Uri]$Site).Host
+        if (-not $Location) {
+            $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
+            $Location = $hash[$hostname]
+            if (-not $Location) {
+                $Location = Get-PSFConfigValue -FullName SPReplicator.Location
+            }
+        }
+        
+        $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
+        if ($hash[$hostname]) {
+            $hash[$hostname] = $Location
+        }
+        else {
+            $hash.Add($hostname, $Location)
+        }
+        
+        Set-PSFConfig -FullName SPReplicator.SiteMapper -Value $hash -Description "Hosts and locations"
     }
     process {
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
@@ -71,14 +91,9 @@
             $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
             
             if ($Credential) {
-                if (-not $Location) {
-                    $Location = Get-PSFConfigValue -FullName SPReplicator.Location
-                }
-                
                 if ($Location -eq "Onprem") {
                     $script:spsite.Credentials = $Credential.GetNetworkCredential()
                     Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
-                    
                 }
                 else {
                     if ($PSVersionTable.PSEdition -eq "Core") {
@@ -121,9 +136,9 @@
             
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
             $global:SPReplicator = [pscustomobject]@{
-                Web             = $script:spweb
-                Site            = $script:spsite
-                LogList         = $global:SPReplicator.LogList
+                Web     = $script:spweb
+                Site    = $script:spsite
+                LogList = $global:SPReplicator.LogList
             }
             $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
         }

@@ -11,7 +11,7 @@ else {
 }
 
 foreach ($function in (Get-ChildItem -Recurse "$PSScriptRoot\functions\*.ps1")) {
-	$ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($function))), $null, $null)
+    $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($function))), $null, $null)
 }
 
 
@@ -25,6 +25,10 @@ Register-PSFTeppArgumentCompleter -Command Add-SPRColumn -Parameter Type -Name F
 
 if (-not (Get-PSFConfigValue -FullName SPReplicator.Location)) {
     Set-PSFConfig -Module SPReplicator -Name Location -Value Onprem -Description "Specifies primary location: SharePoint Online (Online) or On-Premises (Onprem)"
+}
+
+if (-not (Get-PSFConfigValue -FullName SPReplicator.SiteMapper)) {
+    Set-PSFConfig -FullName SPReplicator.SiteMapper -Value @{} -Description "Hosts and locations (online vs onprem)" -Initialize
 }
 
 $script:spweb = $global:SPReplicator.Web
