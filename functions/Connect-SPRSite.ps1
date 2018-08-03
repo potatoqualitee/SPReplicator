@@ -137,7 +137,6 @@
             $script:spsite.ExecuteQuery()
             $script:spsite.Load($script:spweb.Lists)
             $script:spsite.ExecuteQuery()
-            $script:spweb.Lists.Title
             
             Register-PSFTeppScriptblock -Name List -ScriptBlock { $script:spweb.Lists.Title }
             Register-PSFTeppArgumentCompleter -Command (Get-Command -Module SPReplicator).Name -Parameter List -Name List
