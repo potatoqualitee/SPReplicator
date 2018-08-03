@@ -54,7 +54,7 @@
         [Parameter(Mandatory, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [ValidateSet("OnPrem", "Online")]
+        #[ValidateSet("OnPrem", "Online")]
         [string]$Location,
         [ValidateSet("Default", "FormsAuthentication", "Authentication")]
         [string]$AuthenticationMode = "Default",
@@ -67,15 +67,15 @@
         
         # handle online vs onprem
         $hostname = ([System.Uri]$Site).Host
+        $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
+        
         if (-not $Location) {
             $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
-            $Location = "$($hash[$hostname])"
+            $Location = $hash[$hostname]
             if (-not $Location) {
                 $Location = Get-PSFConfigValue -FullName SPReplicator.Location
             }
         }
-        
-        $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
         if ($hash[$hostname]) {
             $hash[$hostname] = $Location
         }
