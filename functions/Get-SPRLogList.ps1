@@ -21,6 +21,7 @@
         [switch]$EnableException
     )
     process {
-        (Get-Variable -Name PSDefaultParameterValues -Scope 2 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value)['*-SPR*:LogToList']
+        #(Get-Variable -Name PSDefaultParameterValues -Scope 2 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Value)['*-SPR*:LogToList']
+        $global:SPReplicator.LogList
     }
 }

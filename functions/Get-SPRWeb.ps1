@@ -76,11 +76,7 @@
                         $script:spweb = $script:spweb | Select-Object -ExcludeProperty Alerts
                     }
                     $script:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
-                    $global:SPReplicator = [pscustomobject]@{
-                        Web     = $script:spweb
-                        Site    = $script:spsite
-                        LogList = $global:SPReplicator.LogList
-                    }
+                    Add-Member -InputObject $global:SPReplicator -NotePropertyName Web -NotePropertyValue $script:spweb -Force
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_

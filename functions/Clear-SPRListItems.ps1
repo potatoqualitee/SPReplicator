@@ -134,7 +134,12 @@
                 $thislist.Context.Load($thislist.RootFolder)
                 $thislist.Context.ExecuteQuery()
                 $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
-                $currentuser = $thislist.Context.CurrentUser.ToString()
+                if ($thislist.Context.CurrentUser) {
+                    $currentuser = $thislist.Context.CurrentUser.ToString()
+                }
+                else {
+                    $currentuser = $script:spsite.CurrentUser.ToString()
+                }
             }
             else {
                 $currentuser = $script:spsite.CurrentUser.ToString()

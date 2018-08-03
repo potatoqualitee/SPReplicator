@@ -138,15 +138,19 @@
             $script:spsite.Load($script:spweb.Lists)
             $script:spsite.ExecuteQuery()
             
-            Register-PSFTeppScriptblock -Name List -ScriptBlock { $script:spweb.Lists.Title }
-            Register-PSFTeppArgumentCompleter -Command (Get-Command -Module SPReplicator).Name -Parameter List -Name List
-            
-            Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
             $global:SPReplicator = [pscustomobject]@{
                 Web     = $script:spweb
                 Site    = $script:spsite
                 LogList = $global:SPReplicator.LogList
+                ListNames = $script:spweb.Lists.Title
             }
+            
+            Register-PSFTeppScriptblock -Name List -ScriptBlock {
+                $global:SPReplicator.ListNames
+            }
+            Register-PSFTeppArgumentCompleter -Command (Get-Command -Module SPReplicator).Name -Parameter List -Name List
+            
+            Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
             $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
             
         }

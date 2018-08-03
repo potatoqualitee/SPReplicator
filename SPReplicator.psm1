@@ -39,6 +39,7 @@ if (-not (Get-PSFConfigValue -FullName SPReplicator.SiteMapper)) {
 
 $script:spweb = $global:SPReplicator.Web
 $script:spsite = $global:SPReplicator.Site
+
 if ($global:SPReplicator.LogList) {
     $global:SPReplicator.LogList | Set-SPRLogList
 }
@@ -47,6 +48,7 @@ $global:SPReplicator = [pscustomobject]@{
     Web     = $script:spweb
     Site    = $script:spsite
     LogList = $global:SPReplicator.LogList
+    ListNames = $global:SPReplicator.ListNames
 }
 
 # SIG # Begin signature block

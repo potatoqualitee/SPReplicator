@@ -79,13 +79,8 @@
                 $PSDefaultParameterValues.Remove($command)
             }
             $PSDefaultParameterValues.Add($command, $InputObject)
+            Add-Member -InputObject $global:SPReplicator -NotePropertyName LogList -NotePropertyValue $PSDefaultParameterValues['*-SPR*:LogToList'] -Force
             Set-Variable -Name PSDefaultParameterValues -Scope 2 -Value $PSDefaultParameterValues -ErrorAction SilentlyContinue
-            
-            $global:SPReplicator = [pscustomobject]@{
-                Web     = $script:spweb
-                Site    = $script:spsite
-                LogList = $PSDefaultParameterValues['*-SPR*:LogToList']
-            }
             Get-SPRLogList
         }
         catch {
