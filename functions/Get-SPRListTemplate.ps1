@@ -85,19 +85,19 @@
             $script:spsite.Load($customtemplates)
             $script:spsite.ExecuteQuery()
             
-            # long story as to why it's done this way
             $templates = $customtemplates, $script:spweb.ListTemplates | Select-DefaultView -Property 'ListTemplateTypeKind as Id', Name, Description, InternalName, BaseType, IsCustomTemplate, Hidden
             
             if ($Id) {
-                $templates | Where-Object Id -in $Id
+                $templates = $templates | Where-Object Id -in $Id
             }
             
             if ($Name) {
-                $templates | Where-Object Name -in $Name
+                $templates = $templates | Where-Object Name -in $Name
             }
-            
-            if (-not $Id -and -not $Name) {
-                $templates
+            $listitems = Get-SPRListItem -List "List Template Gallery"
+            foreach ($template in $templates) {
+                $listitem = $listitems | Where-Object TemplateTitle -eq $template.Name
+                Add-Member -NotePropertyName ListItem -NotePropertyValue $listitem -InputObject $template -PassThru -Force
             }
         }
         catch {
