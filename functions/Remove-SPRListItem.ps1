@@ -100,15 +100,20 @@
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid InputObject" -Continue
             }
             $thislist = $item.ListObject
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Removing record $($item.Id) from $($item.ListObject.Title)")) {
+            $title = $item.Title
+            if (-not $title) {
+                $title = $item.TemplateTitle
+            }
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Removing record $($item.Id) ($title) from $($item.ListObject.Title)")) {
                 try {
                     $thislist.GetItemById($item.Id).DeleteObject()
                     $script:spsite.ExecuteQuery()
+                    
                     [pscustomobject]@{
                         Site = $thislist.Context
                         List = $thislist.Title
                         ItemId = $item.Id
-                        Title = $item.Title
+                        Title = $title
                         Status = "Deleted"
                     }
                 }
