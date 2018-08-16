@@ -47,17 +47,11 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $null = Connect-SPRSite -Site $Site -Credential $Credential
-                $getsite = $script:spsite.get_site()
-                $script:spsite.Load($getsite)
-                $script:spsite.ExecuteQuery()
-                $InputObject = $getsite.get_rootWeb()
+                $siteobject = Connect-SPRSite -Site $Site -Credential $Credential
+                $InputObject = $siteobject.RootWeb
             }
             elseif ($script:spweb) {
-                $getsite = $script:spweb.Context.get_site()
-                $script:spweb.Context.Load($getsite)
-                $script:spweb.Context.ExecuteQuery()
-                $InputObject = $getsite.get_rootWeb()
+                $InputObject = $script:spweb.Context.RootWeb
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -66,10 +60,7 @@
         }
         
         if ($InputObject -is [Microsoft.SharePoint.Client.Site]) {
-            $getsite = $script:spweb.Context.get_site()
-            $script:spweb.Context.Load($getsite)
-            $script:spweb.Context.ExecuteQuery()
-            $InputObject = $getsite.get_rootWeb()
+            $InputObject = $InputObject.RootWeb
         }
         
         foreach ($web in $InputObject) {
