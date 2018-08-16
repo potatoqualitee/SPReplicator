@@ -96,6 +96,12 @@
                 # i get Exception calling "ExecuteQuery" with "0" argument(s): "Method "SaveAsTemplate" does not exist."
                 # savebinarydirect
                 # https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2010/ms466023(v=office.14)
+                
+                #ctl00$PlaceHolderMain$ctl00$ctl01$TxtSaveAsTemplateName: THIS IS FILENAME
+                #ctl00$PlaceHolderMain$ctl01$ctl01$TxtSaveAsTemplateTitle: THIS IS NAME
+                #ctl00$PlaceHolderMain$ctl01$ctl02$TxtSaveAsTemplateDescription: DECRIPTION
+                #ctl00$PlaceHolderMain$ctl03$CbSaveData: on
+                #https://blog.vossers.com/2012/02/04/use-jquery-to-submit-forms-on-remote-sharepoint-admin-pages/
                 $thislist.SaveAsTemplate($FileName, $Name, $Description, $IncludeData)
                 $thislist.Update()
                 $thislist.Context.ExecuteQuery()
