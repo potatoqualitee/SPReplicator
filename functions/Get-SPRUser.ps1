@@ -24,6 +24,9 @@
 .PARAMETER InputObject
     Allows piping from Connect-SPRSite
 
+.PARAMETER Force
+    Repopulates the user cache, otherwise, it'll use the cache
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -50,6 +53,7 @@
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$EnsureUser,
+        [switch]$Force,
         [switch]$EnableException
     )
     process {
@@ -72,8 +76,12 @@
                 $InputObject = $script:spweb
             }
         }
-
+        
         foreach ($web in $InputObject) {
+            $script:spsite.Load($web)
+            $script:spsite.ExecuteQuery()
+            $webid = $web.Id
+            
             if (-not $UserName) {
                 try {
                     $users = $web.SiteUsers
@@ -90,10 +98,16 @@
                 }
             }
             else {
-                $users = $web.SiteUsers
-                $script:spsite.Load($users)
-                $script:spsite.ExecuteQuery()
-
+                if (-not $global:SPReplicator.UserCache[$webid] -or $Force) {
+                    $users = $web.SiteUsers
+                    $script:spsite.Load($users)
+                    $script:spsite.ExecuteQuery()
+                    $global:SPReplicator.UserCache[$webid] = $users
+                }
+                else {
+                    $users = $global:SPReplicator.UserCache[$webid]
+                }
+                
                 foreach ($user in $UserName) {
                     try {
                         Write-PSFMessage -Level Verbose -Message "Getting $user from $($script:spsite.Url)"
