@@ -20,7 +20,13 @@
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRsite
-    
+  
+.PARAMETER WhatIf
+    If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
+
+.PARAMETER Confirm
+    If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
+
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -37,7 +43,7 @@
 
     Removes the ad\user SharePoint object on intranet.ad.local
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint user name")]
         [string[]]$Identity,
@@ -76,14 +82,18 @@
             $script:spsite.Load($user)
             $login = $user.LoginName
             $script:spsite.ExecuteQuery()
-            $script:spsite.RootWeb.SiteUsers.Remove($user)
-            $script:spsite.ExecuteQuery()
             
-            [pscustomobject]@{
-                Site = $script:spsite
-                Web = $script:spsite.RootWeb
-                Identity = $login
-                Status = "Deleted"
+            
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $script:spsite.Url -Action "Removing user $login")) {
+                $script:spsite.RootWeb.SiteUsers.Remove($user)
+                $script:spsite.ExecuteQuery()
+                
+                [pscustomobject]@{
+                    Site = $script:spsite
+                    Web  = $script:spsite.RootWeb
+                    Identity = $login
+                    Status = "Deleted"
+                }
             }
         }
     }
