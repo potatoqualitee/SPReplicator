@@ -70,11 +70,12 @@
         }
         
         foreach ($web in $InputObject) {
+            $users = $web.SiteUsers
+            $script:spsite.Load($users)
+            $script:spsite.ExecuteQuery()
+            
             if (-not $UserName) {
                 try {
-                    $users = $web.SiteUsers
-                    $script:spsite.Load($users)
-                    $script:spsite.ExecuteQuery()
                     # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
                     if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
                         $users = $users | Select-Object -ExcludeProperty Alerts
