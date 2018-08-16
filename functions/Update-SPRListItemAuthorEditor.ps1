@@ -6,8 +6,8 @@
 .DESCRIPTION
     Updates author (created by) from a SharePoint list.
 
-.PARAMETER Username
-    The username of the user.
+.PARAMETER Identity
+    The Identity of the user.
 
 .PARAMETER Column
     List of specific column(s) to be updated. If no columns are specified, we'll try to figure out which fields to update.
@@ -74,7 +74,7 @@
         [PSCredential]$Credential,
         [ValidateSet("Author", "Editor")]
         [string[]]$Column = @("Author", "Editor"),
-        [string]$Username,
+        [string]$Identity,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [Microsoft.SharePoint.Client.User]$UserObject,
@@ -149,7 +149,7 @@
             
             if (-not $UserObject) {
                 try {
-                    $UserObject = Get-SPRUser -Username $Username
+                    $UserObject = Get-SPRUser -Identity $Identity
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
@@ -157,7 +157,7 @@
                 }
             }
             
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record on $($thislist.Title), changing $Column to $Username")) {
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record on $($thislist.Title), changing $Column to $Identity")) {
                 try {
                     Update-Row -Row $item -ColumnNames $Column -UserObject $UserObject
                 }

@@ -15,8 +15,8 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER UserName
-    The Active Directory username to Remove to the website.
+.PARAMETER Identity
+    The Active Directory Identity to Remove to the website.
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRsite
@@ -28,7 +28,7 @@
 
 .EXAMPLE
     Connect-SPRSite -Site intranet.ad.local
-    Remove-SPRUser -UserName 'ad\user'
+    Remove-SPRUser -Identity 'ad\user'
 
     Removes the ad\user SharePoint object on intranet.ad.local
 
@@ -36,7 +36,7 @@
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint user name")]
-        [string[]]$UserName,
+        [string[]]$Identity,
         [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -48,10 +48,10 @@
         if (-not $InputObject) {
             if ($Site) {
                 $null = Connect-SPRSite -Site $Site -Credential $Credential
-                $InputObject = Get-SPRUser -UserName $UserName
+                $InputObject = Get-SPRUser -Identity $Identity
             }
             elseif ($script:spweb) {
-                $InputObject = Get-SPRUser -UserName $UserName
+                $InputObject = Get-SPRUser -Identity $Identity
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -60,7 +60,7 @@
         }
         
         if (-not $InputObject) {
-            Stop-PSFFunction -EnableException:$EnableException -Message "$username not found in $spsite"
+            Stop-PSFFunction -EnableException:$EnableException -Message "$Identity not found in $spsite"
             return
         }
         

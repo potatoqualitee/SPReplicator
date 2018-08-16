@@ -92,7 +92,7 @@
         $addcount = 0
         $start = Get-Date
         if ($AsUser) {
-            $userobject = Get-SPRUser -Site $Site -UserName $AsUser -Credential $Credential
+            $userobject = Get-SPRUser -Site $Site -Identity $AsUser -Credential $Credential
         }
         
         function New-SPlist {

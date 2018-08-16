@@ -335,12 +335,12 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Context "Update-SPRListItemAuthorEditor" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
-            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false -WhatIf
+            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Identity 'System Account' -Confirm:$false -WhatIf
             $results | Should -Be $null
             Import-Module SPReplicator -Force
         }
         It "Updates author/editor for a single item on $script:mylist" {
-            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Username 'System Account' -Confirm:$false
+            $results = Get-SPRListItem -Site $script:site -List $script:mylist | Select-Object -First 1 | Update-SPRListItemAuthorEditor -Identity 'System Account' -Confirm:$false
             $results.Author | Should -Be 'System Account'
             $results.Editor | Should -Be 'System Account'
         }

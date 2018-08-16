@@ -15,8 +15,8 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER UserName
-    The Active Directory username to add to the website.
+.PARAMETER Identity
+    The Active Directory Identity to add to the website.
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRsite
@@ -28,7 +28,7 @@
 
 .EXAMPLE
     Connect-SPRSite -Site intranet.ad.local
-    Add-SPRUser -UserName 'ad\user'
+    Add-SPRUser -Identity 'ad\user'
 
     Adds the ad\user SharePoint object on intranet.ad.local
 
@@ -36,7 +36,7 @@
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint user name")]
-        [string[]]$UserName,
+        [string[]]$Identity,
         [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -72,7 +72,7 @@
             $script:spsite.ExecuteQuery()
             $webid = $web.Id
             
-            foreach ($user in $UserName) {
+            foreach ($user in $Identity) {
                 try {
                     $spuser = $web.EnsureUser($user)
                     $web.Context.Load($spuser)

@@ -129,11 +129,11 @@
             Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             
             if ($script:spsite.Credentials) {
-                $loginname = Get-SPRUser -UserName $script:spsite.Credentials.UserName
+                $loginname = Get-SPRUser -Identity $script:spsite.Credentials.UserName
             }
             else {
                 $username = whoami
-                $loginname = Get-SPRUser -UserName $username
+                $loginname = Get-SPRUser -Identity $username
             }
             
             $script:spsite.Load($script:spweb)
