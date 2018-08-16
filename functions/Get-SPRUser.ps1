@@ -97,6 +97,7 @@
                 foreach ($user in $UserName) {
                     try {
                         Write-PSFMessage -Level Verbose -Message "Getting $user from $($script:spsite.Url)"
+
                         if ($EnsureUser) {
                             $spuser = $script:spweb.EnsureUser($user)
                             $script:spsite.Load($spuser)
@@ -108,7 +109,10 @@
                                 $spuser = $users | Where-Object { $psitem.LoginName.EndsWith($user) }
                             }
                             if (-not $spuser) {
-                                $spuser = $users | Where-Object { $psitem.Email -eq $user}
+                                $spuser = $users | Where-Object { $psitem.Email -eq $user }
+                            }
+                            if (-not $spuser) {
+                                $spuser = $users | Where-Object { $psitem.Title -eq $user }
                             }
                         }
                         Write-PSFMessage -Level Verbose -Message "Got $user from $($script:spsite.Url)"
