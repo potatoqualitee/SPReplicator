@@ -20,7 +20,7 @@
 
 .PARAMETER EnsureUser
     Use the EnsureUser method of finding a user account
-    
+
 .PARAMETER InputObject
     Allows piping from Connect-SPRSite
 
@@ -72,14 +72,14 @@
                 $InputObject = $script:spweb
             }
         }
-        
+
         foreach ($web in $InputObject) {
             if (-not $UserName) {
                 try {
                     $users = $web.SiteUsers
                     $script:spsite.Load($users)
                     $script:spsite.ExecuteQuery()
-                    # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
+                    # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
                     if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
                         $users = $users | Select-Object -ExcludeProperty Alerts
                     }
@@ -93,7 +93,7 @@
                 $users = $web.SiteUsers
                 $script:spsite.Load($users)
                 $script:spsite.ExecuteQuery()
-                
+
                 foreach ($user in $UserName) {
                     try {
                         Write-PSFMessage -Level Verbose -Message "Getting $user from $($script:spsite.Url)"
@@ -116,11 +116,11 @@
                             }
                         }
                         Write-PSFMessage -Level Verbose -Message "Got $user from $($script:spsite.Url)"
-                        
+
                         if ($spuser) {
                             Add-Member -InputObject $spuser -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force
-                            
-                            # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
+
+                            # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -eq "Online") {
                                 $spuser | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                             }
