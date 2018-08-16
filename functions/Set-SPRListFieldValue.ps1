@@ -86,7 +86,7 @@
             foreach ($currentrow in $row) {
                 $runupdate = $false
                 foreach ($fieldname in $ColumnNames) {
-                    if (-not $currentrow.ListItem[$fieldname]) {
+                    if ($fieldname -notin $fields.Title) {
                         Stop-PSFFunction -EnableException:$EnableException -Message "$fieldname does not exist" -Continue
                     }
                     
@@ -131,6 +131,10 @@
             
             $thislist = $item.ListObject
             
+            $fields = $thislist.Fields
+            $thislist.Context.Load($fields)
+            $thislist.Context.ExecuteQuery()
+            
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Updating record $($item.Id) from $($thislist.Title)")) {
                 try {
                     Update-Row -Row $item -ColumnNames $Column -Value $value
@@ -144,7 +148,13 @@
     end {
         if ($script:updates.Id) {
             Write-PSFMessage -Level Debug -Message "Executing ExecuteQuery"
-            $script:spsite.ExecuteQuery()
+            
+            try {
+                $script:spsite.ExecuteQuery()
+            }
+            catch {
+                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
+            }
             if (-not $Quiet) {
                 foreach ($listitem in $script:updates) {
                     Get-SPRListItem -List $listitem.ListObject.Title -Id $listitem.ListItem.Id -Web $Web
