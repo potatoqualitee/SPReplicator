@@ -151,8 +151,15 @@
             }
             Register-PSFTeppArgumentCompleter -Command (Get-Command -Module SPReplicator).Name -Parameter List -Name List
             
+            if ($credentials) {
+                $thislocation = "Online"
+            }
+            else {
+                $thislocation = "Onprem"
+            }
+            Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name Location -Value $thislocation -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
-            $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, CurrentUser
+            $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, Location, CurrentUser
             
         }
         catch {

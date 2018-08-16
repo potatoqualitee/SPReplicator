@@ -19,7 +19,9 @@
     The human readable user name. So 'Jon Deaux' as opposed to 'JonDeaux', unless you named it JonDeaux.
 
 .PARAMETER EnsureUser
-    Use the EnsureUser method of finding a user account
+    Use the EnsureUser method of finding a user account. 
+    
+    "EnsureUser checks whether the specified login name belongs to a valid user of the Web site, and if the login name does not already exist, adds it to the Web site directly."
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRSite
@@ -60,10 +62,16 @@
         if (-not $InputObject) {
             if ($Site) {
                 $null = Connect-SPRSite -Site $Site -Credential $Credential
-                $InputObject = Get-SPRWeb
+                $getsite = $script:spsite.get_site()
+                $script:spsite.Load($getsite)
+                $script:spsite.ExecuteQuery()
+                $InputObject = $getsite.get_rootWeb()
             }
             elseif ($script:spweb) {
-                $InputObject = $script:spweb
+                $getsite = $script:spweb.Context.get_site()
+                $script:spweb.Context.Load($getsite)
+                $script:spweb.Context.ExecuteQuery()
+                $InputObject = $getsite.get_rootWeb()
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -73,7 +81,10 @@
         else {
             if ($InputObject[0] -is [Microsoft.SharePoint.Client.User]) {
                 $UserName = $InputObject.LoginName
-                $InputObject = $script:spweb
+                $getsite = $script:spweb.Context.get_site()
+                $script:spweb.Context.Load($getsite)
+                $script:spweb.Context.ExecuteQuery()
+                $InputObject = $getsite.get_rootWeb()
             }
         }
         
