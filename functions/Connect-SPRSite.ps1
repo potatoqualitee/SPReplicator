@@ -121,9 +121,12 @@
                     }
                 } -Force
             }
+            
             $script:spsite.AuthenticationMode = $AuthenticationMode
             $script:spsite.ExecuteQuery()
             $script:spweb = $script:spsite.Web
+            
+            Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             
             if ($script:spsite.Credentials) {
                 $loginname = Get-SPRUser -UserName $script:spsite.Credentials.UserName
@@ -138,12 +141,10 @@
             $script:spsite.Load($script:spweb.Lists)
             $script:spsite.ExecuteQuery()
             
-            $global:SPReplicator = [pscustomobject]@{
-                Web     = $script:spweb
-                Site    = $script:spsite
-                LogList = $global:SPReplicator.LogList
-                ListNames = $script:spweb.Lists.Title
-            }
+            $global:SPReplicator.Web     = $script:spweb
+            $global:SPReplicator.Site    = $script:spsite
+            $global:SPReplicator.LogList = $global:SPReplicator.LogList
+            $global:SPReplicator.ListNames = $script:spweb.Lists.Title
             
             Register-PSFTeppScriptblock -Name List -ScriptBlock {
                 $global:SPReplicator.ListNames

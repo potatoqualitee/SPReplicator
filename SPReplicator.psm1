@@ -49,6 +49,7 @@ $global:SPReplicator = [pscustomobject]@{
     Site    = $script:spsite
     LogList = $global:SPReplicator.LogList
     ListNames = $global:SPReplicator.ListNames
+    UserCache = @{ }
 }
 
 # SIG # Begin signature block

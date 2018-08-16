@@ -92,7 +92,6 @@
         $addcount = 0
         $start = Get-Date
         if ($AsUser) {
-            Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
             $userobject = Get-SPRUser -Site $Site -UserName $AsUser -Credential $Credential
         }
         

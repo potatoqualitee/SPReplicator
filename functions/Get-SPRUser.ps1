@@ -16,11 +16,17 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER UserName
-    The human readable user name. So 'My User' as opposed to 'MyUser', unless you named it MyUser.
+    The human readable user name. So 'Jon Deaux' as opposed to 'JonDeaux', unless you named it JonDeaux.
+
+.PARAMETER EnsureUser
+    Use the EnsureUser method of finding a user account
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRSite
 
+.PARAMETER Force
+    Repopulates the user cache, otherwise, it'll use the cache
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -46,6 +52,8 @@
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
+        [switch]$EnsureUser,
+        [switch]$Force,
         [switch]$EnableException
     )
     process {
@@ -70,12 +78,16 @@
         }
         
         foreach ($web in $InputObject) {
+            $script:spsite.Load($web)
+            $script:spsite.ExecuteQuery()
+            $webid = $web.Id
+            
             if (-not $UserName) {
                 try {
                     $users = $web.SiteUsers
                     $script:spsite.Load($users)
                     $script:spsite.ExecuteQuery()
-                    # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
+                    # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
                     if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
                         $users = $users | Select-Object -ExcludeProperty Alerts
                     }
@@ -86,23 +98,48 @@
                 }
             }
             else {
+                if (-not $global:SPReplicator.UserCache[$webid] -or $Force) {
+                    $users = $web.SiteUsers
+                    $script:spsite.Load($users)
+                    $script:spsite.ExecuteQuery()
+                    $global:SPReplicator.UserCache[$webid] = $users
+                }
+                else {
+                    $users = $global:SPReplicator.UserCache[$webid]
+                }
+                
                 foreach ($user in $UserName) {
                     try {
                         Write-PSFMessage -Level Verbose -Message "Getting $user from $($script:spsite.Url)"
-                        $ensureduser = $script:spweb.EnsureUser($user)
-                        $script:spsite.Load($ensureduser)
-                        $script:spsite.ExecuteQuery()
+
+                        if ($EnsureUser) {
+                            $spuser = $script:spweb.EnsureUser($user)
+                            $script:spsite.Load($spuser)
+                            $script:spsite.ExecuteQuery()
+                        }
+                        else {
+                            $spuser = $users | Where-Object { $psitem.LoginName -eq $user }
+                            if (-not $spuser) {
+                                $spuser = $users | Where-Object { $psitem.LoginName.EndsWith($user) }
+                            }
+                            if (-not $spuser) {
+                                $spuser = $users | Where-Object { $psitem.Email -eq $user }
+                            }
+                            if (-not $spuser) {
+                                $spuser = $users | Where-Object { $psitem.Title -eq $user }
+                            }
+                        }
                         Write-PSFMessage -Level Verbose -Message "Got $user from $($script:spsite.Url)"
-                        
-                        if ($ensureduser) {
-                            Add-Member -InputObject $ensureduser -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force
-                            
-                            # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag 
+
+                        if ($spuser) {
+                            Add-Member -InputObject $spuser -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force
+
+                            # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -eq "Online") {
-                                $ensureduser | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                                $spuser | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                             }
                             else {
-                                $ensureduser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                                $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                             }
                         }
                     }

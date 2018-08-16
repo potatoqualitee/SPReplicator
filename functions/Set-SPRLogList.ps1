@@ -79,7 +79,7 @@
                 $PSDefaultParameterValues.Remove($command)
             }
             $PSDefaultParameterValues.Add($command, $InputObject)
-            Add-Member -InputObject $global:SPReplicator -NotePropertyName LogList -NotePropertyValue $PSDefaultParameterValues['*-SPR*:LogToList'] -Force
+            $global:SPReplicator.LogList = $PSDefaultParameterValues['*-SPR*:LogToList']
             Set-Variable -Name PSDefaultParameterValues -Scope 2 -Value $PSDefaultParameterValues -ErrorAction SilentlyContinue
             Get-SPRLogList
         }

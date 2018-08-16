@@ -76,7 +76,8 @@
                         $script:spweb = $script:spweb | Select-Object -ExcludeProperty Alerts
                     }
                     $script:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
-                    Add-Member -InputObject $global:SPReplicator -NotePropertyName Web -NotePropertyValue $script:spweb -Force
+                    Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
+                    $global:SPReplicator.Web = $script:spweb
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
@@ -90,6 +91,7 @@
                             $script:spweb = $web
                             $server.Load($script:spweb)
                             $server.ExecuteQuery()
+                            Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
                             
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
                                 $script:spweb = $script:spweb | Select-Object -ExcludeProperty Alerts
