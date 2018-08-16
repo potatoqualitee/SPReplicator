@@ -7,7 +7,7 @@
     Removes a SharePoint user.
 
 .PARAMETER Site
-    The Removeress to the site collection. You can also pass a hostname and it'll figure it out.
+    The address to the site collection. You can also pass a hostname and it'll figure it out.
 
     Don't want to specify the Site or Credential every time? Use Connect-SPRSite to create a reusable connection.
     See Get-Help Connect-SPRsite for more information.
@@ -16,7 +16,7 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER Identity
-    The Active Directory Identity to Remove to the website.
+    The Active Directory Identity to remove from the web.
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRsite
@@ -32,6 +32,10 @@
 
     Removes the ad\user SharePoint object on intranet.ad.local
 
+.EXAMPLE
+    Remove-SPRUser  -Site intranet.ad.local -Identity 'ad\user'
+
+    Removes the ad\user SharePoint object on intranet.ad.local
 #>
     [CmdletBinding()]
     param (
@@ -41,7 +45,7 @@
         [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SharePoint.Client.User[]]$InputObject,
         [switch]$EnableException
     )
     process {
@@ -70,9 +74,17 @@
                 return
             }
             $script:spsite.Load($user)
+            $login = $user.LoginName
             $script:spsite.ExecuteQuery()
-            $userid = $user.Id
-            Write-Warning $userid
+            $script:spsite.RootWeb.SiteUsers.Remove($user)
+            $script:spsite.ExecuteQuery()
+            
+            [pscustomobject]@{
+                Site = $script:spsite
+                Web = $script:spsite.RootWeb
+                Identity = $login
+                Status = "Deleted"
+            }
         }
     }
 }
