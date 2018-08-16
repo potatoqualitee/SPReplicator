@@ -12,7 +12,7 @@
     begin {
         if ($AsUser) {
             Write-PSFMessage -Level Output -Message "Validating user. This may take a moment."
-            $userobject = Get-SPRUser -Site $Site -UserName $AsUser
+            $userobject = Get-SPRUser -Site $Site -Identity $AsUser
         }
         function Add-Row {
             [cmdletbinding()]

@@ -1,10 +1,10 @@
-﻿Function Add-SPRUser {
+﻿Function Remove-SPRUser {
 <#
 .SYNOPSIS
-    Adds a SharePoint user.
+    Removes a SharePoint user.
 
 .DESCRIPTION
-    Adds a SharePoint user.
+    Removes a SharePoint user.
 
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
@@ -16,7 +16,7 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER Identity
-    The Active Directory Identity to add to the website.
+    The Active Directory Identity to remove from the web.
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRsite
@@ -28,10 +28,14 @@
 
 .EXAMPLE
     Connect-SPRSite -Site intranet.ad.local
-    Add-SPRUser -Identity 'ad\user'
+    Remove-SPRUser -Identity 'ad\user'
 
-    Adds the ad\user SharePoint object on intranet.ad.local
+    Removes the ad\user SharePoint object on intranet.ad.local
 
+.EXAMPLE
+    Remove-SPRUser  -Site intranet.ad.local -Identity 'ad\user'
+
+    Removes the ad\user SharePoint object on intranet.ad.local
 #>
     [CmdletBinding()]
     param (
@@ -41,17 +45,17 @@
         [string]$Site,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SharePoint.Client.User[]]$InputObject,
         [switch]$EnableException
     )
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $siteobject = Connect-SPRSite -Site $Site -Credential $Credential
-                $InputObject = $siteobject.RootWeb
+                $null = Connect-SPRSite -Site $Site -Credential $Credential
+                $InputObject = Get-SPRUser -Identity $Identity
             }
             elseif ($script:spweb) {
-                $InputObject = $script:spweb.Context.RootWeb
+                $InputObject = Get-SPRUser -Identity $Identity
             }
             else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
@@ -59,35 +63,27 @@
             }
         }
         
-        if ($InputObject -is [Microsoft.SharePoint.Client.Site]) {
-            $InputObject = $InputObject.RootWeb
+        if (-not $InputObject) {
+            Stop-PSFFunction -EnableException:$EnableException -Message "$Identity not found in $spsite"
+            return
         }
         
-        foreach ($web in $InputObject) {
-            if ($web -isnot [Microsoft.SharePoint.Client.Web]) {
+        foreach ($user in $InputObject) {
+            if ($user -isnot [Microsoft.SharePoint.Client.User]) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid inputobject"
                 return
             }
-            $script:spsite.Load($web)
+            $script:spsite.Load($user)
+            $login = $user.LoginName
             $script:spsite.ExecuteQuery()
-            $webid = $web.Id
+            $script:spsite.RootWeb.SiteUsers.Remove($user)
+            $script:spsite.ExecuteQuery()
             
-            foreach ($user in $Identity) {
-                try {
-                    $spuser = $web.EnsureUser($user)
-                    $web.Context.Load($spuser)
-                    $web.Context.ExecuteQuery()
-                }
-                catch {
-                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
-                }
-                
-                if ($web.Context -eq "Online") {
-                    $spuser | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
-                }
-                else {
-                    $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
-                }
+            [pscustomobject]@{
+                Site = $script:spsite
+                Web = $script:spsite.RootWeb
+                Identity = $login
+                Status = "Deleted"
             }
         }
     }

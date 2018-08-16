@@ -129,11 +129,11 @@
             Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             
             if ($script:spsite.Credentials) {
-                $loginname = Get-SPRUser -UserName $script:spsite.Credentials.UserName
+                $loginname = Get-SPRUser -Identity $script:spsite.Credentials.UserName
             }
             else {
                 $username = whoami
-                $loginname = Get-SPRUser -UserName $username
+                $loginname = Get-SPRUser -Identity $username
             }
             
             $script:spsite.Load($script:spweb)
@@ -157,9 +157,17 @@
             else {
                 $thislocation = "Onprem"
             }
+            
+            $getsite = $script:spsite.get_site()
+            $script:spsite.Load($getsite)
+            $script:spsite.ExecuteQuery()
+            $rootweb = $getsite.get_rootWeb()
+            
+            Add-Member -InputObject $rootweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
+            Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name RootWeb -Value $rootweb -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name Location -Value $thislocation -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
-            $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, Location, CurrentUser
+            $script:spsite | Select-DefaultView -Property Url, ServerVersion, AuthenticationMode, Credentials, RequestTimeout, Location, RootWeb, CurrentUser
             
         }
         catch {

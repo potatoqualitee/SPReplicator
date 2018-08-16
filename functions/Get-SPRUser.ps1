@@ -15,7 +15,7 @@
 .PARAMETER Credential
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER UserName
+.PARAMETER Identity
     The human readable user name. So 'Jon Deaux' as opposed to 'JonDeaux', unless you named it JonDeaux.
 
 .PARAMETER EnsureUser
@@ -40,7 +40,7 @@
     Gets all users on intranet.ad.local
 
 .EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local | Get-SPRUser -UserName 'ad\user'
+    Connect-SPRSite -Site intranet.ad.local | Get-SPRUser -Identity 'ad\user'
 
     Gets the ad\user SharePoint object on intranet.ad.local.
 
@@ -48,7 +48,7 @@
     [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint user name")]
-        [string[]]$UserName,
+        [string[]]$Identity,
         [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
@@ -80,7 +80,7 @@
         }
         else {
             if ($InputObject[0] -is [Microsoft.SharePoint.Client.User]) {
-                $UserName = $InputObject.LoginName
+                $Identity = $InputObject.LoginName
                 $getsite = $script:spweb.Context.get_site()
                 $script:spweb.Context.Load($getsite)
                 $script:spweb.Context.ExecuteQuery()
@@ -93,7 +93,7 @@
             $script:spsite.ExecuteQuery()
             $webid = $web.Id
             
-            if (-not $UserName) {
+            if (-not $Identity) {
                 try {
                     $users = $web.SiteUsers
                     $script:spsite.Load($users)
@@ -119,7 +119,7 @@
                     $users = $global:SPReplicator.UserCache[$webid]
                 }
                 
-                foreach ($user in $UserName) {
+                foreach ($user in $Identity) {
                     try {
                         Write-PSFMessage -Level Verbose -Message "Getting $user from $($script:spsite.Url)"
 
