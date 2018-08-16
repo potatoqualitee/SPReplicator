@@ -9,7 +9,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
         }
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
-        $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
+        $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, 'Sample test create new list' -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $originalwebs = Get-SPRWeb
