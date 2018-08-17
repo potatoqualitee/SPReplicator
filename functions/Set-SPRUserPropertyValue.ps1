@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     Sets SharePoint user properties.
-
+https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2010/ms544240(v%3Doffice.14)
     This requires : https://social.technet.microsoft.com/Forums/msonline/en-US/90459cd0-d3e6-4078-80c4-399e56aeaed0/how-to-see-who-has-the-8220manage-profile8221-permissions-for-user-profile-properties?forum=onlineservicessharepoint
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
@@ -65,34 +65,8 @@
         [Microsoft.SharePoint.Client.User[]]$InputObject,
         [switch]$EnableException
     )
-    process {
-        if (-not $InputObject) {
-            if ($Site) {
-                $null = Connect-SPRSite -Site $Site -Credential $Credential
-                $InputObject = Get-SPRUser -Identity $Identity
-            }
-            elseif ($script:spweb) {
-                $InputObject = Get-SPRUser -Identity $Identity
-            }
-            else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
-                return
-            }
-        }
-        
-        if (-not $InputObject) {
-            Stop-PSFFunction -EnableException:$EnableException -Message "$Identity not found in $spsite"
-            return
-        }
-        
-        foreach ($user in $InputObject) {
-            if ($user -isnot [Microsoft.SharePoint.Client.User]) {
-                Stop-PSFFunction -EnableException:$EnableException -Message "Invalid inputobject"
-                return
-            }
-            $user.Context.Load($user)
-            $login = $user.LoginName
-            $user.Context.ExecuteQuery()
+    begin {
+        function Do-online {
             try {
                 $people = New-Object Microsoft.SharePoint.Client.UserProfiles.PeopleManager($user.Context)
             }
@@ -132,13 +106,70 @@
                 $userprofile = $people.GetPropertiesFor($login)
                 $user.Context.Load($userprofile)
                 $user.Context.ExecuteQuery()
-                $userprofile.UserProfileProperties |GM
                 $keys = $userprofile.UserProfileProperties.Keys | Sort-Object
                 $properties = [pscustomobject] | Select-Object -Property $keys
                 foreach ($key in $keys) {
                     $properties.$key = $userprofile.UserProfileProperties[$key]
                 }
-                #Select-Object -InputObject $properties -Property $keys
+                Select-Object -InputObject $properties -Property $keys
+            }
+        }
+    }
+    process {
+        if (-not $InputObject) {
+            if ($Site) {
+                $null = Connect-SPRSite -Site $Site -Credential $Credential
+                $InputObject = Get-SPRUser -Identity $Identity
+            }
+            elseif ($script:spweb) {
+                $InputObject = Get-SPRUser -Identity $Identity
+            }
+            else {
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
+                return
+            }
+        }
+        
+        if (-not $InputObject) {
+            Stop-PSFFunction -EnableException:$EnableException -Message "$Identity not found in $($spsite.Url)"
+            return
+        }
+        
+        foreach ($user in $InputObject) {
+            if ($user -isnot [Microsoft.SharePoint.Client.User]) {
+                Stop-PSFFunction -EnableException:$EnableException -Message "Invalid inputobject"
+                return
+            }
+            $user.Context.Load($user)
+            $login = $user.LoginName
+            $user.Context.ExecuteQuery()
+            
+            if ($script:spsite.Location -eq "Online") {
+                Do-online
+            }
+            else {
+                $url = $user.Context.Url
+                $url = "$url/_vti_bin/userprofileservice.asmx"
+                if ($script:spsite.Credential) {
+                    $upws = New-WebServiceProxy -Uri $url -Credential $script:spsite.Credential -Namespace SPReplicator.UPS
+                }
+                else {
+                    $upws = New-WebServiceProxy -Uri $url -UseDefaultCredential -Namespace SPReplicator.UPS
+                }
+                
+                $userProperty = $upws.GetUserPropertyByAccountName($login, $Property)
+                
+                $valuedata = New-Object -TypeName SPReplicator.UPS.ValueData
+                $valuedata.Value = $Value
+                
+                #$newdata = New-Object -TypeName SPReplicator.UPS.PropertyData
+                #$newdata.Name = $Property
+                #$newdata.Values = $valuedata
+                
+                $userProperty.IsValueChanged = $true
+                $userProperty.Values = $valuedata
+                
+                $upws.ModifyUserPropertyByAccountName($login, $userProperty)
             }
         }
     }
