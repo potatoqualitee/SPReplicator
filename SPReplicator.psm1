@@ -4,10 +4,12 @@ Get-ChildItem "$PSScriptRoot\bin\" -Recurse | Unblock-File
 if ($PSVersionTable.PSEdition -eq "Core") {
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.Portable.dll"
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Portable.dll"
+    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.UserProfiles.Portable.dll"
 }
 else {
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.dll"
     Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.Runtime.dll"
+    Add-Type -Path "$PSScriptRoot\bin\Microsoft.SharePoint.Client.UserProfiles.dll"
 }
 
 foreach ($function in (Get-ChildItem -Recurse "$PSScriptRoot\functions\*.ps1")) {

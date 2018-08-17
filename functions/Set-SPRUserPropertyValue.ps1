@@ -40,12 +40,12 @@
 
 .EXAMPLE
     Connect-SPRSite -Site intranet.ad.local
-    Set-SPRUserPropertyValue -Identity 'ad\user'
+    Set-SPRUserPropertyValue -Identity 'ad\user' -Property Email -Value test@hello.com
 
     Sets the ad\user SharePoint object on intranet.ad.local
 
 .EXAMPLE
-    Set-SPRUserPropertyValue  -Site intranet.ad.local -Identity 'ad\user'
+    Set-SPRUserPropertyValue -Site intranet.ad.local -Identity 'ad\user' -Property Email -Value test@hello.com
 
     Sets the ad\user SharePoint object on intranet.ad.local
 #>
@@ -55,7 +55,9 @@
         [string[]]$Identity,
         [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
-        [string]$Property,
+        [Parameter(Mandatory)]
+        [string[]]$Property,
+        [Parameter(Mandatory)]
         [string]$Value,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
@@ -87,18 +89,50 @@
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid inputobject"
                 return
             }
-            $script:spsite.Load($user)
+            $user.Context.Load($user)
             $login = $user.LoginName
-            $script:spsite.ExecuteQuery()
+            $user.Context.ExecuteQuery()
+            try {
+                $people = New-Object Microsoft.SharePoint.Client.UserProfiles.PeopleManager($user.Context)
+            }
+            catch {
+                Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                return
+            }
             
-            
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $script:spsite.Url -Action "Removing user $login")) {
-                $peopleManager = New-Object Microsoft.SharePoint.Client.UserProfiles.PeopleManager($script:spsite)
-                $peopleManager.SetSingleValueProfileProperty($user, $Property, $Value)
-                $script:spsite.Load($peopleManager)
-                $script:spsite.ExecuteQuery()
-                
-                Get-SPRUser -Identity $user
+            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $user.Context.Url -Action "Updating property $Property to $Value for $($user.LoginName)")) {
+                try {
+                    $userprofile = $people.GetPropertiesFor($login)
+                    $user.Context.Load($userprofile)
+                    $user.Context.ExecuteQuery()
+                }
+                catch {
+                    Stop-PSFFunction -EnableException:$EnableException -Message 'Failure. Did you run "Setup My Sites"?' -ErrorRecord $erecord
+                    return
+                }
+                try {
+                    $people.SetSingleValueProfileProperty($userprofile.AccountName, $Property, $Value)
+                    $user.Context.ExecuteQuery()
+                }
+                catch {
+                    $errorrecord = $_
+                    
+                    try {
+                        $people.SetMultiValuedProfileProperty($userprofile.AccountName, $Property, $Value)
+                        $user.Context.Load($people)
+                        $user.Context.ExecuteQuery()
+                    }
+                    catch {
+                        Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $errorrecord
+                        return
+                    }
+                }
+                $keys = $userprofile.UserProfileProperties.Keys | Sort-Object
+                foreach ($key in $keys) {
+                    @{
+                        $key = $userprofile.UserProfileProperties[$key]
+                    }
+                }
             }
         }
     }
