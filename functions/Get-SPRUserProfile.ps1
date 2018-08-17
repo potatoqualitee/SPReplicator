@@ -109,11 +109,12 @@
                     $user.Context.ExecuteQuery()
                     
                     $keys = $userprofile.UserProfileProperties.Keys | Sort-Object
-                    $properties = [pscustomobject] | Select-Object -Property $keys
+                    $properties = [pscustomobject] | Select-Object -Property $keys, UserProfileObject
                     foreach ($key in $keys) {
                         $properties.$key = $userprofile.UserProfileProperties[$key]
                     }
-                    Select-Object -InputObject $properties -Property $keys
+                    $properties.UserProfileObject = $userprofile
+                    Select-Object -InputObject $properties -Property $keys, UserProfileObject
                 }
                 catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message 'Failure. Did you run "Setup My Sites"?' -ErrorRecord $erecord
