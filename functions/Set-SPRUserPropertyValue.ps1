@@ -6,6 +6,7 @@
 .DESCRIPTION
     Sets SharePoint user properties.
 
+    This requires : https://social.technet.microsoft.com/Forums/msonline/en-US/90459cd0-d3e6-4078-80c4-399e56aeaed0/how-to-see-who-has-the-8220manage-profile8221-permissions-for-user-profile-properties?forum=onlineservicessharepoint
 .PARAMETER Site
     The address to the site collection. You can also pass a hostname and it'll figure it out.
 
@@ -118,6 +119,7 @@
                     $errorrecord = $_
                     
                     try {
+                        [Microsoft.SharePoint.Client.UserProfiles.PeopleManager]::SetSingleValueProfileProperty($userprofile.AccountName, $Property, $Value)
                         $people.SetMultiValuedProfileProperty($userprofile.AccountName, $Property, $Value)
                         $user.Context.Load($people)
                         $user.Context.ExecuteQuery()
@@ -127,12 +129,16 @@
                         return
                     }
                 }
+                $userprofile = $people.GetPropertiesFor($login)
+                $user.Context.Load($userprofile)
+                $user.Context.ExecuteQuery()
+                $userprofile.UserProfileProperties |GM
                 $keys = $userprofile.UserProfileProperties.Keys | Sort-Object
+                $properties = [pscustomobject] | Select-Object -Property $keys
                 foreach ($key in $keys) {
-                    @{
-                        $key = $userprofile.UserProfileProperties[$key]
-                    }
+                    $properties.$key = $userprofile.UserProfileProperties[$key]
                 }
+                #Select-Object -InputObject $properties -Property $keys
             }
         }
     }
