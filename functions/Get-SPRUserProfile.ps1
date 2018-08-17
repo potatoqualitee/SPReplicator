@@ -18,22 +18,10 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER Identity
-    The Active Directory Identity to Set from the web.
-  
-.PARAMETER Property
-    The property to be updated
-    
-.PARAMETER Value
-    The new value
+    The Active Directory Identity
 
 .PARAMETER InputObject
     Allows piping from Get-SPRUser
-  
-.PARAMETER WhatIf
-    If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
-
-.PARAMETER Confirm
-    If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -51,16 +39,12 @@
 
     Sets the ad\user SharePoint object on intranet.ad.local
 #>
-    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
+    [CmdletBinding()]
     param (
         [Parameter(Position = 0, HelpMessage = "Human-readble SharePoint user name")]
         [string[]]$Identity,
         [Parameter(Position = 1, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
-        [Parameter(Mandatory)]
-        [string[]]$Property,
-        [Parameter(Mandatory)]
-        [string]$Value,
         [PSCredential]$Credential,
         [parameter(ValueFromPipeline)]
         [Microsoft.SharePoint.Client.User[]]$InputObject,
@@ -102,24 +86,24 @@
                 return
             }
             
-            if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $user.Context.Url -Action "Updating property $Property to $Value for $($user.LoginName)")) {
-                try {
-                    $userprofile = $people.GetPropertiesFor($login)
-                    $user.Context.Load($userprofile)
-                    $user.Context.ExecuteQuery()
-                    
-                    $keys = $userprofile.UserProfileProperties.Keys | Sort-Object
-                    $properties = [pscustomobject] | Select-Object -Property $keys, UserProfileObject
-                    foreach ($key in $keys) {
-                        $properties.$key = $userprofile.UserProfileProperties[$key]
-                    }
-                    $properties.UserProfileObject = $userprofile
-                    Select-Object -InputObject $properties -Property $keys, UserProfileObject
+            try {
+                $userprofile = $people.GetPropertiesFor($login)
+                $user.Context.Load($userprofile)
+                $user.Context.ExecuteQuery()
+            }
+            catch {
+                Stop-PSFFunction -EnableException:$EnableException -Message 'Failure. Did you run "Setup My Sites"?' -ErrorRecord $erecord
+                return
+            }
+            if ($userprofile.UserProfileProperties.Keys) {
+                $keys = $userprofile.UserProfileProperties.Keys | Sort-Object
+                $properties = [pscustomobject] | Select-Object -Property $keys
+                foreach ($key in $keys) {
+                    try { $value = $userprofile.UserProfileProperties[$key] } catch { $value = $null }
+                    $properties.$key = $value
                 }
-                catch {
-                    Stop-PSFFunction -EnableException:$EnableException -Message 'Failure. Did you run "Setup My Sites"?' -ErrorRecord $erecord
-                    return
-                }
+                Add-Member -InputObject $properties -NotePropertyName UserProfileObject -NotepropertyValue $userprofile -Force
+                Select-Object -InputObject $properties -Property *
             }
         }
     }

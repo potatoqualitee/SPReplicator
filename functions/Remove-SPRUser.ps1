@@ -19,7 +19,7 @@
     The Active Directory Identity to remove from the web.
 
 .PARAMETER InputObject
-    Allows piping from Connect-SPRsite
+    Allows piping from Get-SPRUser
   
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
