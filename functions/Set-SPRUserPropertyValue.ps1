@@ -167,7 +167,7 @@ https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2
                 #$newdata.Values = $valuedata
                 
                 $userProperty.IsValueChanged = $true
-                $userProperty.Values = $valuedata
+                $userProperty.Values = ,$valuedata
                 
                 $upws.ModifyUserPropertyByAccountName($login, $userProperty)
             }
