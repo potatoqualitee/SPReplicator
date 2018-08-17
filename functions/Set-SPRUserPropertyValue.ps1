@@ -148,18 +148,21 @@ https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2
                 Do-online
             }
             else {
+                $random = -join ((65 .. 90) + (97 .. 122) | Get-Random -Count 5 | ForEach-Object { [char]$_ })
+                
+                $namespace = "SPReplicator.UPS.$random"
                 $url = $user.Context.Url
                 $url = "$url/_vti_bin/userprofileservice.asmx"
                 if ($script:spsite.Credential) {
-                    $upws = New-WebServiceProxy -Uri $url -Credential $script:spsite.Credential -Namespace SPReplicator.UPS
+                    $upws = New-WebServiceProxy -Uri $url -Credential $script:spsite.Credential -Namespace $namespace
                 }
                 else {
-                    $upws = New-WebServiceProxy -Uri $url -UseDefaultCredential -Namespace SPReplicator.UPS
+                    $upws = New-WebServiceProxy -Uri $url -UseDefaultCredential -Namespace $namespace
                 }
                 
                 $userProperty = $upws.GetUserPropertyByAccountName($login, $Property)
                 
-                $valuedata = New-Object -TypeName SPReplicator.UPS.ValueData
+                $valuedata = New-Object -TypeName "$namespace.ValueData"
                 $valuedata.Value = $Value
                 
                 #$newdata = New-Object -TypeName SPReplicator.UPS.PropertyData
