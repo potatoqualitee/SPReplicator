@@ -16,28 +16,20 @@ foreach ($function in (Get-ChildItem -Recurse "$PSScriptRoot\functions\*.ps1")) 
     $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($function))), $null, $null)
 }
 
-
-# Register that script block
-Register-PSFTeppScriptblock -Name Template -ScriptBlock {
+Register-PSFTeppScriptblock -Name SPReplicator-Template -ScriptBlock {
     $class = [Microsoft.SharePoint.Client.ListTemplateType]
     [System.Enum]::GetNames($class)
 }
-Register-PSFTeppScriptblock -Name FieldType -ScriptBlock { [System.Enum]::GetNames([Microsoft.SharePoint.Client.FieldType]) | Where-Object { $PSItem -ne 'Invalid' } | Sort-Object }
-Register-PSFTeppScriptblock -Name Location -ScriptBlock { "OnPrem", "Online" }
-
+Register-PSFTeppScriptblock -Name SPReplicator-FieldType -ScriptBlock { [System.Enum]::GetNames([Microsoft.SharePoint.Client.FieldType]) | Where-Object { $PSItem -ne 'Invalid' } | Sort-Object }
+Register-PSFTeppScriptblock -Name SPReplicator-Location -ScriptBlock { "OnPrem", "Online" }
 
 # Register the actual auto completer
-Register-PSFTeppArgumentCompleter -Command New-SPRList -Parameter Template -Name Template
-Register-PSFTeppArgumentCompleter -Command Add-SPRColumn -Parameter Type -Name FieldType
-Register-PSFTeppArgumentCompleter -Command Connect-SPRSite -Parameter Location -Name Location
+Register-PSFTeppArgumentCompleter -Command New-SPRList -Parameter Template -Name SPReplicator-Template
+Register-PSFTeppArgumentCompleter -Command Add-SPRColumn -Parameter Type -Name SPReplicator-FieldType
+Register-PSFTeppArgumentCompleter -Command Connect-SPRSite -Parameter Location -Name SPReplicator-Location
 
-if (-not (Get-PSFConfigValue -FullName SPReplicator.Location)) {
-    Set-PSFConfig -Module SPReplicator -Name Location -Value Onprem -Description "Specifies primary location: SharePoint Online (Online) or On-Premises (Onprem)"
-}
-
-if (-not (Get-PSFConfigValue -FullName SPReplicator.SiteMapper)) {
-    Set-PSFConfig -FullName SPReplicator.SiteMapper -Value @{} -Description "Hosts and locations (online vs onprem)" -Initialize
-}
+Set-PSFConfig -Module SPReplicator -Name Location -Value Onprem -Description "Specifies primary location: SharePoint Online (Online) or On-Premises (Onprem)" -Initialize
+Set-PSFConfig -FullName SPReplicator.SiteMapper -Value @{ } -Description "Hosts and locations (online vs onprem)" -Initialize
 
 $script:spweb = $global:SPReplicator.Web
 $script:spsite = $global:SPReplicator.Site
