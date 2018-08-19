@@ -1,10 +1,21 @@
-*.psproj
-SPListReplicator.psprojs
 
-# ignore files for VS and VS Code and PowerShell Studio
-.vs/*
+# ignore the settings folder and files for VSCode and PSS
 .vscode/*
-*.pssproj
-*.sln
-*.TempPoint.*
-*.psprojs
+*.psproj
+*TempPoint*
+
+# Ignore staging info from Visual Studio
+library/SPReplicator/.vs/*
+library/SPReplicator/SPReplicator/bin/*
+library/SPReplicator/SPReplicator/obj/*
+
+# ignore PowerShell Studio MetaData
+SPReplicator/SPReplicator.psproj
+SPReplicator/SPReplicator.psproj.bak
+SPReplicator/SPReplicator.psprojs
+SPReplicator/SPReplicator.psproj
+
+SPReplicator.psproj
+SPReplicator.psproj.bak
+SPReplicator.psprojs
+SPReplicator.psproj
