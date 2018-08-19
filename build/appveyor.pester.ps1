@@ -32,4 +32,4 @@ param (
     $ModuleBase = $ENV:APPVEYOR_BUILD_FOLDER
 )
 
-& "$($ModuleBase)\tests\Pester.ps1"
+& "$($ModuleBase)\SPReplicator\tests\Pester.ps1"
