@@ -54,7 +54,8 @@ function ConvertTo-DataTable {
 
             Creates a DataTable with the running processes and converts any TimeSpan property to TotalSeconds.
     #>
-    [CmdletBinding()]
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseOutputTypeCorrectly", "")]
+	[CmdletBinding()]
     [OutputType([System.Object[]])]
     param (
         [Parameter(Position = 0,
@@ -89,7 +90,8 @@ function ConvertTo-DataTable {
             # If a type is accepted (included in the $type array) then it will be passed on, otherwise it will first change type before passing it on.
             # Special types will have both their types converted as well as the value.
             # TimeSpan is a special type and will be converted into the $timespantype. (default: TotalMilliseconds) so that the timespan can be stored in a database further down the line.
-            [CmdletBinding()]
+			[OutputType([System.Collections.Hashtable])]
+			[CmdletBinding()]
             param (
                 $type,
                 $value,

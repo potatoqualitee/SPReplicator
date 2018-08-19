@@ -83,7 +83,8 @@
     begin {
         $script:updates = @()
         function Update-Row {
-            [cmdletbinding()]
+			[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+			[cmdletbinding()]
             param (
                 [object[]]$Row,
                 [string[]]$ColumnNames,

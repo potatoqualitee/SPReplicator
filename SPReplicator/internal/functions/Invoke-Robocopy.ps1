@@ -1,4 +1,4 @@
-<#
+﻿<#
 .Synopsis
     Wrapper function for robocopy.exe
 
@@ -42,12 +42,14 @@
 
     Copy 'c:\alpha' to 'c:\bravo' and 'c:\charlie'. Copy subdirectories, include empty directories, exclude older files.
 #>
-function Invoke-Robocopy {
+function Invoke-Robocopy
+{
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
     [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateScript({ Test-Path -Path $_ })]
+        [PsfValidateScript({ Test-Path -Path $args[0] }, ErrorMessage = 'Path must already exist: {0}')]
         [string]$Path,
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string[]]$Destination,
@@ -97,7 +99,7 @@ function Invoke-Robocopy {
                     throw $_
                 }
                 
-                Write-Verbose 'Finished, processing output'
+                Write-PSFMessage -Level Verbose -Message 'Finished, processing output'
                 
                 $StdOut = New-Object -TypeName System.Collections.Generic.List``1[String]
                 $StdErr = New-Object -TypeName System.Collections.Generic.List``1[String]

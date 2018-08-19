@@ -74,10 +74,10 @@
         [switch]$EnableException
     )
     begin {
-        $spuser = $null
         $script:updates = @()
         function Update-Row {
-            [cmdletbinding()]
+			[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+			[cmdletbinding()]
             param (
                 [object[]]$Row,
                 [string[]]$ColumnNames,

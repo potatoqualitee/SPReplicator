@@ -66,7 +66,7 @@ https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2
         [switch]$EnableException
     )
     begin {
-        function Do-online {
+        function Invoke-Online {
             try {
                 $people = New-Object Microsoft.SharePoint.Client.UserProfiles.PeopleManager($user.Context)
             }
@@ -145,7 +145,7 @@ https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2
             $user.Context.ExecuteQuery()
             
             if ($script:spsite.Location -eq "Online") {
-                Do-online
+                Invoke-Online
             }
             else {
                 $random = -join ((65 .. 90) + (97 .. 122) | Get-Random -Count 5 | ForEach-Object { [char]$_ })

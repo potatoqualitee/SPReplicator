@@ -158,7 +158,7 @@
                 }
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Added $ColumnName as $Type to $List")) {
                     Write-PSFMessage -Level Debug -Message $xml
-                    $field = $thislist.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
+                    $null = $thislist.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
                     $thislist.Update()
                     $server.Load($thislist)
                     $server.ExecuteQuery()

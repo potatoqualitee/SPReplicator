@@ -62,7 +62,6 @@
         [switch]$EnableException
     )
     begin {
-        $collection = @()
         $start = Get-Date
         $count = 0
     }

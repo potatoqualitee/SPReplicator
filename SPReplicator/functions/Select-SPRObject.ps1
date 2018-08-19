@@ -54,7 +54,7 @@
                 }
                 
                 $props = ($object | Get-Member | Where-Object MemberType -in 'Property', 'NoteProperty', 'AliasProperty' | Where-Object { $_.Name -notin $ExcludeProperty }).Name
-                $defaultset = New-Object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet', [string[]]$props)
+                #$defaultset = New-Object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet', [string[]]$props)
             }
             else {
                 # property needs to be string
@@ -75,7 +75,7 @@
                 else {
                     $props = $Property
                 }
-                $defaultset = New-Object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet', [string[]]$props)
+                #$defaultset = New-Object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet', [string[]]$props)
             }
             Select-Object -InputObject $object -Property $props
         }

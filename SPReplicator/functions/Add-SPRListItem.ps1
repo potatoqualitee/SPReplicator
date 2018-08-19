@@ -94,8 +94,12 @@
         if ($AsUser) {
             $userobject = Get-SPRUser -Site $Site -Identity $AsUser -Credential $Credential
         }
-        
-        function New-SPlist {
+		
+		function New-SPlist
+		{
+			[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+			[CmdletbInding()]
+			param ()
             $firstobject = $InputObject | Select-Object -First 1
             if ($firstobject.ListObject) {
                 $rowlist = $firstobject.ListObject
@@ -224,7 +228,7 @@
                 
                 foreach ($fieldname in $columns) {
                     $datatype = ($ColumnInfo | Where-Object Name -eq $fieldname).Type
-                    if ($type -eq 'DateTime') {
+                    if ($datatype -eq 'DateTime') {
                         if ($currentrow.$fieldname) {
                             $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
                         }
@@ -233,7 +237,7 @@
                         }
                     }
                     else {
-                        if ($type -ne 'Note') {
+                        if ($datatype -ne 'Note') {
                             $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                         }
                         else {

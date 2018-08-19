@@ -1,4 +1,4 @@
-New-PSFLicense -Product 'SPReplicator' -Manufacturer 'Chrissy LeMaire' -ProductVersion $ModuleVersion -ProductType Module -Name MIT -Version "1.0.0.0" -Date (Get-Date "2018-08-19") -Text @"
+﻿New-PSFLicense -Product 'SPReplicator' -Manufacturer 'Chrissy LeMaire' -ProductVersion $ModuleVersion -ProductType Module -Name MIT -Version "1.0.0.0" -Date (Get-Date "2018-08-19") -Text @"
 Copyright (c) 2018 Chrissy LeMaire
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

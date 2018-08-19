@@ -1,4 +1,4 @@
-function Select-DefaultView {
+﻿function Select-DefaultView {
     <#
 .SYNOPSIS
     Allows for easier aliasing and hiding non-default columns without stripping properties like Select-SPRObject

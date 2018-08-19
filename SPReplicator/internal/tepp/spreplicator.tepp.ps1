@@ -1,4 +1,4 @@
-Register-PSFTeppScriptblock -Name SPReplicator-Template -ScriptBlock {
+﻿Register-PSFTeppScriptblock -Name SPReplicator-Template -ScriptBlock {
 	$class = [Microsoft.SharePoint.Client.ListTemplateType]
 	[System.Enum]::GetNames($class)
 }

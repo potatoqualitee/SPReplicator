@@ -29,7 +29,8 @@ function Invoke-Command2 {
 		Executes the scriptblock '{ dir }' on the computer sql2014 using the credentials stored in $Credential.
 		If $Credential is null, no harm done.
 #>
-    [CmdletBinding()]
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUsePSCredentialType", "")]
+	[CmdletBinding()]
     param (
         [string]$ComputerName = $env:COMPUTERNAME,
         [object]$Credential,

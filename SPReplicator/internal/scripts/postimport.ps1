@@ -1,4 +1,4 @@
-# Add all things you want to run after importing the main code
+﻿# Add all things you want to run after importing the main code
 
 # Load libraries
 . Import-ModuleFile -Path "$ModuleRoot\bin\library-import.ps1"

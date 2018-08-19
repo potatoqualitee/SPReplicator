@@ -62,7 +62,8 @@
 
     Imports all items from C:\temp\mylist.dat to My List on intranet.ad.local
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingEmptyCatchBlock", "")]
+	[CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$List,

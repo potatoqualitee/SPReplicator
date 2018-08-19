@@ -70,7 +70,6 @@
             }
             $script:spsite.Load($web)
             $script:spsite.ExecuteQuery()
-            $webid = $web.Id
             
             foreach ($user in $Identity) {
                 try {

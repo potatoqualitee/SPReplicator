@@ -30,7 +30,7 @@
                 
                 foreach ($fieldname in $columns) {
                     $datatype = ($ColumnInfo | Where-Object Name -eq $fieldname).Type
-                    if ($type -eq 'DateTime') {
+                    if ($datatype -eq 'DateTime') {
                         $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
                     }
                     else {
