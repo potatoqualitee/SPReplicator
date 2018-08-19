@@ -54,7 +54,8 @@
         [Parameter(Mandatory, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [string]$Location,
+		[PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
+		[string]$Location,
         [ValidateSet("Default", "FormsAuthentication", "Authentication")]
         [string]$AuthenticationMode = "Default",
         [switch]$EnableException

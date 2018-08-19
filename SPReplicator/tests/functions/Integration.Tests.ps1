@@ -1,8 +1,7 @@
-﻿$CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
-Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
+﻿Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 . "$PSScriptRoot\..\constants.ps1"
 
-Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
+Describe "OnPrem Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value OnPrem
@@ -462,7 +461,7 @@ Describe "$CommandName Integration Tests" -Tag "IntegrationTests" {
     Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
 }
 
-Describe "$CommandName Final Tests" -Tag "Finaltests" {
+Describe "OnPrem Final Tests" -Tag "Finaltests" {
     Context "Checking to ensure all original data has remained" {
         $nowlists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $nowwebs = Get-SPRWeb

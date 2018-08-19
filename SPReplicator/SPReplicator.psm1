@@ -1,5 +1,5 @@
 $script:ModuleRoot = $PSScriptRoot
-$script:ModuleVersion = "1.0.0.0"
+$script:ModuleVersion = (Invoke-Expression (Get-Content "$ModuleRoot\SPReplicator.psd1" -Raw)).ModuleVersion
 
 function Import-ModuleFile
 {
