@@ -61,6 +61,7 @@
         if (-not $InputObject) {
             if ($Site) {
                 $null = Connect-SPRSite -Site $Site -Credential $Credential
+                $InputObject = $script:spweb
             }
             
             if ($Web) {

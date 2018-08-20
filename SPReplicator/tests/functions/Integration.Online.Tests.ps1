@@ -4,7 +4,7 @@
 Describe "Online Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         if ($env:appveyor) {
-            $env:psmodulepath = "$env:psmodulepath; C:\projects"
+            $env:psmodulepath = "$env:psmodulepath; C:\projects; C:\projects\SPReplicator"
         }
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online

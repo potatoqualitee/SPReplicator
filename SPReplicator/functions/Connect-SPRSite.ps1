@@ -64,15 +64,16 @@
         if ($Site -notmatch 'http') {
             $Site = "https://$Site"
         }
-        
         # handle online vs onprem
         $hostname = ([System.Uri]$Site).Host
         $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
         
         if (-not $Location) {
             $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
-            $Location = $hash[$hostname]
-            if (-not $Location) {
+            if ($hash[$hostname]) {
+                $Location = $hash[$hostname]
+            }
+            else {
                 $Location = Get-PSFConfigValue -FullName SPReplicator.Location
             }
         }
