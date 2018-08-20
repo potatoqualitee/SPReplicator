@@ -52,7 +52,7 @@ Write-PSFMessage -Level Important -Message "Proceeding with individual tests"
 foreach ($file in (Get-ChildItem "$PSScriptRoot\functions" -Recurse -File -Filter "*Online.Tests.ps1"))
 {
 	Write-PSFMessage -Level Significant -Message "  Executing $($file.Name)"
-	$results = Invoke-Pester -Script $file.FullName -Show None -PassThru
+	$results = Invoke-Pester -Script $file.FullName -PassThru
 	foreach ($result in $results)
 	{
 		$totalRun += $result.TotalCount
