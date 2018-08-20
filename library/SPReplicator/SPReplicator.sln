@@ -1,0 +1,25 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{C9A7C5C1-A6E2-4FD4-ADC1-48D6E4540EC4}") = "SPReplicator", "SPReplicator\SPReplicator.csproj", "{0F948C6D-EBE8-427A-865B-C5C0765C1387}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0F948C6D-EBE8-427A-865B-C5C0765C1387}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F948C6D-EBE8-427A-865B-C5C0765C1387}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F948C6D-EBE8-427A-865B-C5C0765C1387}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F948C6D-EBE8-427A-865B-C5C0765C1387}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9150C040-85F1-4B61-AD3D-9D3B57E91900}
+	EndGlobalSection
+EndGlobal
