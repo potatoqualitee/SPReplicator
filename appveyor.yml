@@ -11,10 +11,11 @@ cache:
 shallow_clone: true
   
 environment: 
-  environment: master
-  version: 0.0.$(appveyor_build_number)
   sponlinecred:
     secure: mBRzjzHndw1jCCceXQ93iQ==
+  environment: master
+  version: 0.0.$(appveyor_build_number)
+  
 
 matrix:
   fast_finish: true
