@@ -24,7 +24,7 @@ $totalFailed = 0
 $totalRun = 0
 
 $testresults = @()
-
+<#
 Write-PSFMessage -Level Important -Message "Modules imported, proceeding with general tests"
 foreach ($file in (Get-ChildItem "$PSScriptRoot\general" -Filter "*.Tests.ps1"))
 {
@@ -46,6 +46,7 @@ foreach ($file in (Get-ChildItem "$PSScriptRoot\general" -Filter "*.Tests.ps1"))
 		}
 	}
 }
+#>
 
 Write-PSFMessage -Level Important -Message "Proceeding with individual tests"
 foreach ($file in (Get-ChildItem "$PSScriptRoot\functions" -Recurse -File -Filter "*Tests.ps1"))
@@ -76,5 +77,5 @@ else { Write-PSFMessage -Level Critical -Message "<c='em'>$totalFailed tests</c>
 
 if ($totalFailed -gt 0)
 {
-	throw "$totalFailed / $totalRun tests failed!"
+	throw "$totalFailed / $totalRun tests failed"
 }
