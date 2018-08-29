@@ -31,7 +31,7 @@
     Allows piping from Get-ChildItem
 
  .PARAMETER Overwrite
-    By default, adding a file with the same name will not ovewrite
+   Overwrite destination file if it exists
     
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
