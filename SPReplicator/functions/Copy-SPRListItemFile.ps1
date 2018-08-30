@@ -32,6 +32,9 @@
 
 .PARAMETER Overwrite
     Overwrite destination file if it exists
+  
+.PARAMETER Quiet
+    Do not output new item. Makes imports faster; useful for automated imports.
     
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -63,6 +66,7 @@
         [parameter(Mandatory, ValueFromPipeline)]
         [object]$InputObject,
         [switch]$Overwrite,
+        [switch]$Quiet,
         [switch]$EnableException
     )
     begin {
@@ -96,28 +100,36 @@
                         Stop-PSFFunction -EnableException:$EnableException -Message "$($item.Title) does not have an associated file" -Continue
                     }
                     
+                    # upload
                     [Microsoft.SharePoint.Client.FileInformation]$fileInfo = [Microsoft.SharePoint.Client.File]::OpenBinaryDirect($item.ListObject.Context, $file.ServerRelativeUrl)
                     $newfile = New-Object Microsoft.SharePoint.Client.FileCreationInformation
                     $newfile.Overwrite = $Overwrite
                     $newfile.Content = $fileInfo.Stream.ReadByte()
                     $newfile.URL = $fileName
                     $upload = $thislist.RootFolder.Files.Add($newfile)
-                    $listItem = $upload.ListItemAllFields
+                    $listItem = @{
+                        ListItem = $upload.ListItemAllFields
+                        ListObject = $thislist
+                    }
+                    $listItem.ListItem['Created'] = $item.Created
                     $thislist.Context.Load($thislist)
                     $thislist.Context.ExecuteQuery()
                     $count++
                 }
                 catch {
                     $failure = $true
-                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
+                    Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
                 }
-                $newitem = $thislist | Get-SPRListItem -Id $listItem.Id
-                $null = $newitem | Update-SPRListItem -UpdateObject $item -KeyColumn Title -Confirm:$false
-                $userobject = Get-SPRUser -Identity $item.'Modified_x0020_By'
+                
+                # updates
+                $null = $listItem | Update-SPRListItem -UpdateObject $item -KeyColumn Title -Confirm:$false
+                $userobject = Get-SPRUser -Identity $item.Author
                 if ($userobject) {
-                    $null = $newitem | Update-SPRListItemAuthorEditor -UserObject $userobject -Confirm:$false
+                    $null = $listItem | Update-SPRListItemAuthorEditor -UserObject $userobject -Confirm:$false
                 }
-                $thislist | Get-SPRListItem -Id $listItem.Id
+                if (-not $Quiet) {
+                    $thislist | Get-SPRListItem -Id $listItem.Id
+                }
             }
         }
     }
