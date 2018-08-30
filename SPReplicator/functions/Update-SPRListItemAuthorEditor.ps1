@@ -48,20 +48,14 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -Identity ad\newuser
 
-    Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Prompts for confirmation.
-    
-    Uses ID to compare author.
+    Update the author and editor for all items in My List on intranet.ad.local to ad\newuser. Prompts for confirmation.
 
 .EXAMPLE
-    $updates = Import-CliXml -Path C:\temp\mylist-updated.xml
-    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -UpdateObject $updates -KeyColumn SSN -Confirm:$false
+    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Update-SPRListItemAuthorEditor -Identity ad\newuser -Column Editor -Confirm:$false
 
-    Update 'My List' from modified rows contained within C:\temp\mylist-updated.xml Does not prompt for confirmation.
-    
-    Uses SSN to compare author.
+    Updates just the editor for all items in My List on intranet.ad.local to ad\newuser. Does not prompt for confirmation.
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
