@@ -25,7 +25,10 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER InputObject
-    Piped input from a web
+    Piped input from a list
+  
+.PARAMETER Recurse
+    Recurse and display *all* folders in a library or list.
     
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -33,7 +36,12 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRListFolder -List 'My List'
+    Get-SPRListFolder -Site sharepoint.ad.local -List 'My List'
+
+    Gets a list of all folders in the root of
+  
+ .EXAMPLE
+    Get-SPRListFolder -List 'My List' -Recurse
 
     Gets a list of all folders in My List
     
@@ -41,6 +49,11 @@
     Get-SPRList -List 'My List' | Get-SPRListFolder -Name Sup
 
     Get a folder called Sup on My List
+    
+.EXAMPLE
+    Get-SPRList -List 'My List' | Get-SPRListFolder -Name '/First Folder/Second Folder/Third Folder'
+
+    Gets the folder called Third Folder, under Second Folder which is under the First Folder
 #>
     [CmdletBinding()]
     param (
@@ -54,9 +67,14 @@
         [PSCredential]$Credential,
         [Parameter(ValueFromPipeline)]
         [Microsoft.SharePoint.Client.List[]]$InputObject,
+        [switch]$Recurse,
         [switch]$EnableException
     )
     process {
+        if ($Name -and $Recurse) {
+            Stop-PSFFunction -Message "You must either specify Name or Recurse, but not both"
+            return
+        }
         if (-not $InputObject) {
             if ($Site) {
                 $InputObject = Get-SprList -Site $Site -Credential $Credential -List $List -Web $Web
@@ -92,6 +110,17 @@
                         if ($searchfolder.Name) {
                             $searchfolder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
                         }
+                    }
+                }
+                elseif ($Recurse) {
+                    $folders = $thislist.GetItems([Microsoft.SharePoint.Client.CamlQuery]::CreateAllFoldersQuery())
+                    $thislist.Context.Load($folders)
+                    $thislist.Context.ExecuteQuery()
+                    
+                    foreach ($subfolder in $folders) {
+                        $thislist.Context.Load($subfolder.Folder)
+                        $thislist.Context.ExecuteQuery()
+                        $subfolder.Folder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
                     }
                 }
                 else {
