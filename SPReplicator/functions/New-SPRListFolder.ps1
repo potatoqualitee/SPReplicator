@@ -38,9 +38,9 @@
     Creates a folder called Projects on My List
     
 .EXAMPLE
-    Get-SPRList -ListName 'My List' | New-SPRListFolder -Name Sup
+    Get-SPRList -List 'My List' | New-SPRListFolder -Name '/First Folder/Second Folder/Third Folder'
 
-    Creates a folder called Sup on My List
+    Creates three folders if they don't exist.
 
 #>
     [CmdletBinding()]

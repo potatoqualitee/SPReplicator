@@ -38,7 +38,7 @@
     Gets a list of all folders in My List
     
 .EXAMPLE
-    Get-SPRList -ListName 'My List' | Get-SPRListFolder -Name Sup
+    Get-SPRList -List 'My List' | Get-SPRListFolder -Name Sup
 
     Get a folder called Sup on My List
 #>
@@ -79,6 +79,7 @@
                 
                 if ($Name) {
                     foreach ($foldername in $Name) {
+                        $foldername = $foldername.Trim()
                         if (-not $foldername.StartsWith($rooturl)) {
                             $foldername = $foldername.TrimStart("/")
                             $foldername = "$rooturl/$foldername"
