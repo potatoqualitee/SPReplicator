@@ -1,10 +1,10 @@
-﻿Function Get-SPRListFolder {
+﻿Function New-SPRListFolder {
 <#
 .SYNOPSIS
-    Gets a list of folders in a list.
+    Creates a folder in a list.
 
 .DESCRIPTION
-    Gets a list of folders in a list.
+    Creates a folder in a list.
 
 .PARAMETER Name
     Name of the folder. If no name is provided, all folders will be returned.
@@ -33,14 +33,15 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Get-SPRListFolder -List 'My List'
+    New-SPRListFolder -List 'My List' -Name Projects
 
-    Gets a list of all folders in My List
+    Creates a folder called Projects on My List
     
 .EXAMPLE
-    Get-SPRList -List 'My List' | Get-SPRListFolder -Name Sup
+    Get-SPRList -List 'My List' | New-SPRListFolder -Name '/First Folder/Second Folder/Third Folder'
 
-    Get a folder called Sup on My List
+    Creates three folders if they don't exist.
+
 #>
     [CmdletBinding()]
     param (
@@ -58,45 +59,45 @@
     )
     process {
         if (-not $InputObject) {
-            if ($Site) {
+            if ($List) {
                 $InputObject = Get-SprList -Site $Site -Credential $Credential -List $List -Web $Web
             }
-            elseif ($script:spsite) {
-                $InputObject = Get-SPRList -List $List -Web $Web
-            }
             else {
-                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List pipe in results from Get-SPRList"
+                Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site and List or pipe in results from Get-SPRList"
                 return
             }
         }
         try {
             foreach ($thislist in $InputObject) {
-                Write-PSFMessage -Level Verbose -Message "Loading $($thislist.Title) root folder"
-                $folder = $thislist.RootFolder
-                $thislist.Context.Load($folder)
-                $thislist.Context.ExecuteQuery()
-                $rooturl = $folder.ServerRelativeUrl
-                
-                if ($Name) {
-                    foreach ($foldername in $Name) {
-                        $foldername = $foldername.Trim()
-                        if (-not $foldername.StartsWith($rooturl)) {
-                            $foldername = $foldername.TrimStart("/")
-                            $foldername = "$rooturl/$foldername"
-                        }
-                        Write-PSFMessage -Level Verbose -Message "Searching for $foldername"
-                        $searchfolder = $thislist.Context.RootWeb.GetFolderByServerRelativeUrl($foldername)
-                        $thislist.Context.Load($searchfolder)
-                        $thislist.Context.ExecuteQuery()
-                        $rooturl = $folder.ServerRelativeUrl
-                        if ($searchfolder.Name) {
-                            $searchfolder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
+                foreach ($foldername in $name) {
+                    Write-PSFMessage -Level Verbose -Message "Getting list RootFolder"
+                    $folder = $thislist.RootFolder
+                    $thislist.Context.Load($folder)
+                    $thislist.Context.ExecuteQuery()
+                    
+                    $folders = $foldername -split "/"
+                    foreach ($subfolder in $folders) {
+                        if ($subfolder) {
+                            Write-PSFMessage -Level Verbose -Message "Processing part $subfolder of $foldername"
+                            $foldernames = $folder.Folders
+                            $thislist.Context.Load($foldernames)
+                            $thislist.Context.ExecuteQuery()
+                            $exists = $foldernames | Where-Object Name -eq $subfolder
+                            if ($exists) {
+                                Write-PSFMessage -Level Verbose -Message "$subfolder already exists"
+                                $folder = $thislist.Context.RootWeb.GetFolderByServerRelativeUrl($exists.ServerRelativeUrl)
+                                $thislist.Context.Load($folder)
+                                $thislist.Context.ExecuteQuery()
+                            }
+                            else {
+                                $folder = $folder.Folders.Add($subfolder)
+                                $thislist.Update()
+                                $thislist.Context.ExecuteQuery()
+                            }
                         }
                     }
                 }
-                else {
-                    $folder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
-                }
+                $thislist | Get-SPRListFolder -Name $name | Sort-Object -Unique ServerRelativeUrl
             }
         }
         catch {
