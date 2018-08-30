@@ -39,24 +39,15 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Remove-SPRListFolder -Site sharepoint.ad.local -List 'My List'
+    Remove-SPRListFolder -Site sharepoint.ad.local -List 'My List' -Name 'My Folder'
 
-    Removes a list of all folders in the root of
+    Deletes the folder 'My Folder' from 'My List' in sharepoint.ad.local and prompts for confirmation
+    
+.EXAMPLE
+    Remove-SPRListFolder -Site sharepoint.ad.local -List 'My List' -Name 'My Folder' -Confirm:$false
+
+    Deletes the folder 'My Folder' from 'My List' in sharepoint.ad.local and doensn't prompt for confirmation
   
- .EXAMPLE
-    Remove-SPRListFolder -List 'My List' -Recurse
-
-    Removes a list of all folders in My List
-    
-.EXAMPLE
-    Remove-SPRList -List 'My List' | Remove-SPRListFolder -Name Sup
-
-    Remove a folder called Sup on My List
-    
-.EXAMPLE
-    Remove-SPRList -List 'My List' | Remove-SPRListFolder -Name '/First Folder/Second Folder/Third Folder'
-
-    Removes the folder called Third Folder, under Second Folder which is under the First Folder
 #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
