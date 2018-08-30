@@ -108,7 +108,7 @@
                         $thislist.Context.ExecuteQuery()
                         $rooturl = $folder.ServerRelativeUrl
                         if ($searchfolder.Name) {
-                            $searchfolder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
+                            $searchfolder | Select-DefaultView -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
                         }
                     }
                 }
@@ -120,11 +120,11 @@
                     foreach ($subfolder in $folders) {
                         $thislist.Context.Load($subfolder.Folder)
                         $thislist.Context.ExecuteQuery()
-                        $subfolder.Folder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
+                        $subfolder.Folder | Select-DefaultView -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
                     }
                 }
                 else {
-                    $folder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
+                    $folder | Select-DefaultView -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
                 }
             }
         }
