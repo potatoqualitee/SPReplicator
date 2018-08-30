@@ -44,7 +44,7 @@
 #>
     [CmdletBinding()]
     param (
-        [string]$Name,
+        [string[]]$Name,
         [Parameter(HelpMessage = "Human-readble SharePoint list name")]
         [string[]]$List,
         [Parameter(HelpMessage = "Human-readble SharePoint web name")]
@@ -71,16 +71,30 @@
         }
         try {
             foreach ($thislist in $InputObject) {
-                $folders = $thislist.RootFolder.Folders
-                $thislist.Context.Load($folders)
+                Write-PSFMessage -Level Verbose -Message "Loading $($thislist.Title) root folder"
+                $folder = $thislist.RootFolder
+                $thislist.Context.Load($folder)
                 $thislist.Context.ExecuteQuery()
+                $rooturl = $folder.ServerRelativeUrl
+                
                 if ($Name) {
-                    foreach ($folder in $Name) {
-                        $folders | Where-Object ServerRelativeUrl -match $folder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
+                    foreach ($foldername in $Name) {
+                        if (-not $foldername.StartsWith($rooturl)) {
+                            $foldername = $foldername.TrimStart("/")
+                            $foldername = "$rooturl/$foldername"
+                        }
+                        Write-PSFMessage -Level Verbose -Message "Searching for $foldername"
+                        $searchfolder = $thislist.Context.RootWeb.GetFolderByServerRelativeUrl($foldername)
+                        $thislist.Context.Load($searchfolder)
+                        $thislist.Context.ExecuteQuery()
+                        $rooturl = $folder.ServerRelativeUrl
+                        if ($searchfolder.Name) {
+                            $searchfolder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
+                        }
                     }
                 }
                 else {
-                    $folders | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
+                    $folder | Select-SPRObject -Property Name, ServerRelativeUrl, TimeCreated, TimeLastModified
                 }
             }
         }
