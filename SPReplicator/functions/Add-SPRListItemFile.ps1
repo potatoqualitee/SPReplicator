@@ -39,14 +39,14 @@
     Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
 .EXAMPLE
-    Save-SPRListItemFile -Site intranet.ad.local -List 'My List' -Path C:\temp
-
-    Saves all files (attachments/documents) from My List on intranet.ad.local to C:\temp\
+    Get-ChildItem .\README.md | Add-SPRListItemFile -Site sharepoint.ad.local -List Sup
+    
+    Uploads README.md to the Sup list on sharepoint.ad.local, skips the file if the destination file if it exists.
 
 .EXAMPLE
-    Get-SPRListItem -List 'My List' -Site intranet.ad.local | Where Title -match 'cupcake' | Save-SPRListItemFile -Path C:\temp\
-
-    Saves files (attachments/documents) from My List matching cupcake from intranet.ad.local to C:\temp\
+    Get-ChildItem .\README.md | Add-SPRListItemFile -Site sharepoint.ad.local -List Sup -Overwrite
+    
+    Uploads README.md to the Sup list on sharepoint.ad.local, overwrites the destination file if it exists
 #>
     [CmdletBinding()]
     param (
