@@ -111,6 +111,11 @@
                     $filestream.Close()
                     $filestream.Dispose()
                     $count++
+                    if (($file.length / 1mb) -gt 10) {
+                        [System.GC]::Collect()
+                        [System.GC]::Collect()
+                        [System.GC]::Collect()
+                    }
                 }
                 catch {
                     $failure = $true
@@ -156,5 +161,6 @@
                 Message = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
+        [System.GC]::Collect()
     }
 }
