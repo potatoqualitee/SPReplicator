@@ -228,7 +228,7 @@
                 
                 foreach ($fieldname in $columns) {
                     $datatype = ($ColumnInfo | Where-Object Name -eq $fieldname).Type
-                    if ($datatype -eq 'DateTime') {
+                    if ($datatype -eq 'Date and Time') {
                         if ($currentrow.$fieldname) {
                             $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
                         }
@@ -237,7 +237,7 @@
                         }
                     }
                     else {
-                        if ($datatype -ne 'Note') {
+                        if ($datatype -ne 'Multiple lines of text') {
                             $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                         }
                         else {
@@ -274,12 +274,13 @@
                     $thislist = New-SPList
                 }
             }
-            $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
         }
         
         if ($InputObject[0] -is [Microsoft.SharePoint.Client.List]) {
             $InputObject = $InputObject | Get-SPRListItem
         }
+        
+        $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
         
         foreach ($row in $InputObject) {
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Adding List item to $List")) {
