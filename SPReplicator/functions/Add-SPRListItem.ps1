@@ -230,7 +230,7 @@
                     $datatype = ($ColumnInfo | Where-Object Name -eq $fieldname).Type
                     if ($datatype -eq 'Date and Time') {
                         if ($currentrow.$fieldname) {
-                            $value = (($currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
+                            $value = ((Get-Date $currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
                         }
                         else {
                             $value = $null
