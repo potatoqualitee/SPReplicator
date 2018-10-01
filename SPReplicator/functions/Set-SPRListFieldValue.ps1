@@ -86,7 +86,7 @@
             foreach ($currentrow in $row) {
                 $runupdate = $false
                 foreach ($fieldname in $ColumnNames) {
-                    if ($fieldname -notin $fields.Title) {
+                    if ($fieldname -notin $fields.Title -and $fieldname -notin $fields.StaticName) {
                         Stop-PSFFunction -EnableException:$EnableException -Message "$fieldname does not exist" -Continue
                     }
                     
