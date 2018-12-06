@@ -97,10 +97,10 @@
         try {
             $columns = $collection | Select-Object -First 1 -ExpandProperty ListObject | Get-SPRColumnDetail |
             Where-Object {
-                -not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments'
+                ($PSItem.Name -in 'UID','RecurrenceData','XMLTZone','RecurrenceID', 'TimeZone', 'Duration', 'EventType' ) -or (-not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments')
             }
             $spdatatype = $columns | Select-SPRObject -Property Name, 'TypeAsString as Type'
-            
+
             if (-not $EnableUserField) {
                 $tempdatatype = @()
                 foreach ($dt in $spdatatype) {
