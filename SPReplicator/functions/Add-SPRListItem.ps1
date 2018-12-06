@@ -24,6 +24,12 @@
 .PARAMETER AutoCreateList
     If a Sharepoint list does not exist, one will be created based off of the guessed column types.
 
+.PARAMETER Column
+    Only import specific columns.
+ 
+.PARAMETER ExcludeColumn
+    Exclude specific columns.
+    
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
@@ -79,6 +85,8 @@
         [Parameter(Position = 2, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [string[]]$Column,
+        [string[]]$ExcludeColumn,
         [parameter(ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$AutoCreateList,
@@ -216,10 +224,9 @@
                 }
                 elseif ($currentrow -is [Microsoft.SharePoint.Client.List]) {
                     $columns = $currentrow | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
-                }
-                else {
+                } else {
                     $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
-                    
+
                     if (-not $columns) {
                         $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq Property | Select-Object -ExpandProperty Name |
                         Where-Object { $_ -notin 'RowError', 'RowState', 'Table', 'ItemArray', 'HasErrors' }
@@ -239,8 +246,7 @@
                     else {
                         if ($datatype -ne 'Multiple lines of text') {
                             $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
-                        }
-                        else {
+                        } else {
                             $value = $currentrow.$fieldname
                         }
                         if ($value.Length -eq 0) { $value = $null }
@@ -282,6 +288,14 @@
         
         $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
         
+        if ($Column) {
+            Write-Warning $Column
+            $columns = $columns | Where-Object DisplayName -in $Column
+        }
+        
+        if ($ExcludeColumn) {
+            $columns = $columns | Where-Object DisplayName -notin $ExcludeColumn
+        }
         foreach ($row in $InputObject) {
             if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $thislist.Context.Url -Action "Adding List item to $List")) {
                 try {
