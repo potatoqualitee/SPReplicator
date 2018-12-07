@@ -79,10 +79,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -NoUserLookup $NoUserLookup
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -NoUserLookup:$NoUserLookup
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRListItem -List $List -Web $Web -NoUserLookup $NoUserLookup
+                $InputObject = Get-SPRListItem -List $List -Web $Web -NoUserLookup:$NoUserLookup
             }
             else {
                 $failure = $true
@@ -92,7 +92,7 @@
         }
         
         if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
-            $InputObject = $InputObject | Get-SPRListItem -NoUserLookup $NoUserLookup
+            $InputObject = $InputObject | Get-SPRListItem -NoUserLookup:$NoUserLookup
         }
         
         $collection += $InputObject
