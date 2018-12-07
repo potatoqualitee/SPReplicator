@@ -46,8 +46,11 @@
     Helps create accurate datatypes when used with -AutoCreateList
 
 .PARAMETER DomainMap
-    Allows remapping the People Picker.
-    
+    Allows remapping the People Picker at the domain level.
+
+.PARAMETER UserMap
+    Allows remapping the People Picker at the user level.
+  
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
 
@@ -96,6 +99,7 @@
         [switch]$Quiet,
         [string]$AsUser,
         [object]$DomainMap,
+        [object[]]$UserMap,
         [object]$DataTypeMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
         [switch]$EnableException
@@ -216,7 +220,8 @@
             param (
                 [object[]]$Row,
                 [object[]]$ColumnInfo,
-                [object]$DomainMap
+                [object]$DomainMap,
+                [object[]]$UserMap
             )
             foreach ($currentrow in $row) {
                 
@@ -244,10 +249,17 @@
                             $value = $null
                         }
                     } elseif ($datatype -eq 'Person or Group') {
+                        $value = $currentrow.$fieldname
                         if ($DomainMap) {
-                            $value = "$($currentrow.$fieldname)".Replace($DomainMap.Keys, $DomainMap.Values)
-                        } else {
-                            $value = $currentrow.$fieldname
+                            $value = "$value".Replace($DomainMap.Keys, $DomainMap.Values)
+                        }
+                        if ($UserMap) {
+                            foreach ($user in $UserMap) {
+                                $value = "$value".Replace($user.Keys, $user.Values)
+                            }
+                        }
+                        if ($value.Length -eq 0) {
+                            $value = $null
                         }
                     } else {
                         if ($datatype -ne 'Multiple lines of text') {
@@ -309,7 +321,7 @@
                 try {
                     $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
                     $newItem = $thislist.AddItem($itemCreateInfo)
-                    $newItem = Add-Row -Row $row -ColumnInfo $columns -DomainMap $DomainMap
+                    $newItem = Add-Row -Row $row -ColumnInfo $columns -DomainMap $DomainMap -UserMap $UserMap
                     $newItem.Update()
                     $script:spsite.Load($newItem)
                     

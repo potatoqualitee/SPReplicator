@@ -39,7 +39,10 @@
     Exclude specific columns.
  
 .PARAMETER DomainMap
-    Allows remapping the People Picker.
+    Allows remapping the People Picker at the domain level.
+
+.PARAMETER UserMap
+    Allows remapping the People Picker at the user level.
     
 .PARAMETER Quiet
     Do not output new item. Makes imports faster; useful for automated imports.
@@ -88,6 +91,7 @@
         [switch]$Quiet,
         [string]$AsUser,
         [object]$DomainMap,
+        [object[]]$UserMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
         [parameter(ValueFromPipeline)]
         [System.IO.FileInfo[]]$InputObject,
