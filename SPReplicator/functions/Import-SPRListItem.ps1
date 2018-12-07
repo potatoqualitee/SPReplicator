@@ -70,9 +70,10 @@
     Imports all items from C:\temp\mylist.dat to My List on intranet.ad.local
 
 .EXAMPLE
-    Get-SPRListItem -Path C:\temp\mylist.dat | Import-SPRListItem -List 'My List' -Site intranet.ad.local
+    Get-SPRListItem -Path C:\temp\mylist.dat | Import-SPRListItem -List 'My List' -Site intranet.ad.local -UserMap @{ 'brice.hagood' = 'bhagood' }
 
-    Imports all items from C:\temp\mylist.dat to My List on intranet.ad.local
+    Imports all items from C:\temp\mylist.dat to My List on intranet.ad.local. Remaps People Picker entry brice.hagood to bhagood to accommodate for different naming conventions. Otherwise, People Picker will attempt to resolve brice.hagood on the potentially new domain.
+
 #>
 	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingEmptyCatchBlock", "")]
 	[CmdletBinding(SupportsShouldProcess)]
@@ -123,11 +124,11 @@
                 }
                 if ($file.length/1MB -gt 100) {
                     if ($Column) {
-                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -Property $Column | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
+                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -Property $Column | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
                     } elseif ($ExcludeColumn) {
-                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -ExcludeProperty $ExcludeColumn | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
+                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -ExcludeProperty $ExcludeColumn | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
                     } else {
-                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
+                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
                     }
                 } else {
                     $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data
@@ -137,7 +138,7 @@
                     if ($ExcludeColumn) {
                         $items = $items | Select-SPRObject -ExcludeProperty $ExcludeColumn
                     }
-                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
+                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
                 }
             } catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue

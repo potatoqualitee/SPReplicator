@@ -69,9 +69,11 @@
     Adds data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
 
 .EXAMPLE
-    Import-Csv -Path C:\temp\listitems.csv | Add-SPRListItem -Site intranet.ad.local -List 'My List'
+    Import-Csv -Path C:\temp\listitems.csv | Add-SPRListItem -Site intranet.ad.local -List 'My List' -UserMap @{ 'brice.hagood' = 'bhagood' }
 
     Adds data from listitems.csv into the My List SharePoint list, so long as there are matching columns.
+    
+    Remaps People Picker entry brice.hagood to bhagood to accommodate for different naming conventions. Otherwise, People Picker will attempt to resolve brice.hagood on the potentially new domain.
 
 .EXAMPLE
     $object = @()
@@ -250,16 +252,21 @@
                         }
                     } elseif ($datatype -eq 'Person or Group') {
                         $value = $currentrow.$fieldname
-                        if ($DomainMap) {
-                            $value = "$value".Replace($DomainMap.Keys, $DomainMap.Values)
-                        }
-                        if ($UserMap) {
-                            foreach ($user in $UserMap) {
-                                $value = "$value".Replace($user.Keys, $user.Values)
+                        if ($null -ne $value) {
+                            if ($UserMap) {
+                                foreach ($user in $UserMap) {
+                                    if ($value -eq $user.Keys) {
+                                        $value = "$value".Replace($user.Keys, $user.Values)
+                                    }
+                                }
                             }
-                        }
-                        if ($value.Length -eq 0) {
-                            $value = $null
+                            if ($DomainMap) {
+                                $value = "$value".Replace($DomainMap.Keys, $DomainMap.Values)
+                            }
+                            $value = (Get-SPRUser -Identity $value).FormattedLogin
+                            if ($value.Length -eq 0) {
+                                $value = $null
+                            }
                         }
                     } else {
                         if ($datatype -ne 'Multiple lines of text') {
@@ -309,7 +316,6 @@
         $columns = $thislist | Get-SPRColumnDetail | Where-Object Type -ne Computed | Sort-Object List, DisplayName
         
         if ($Column) {
-            Write-Warning $Column
             $columns = $columns | Where-Object DisplayName -in $Column
         }
         
