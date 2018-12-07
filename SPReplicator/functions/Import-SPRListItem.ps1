@@ -31,6 +31,18 @@
     
 .PARAMETER AsUser
     Import the item as a specific user.
+  
+.PARAMETER Column
+    Only import specific columns.
+ 
+.PARAMETER ExcludeColumn
+    Exclude specific columns.
+ 
+.PARAMETER DomainMap
+    Allows remapping the People Picker at the domain level.
+
+.PARAMETER UserMap
+    Allows remapping the People Picker at the user level.
     
 .PARAMETER Quiet
     Do not output new item. Makes imports faster; useful for automated imports.
@@ -74,8 +86,12 @@
         [Parameter(HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
+        [string[]]$Column,
+        [string[]]$ExcludeColumn,
         [switch]$Quiet,
         [string]$AsUser,
+        [object]$DomainMap,
+        [object[]]$UserMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
         [parameter(ValueFromPipeline)]
         [System.IO.FileInfo[]]$InputObject,
@@ -106,14 +122,24 @@
                     # Don't care because it may or may not exist
                 }
                 if ($file.length/1MB -gt 100) {
-                    $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
-                }
-                else {
+                    if ($Column) {
+                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -Property $Column | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
+                    } elseif ($ExcludeColumn) {
+                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -ExcludeProperty $ExcludeColumn | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
+                    } else {
+                        $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
+                    }
+                } else {
                     $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data
-                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap
+                    if ($Column) {
+                        $items = $items | Select-SPRObject -Property $Column
+                    }
+                    if ($ExcludeColumn) {
+                        $items = $items | Select-SPRObject -ExcludeProperty $ExcludeColumn
+                    }
+                    Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap
                 }
-            }
-            catch {
+            } catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
             }
         }
