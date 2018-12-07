@@ -33,6 +33,9 @@ Function Get-SPRListItem {
 .PARAMETER InputObject
     Allows piping from Get-SPRList
 
+.PARAMETER NoUserLookup
+    Do not perform user lookups. So return "ad\jane.deaux" instead of "Jane Deaux, Esq."
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -82,6 +85,7 @@ Function Get-SPRListItem {
         [datetime]$Since,
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
+        [switch]$NoUserLookup,
         [switch]$EnableException
     )
     process {
@@ -168,12 +172,18 @@ Function Get-SPRListItem {
                     foreach ($fieldName in $item.FieldValues.Keys) {
                         $value = $item.FieldValues[$fieldName]
                         if ($value -match 'Microsoft\.SharePoint\.Client.') {
-                            $object.$fieldName = $item.FieldValues[$fieldName].LookupValue
-                        }
-                        elseif ($value -is [array]) {
+                            if ($value -match 'FieldUserValue' -or $value -match 'User') {
+                                if (-not $NoUserLookup) {
+                                    $object.$fieldName = $item.FieldValues[$fieldName].LookupValue
+                                } else {
+                                    $object.$fieldName = (Get-SPRUser -Identity $item.FieldValues[$fieldName].LookupValue | Select-Object -First 1)
+                                }
+                            } else {
+                                $object.$fieldName = $item.FieldValues[$fieldName].LookupValue
+                            }
+                        } elseif ($value -is [array]) {
                             $object.$fieldName = ($value -join ", ")
-                        }
-                        else {
+                        } else {
                             $object.$fieldName = $value
                         }
                     }
