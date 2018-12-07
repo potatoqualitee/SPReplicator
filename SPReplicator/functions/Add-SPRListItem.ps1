@@ -44,6 +44,9 @@
   
 .PARAMETER DataTypeMap
     Helps create accurate datatypes when used with -AutoCreateList
+
+.PARAMETER DomainMap
+    Allows remapping the People Picker.
     
 .PARAMETER WhatIf
     If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -92,6 +95,7 @@
         [switch]$AutoCreateList,
         [switch]$Quiet,
         [string]$AsUser,
+        [object]$DomainMap,
         [object]$DataTypeMap,
         [Microsoft.SharePoint.Client.List]$LogToList,
         [switch]$EnableException
@@ -102,12 +106,11 @@
         if ($AsUser) {
             $userobject = Get-SPRUser -Site $Site -Identity $AsUser -Credential $Credential
         }
-		
-		function New-SPlist
-		{
-			[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
-			[CmdletbInding()]
-			param ()
+        
+        function New-SPlist {
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+            [CmdletbInding()]
+            param ()
             $firstobject = $InputObject | Select-Object -First 1
             if ($firstobject.ListObject) {
                 $rowlist = $firstobject.ListObject
@@ -138,8 +141,7 @@
                     }
                     $DataTypeMap = $tempdatatype
                 }
-            }
-            else {
+            } else {
                 $datatable = $firstobject | ConvertTo-DataTable
                 $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object Title -ne Type
                 $columns = $listcolumns.Title
@@ -194,8 +196,7 @@
                 
                 if ($column.ColumnName) {
                     $cname = $column.ColumnName
-                }
-                else {
+                } else {
                     $cname = $column
                 }
                 
@@ -203,8 +204,7 @@
                 if ([System.Uri]::IsWellFormedUriString(($column.Table.$column | Select-Object -First 1 | Out-String), "Absolute") -or $type -eq 'URL') {
                     $xml = "<Field Type='URL' Name='$cname' StaticName='$cname' DisplayName='$cname' Format='Hyperlink'/>"
                     $null = $thislist | Add-SPRColumn -ColumnName $cname -Xml $xml
-                }
-                else {
+                } else {
                     $null = $thislist | Add-SPRColumn -ColumnName $cname -Type $type
                 }
             }
@@ -215,21 +215,23 @@
             [cmdletbinding()]
             param (
                 [object[]]$Row,
-                [object[]]$ColumnInfo
+                [object[]]$ColumnInfo,
+                [object]$DomainMap
             )
             foreach ($currentrow in $row) {
                 
                 if ($currentrow.ListObject) {
                     $columns = $currentrow.ListObject | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
-                }
-                elseif ($currentrow -is [Microsoft.SharePoint.Client.List]) {
+                } elseif ($currentrow -is [Microsoft.SharePoint.Client.List]) {
                     $columns = $currentrow | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
                 } else {
                     $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
-
+                    
                     if (-not $columns) {
                         $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq Property | Select-Object -ExpandProperty Name |
-                        Where-Object { $_ -notin 'RowError', 'RowState', 'Table', 'ItemArray', 'HasErrors' }
+                        Where-Object {
+                            $_ -notin 'RowError', 'RowState', 'Table', 'ItemArray', 'HasErrors'
+                        }
                     }
                 }
                 
@@ -238,26 +240,31 @@
                     if ($datatype -eq 'Date and Time') {
                         if ($currentrow.$fieldname) {
                             $value = ((Get-Date $currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
-                        }
-                        else {
+                        } else {
                             $value = $null
                         }
-                    }
-                    else {
+                    } elseif ($datatype -eq 'Person or Group') {
+                        if ($DomainMap) {
+                            $value = "$($currentrow.$fieldname)".Replace($DomainMap.Keys, $DomainMap.Values)
+                        } else {
+                            $value = $currentrow.$fieldname
+                        }
+                    } else {
                         if ($datatype -ne 'Multiple lines of text') {
                             $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
                         } else {
                             $value = $currentrow.$fieldname
                         }
-                        if ($value.Length -eq 0) { $value = $null }
+                        if ($value.Length -eq 0) {
+                            $value = $null
+                        }
                     }
                     
                     # Skip reserved words, so far is only ID
                     if ($fieldname -notin 'ID', 'SPReplicatorDataType') {
                         Write-PSFMessage -Level Debug -Message "Adding $fieldname to row"
                         $newItem.set_item($fieldname, $value)
-                    }
-                    else {
+                    } else {
                         Write-PSFMessage -Level Debug -Message "Not adding $fieldname to row (reserved name)"
                     }
                 }
@@ -266,7 +273,9 @@
         }
     }
     process {
-        if (Test-PSFFunctionInterrupt) { return }
+        if (Test-PSFFunctionInterrupt) {
+            return
+        }
         $thislist = Get-SPRList -Site $Site -Credential $Credential -List $List -Web $Web
         
         if (-not $thislist) {
@@ -274,8 +283,7 @@
                 $failure = $true
                 Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"
                 return
-            }
-            else {
+            } else {
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List $List")) {
                     $thislist = New-SPList
                 }
@@ -301,7 +309,7 @@
                 try {
                     $itemCreateInfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
                     $newItem = $thislist.AddItem($itemCreateInfo)
-                    $newItem = Add-Row -Row $row -ColumnInfo $columns
+                    $newItem = Add-Row -Row $row -ColumnInfo $columns -DomainMap $DomainMap
                     $newItem.Update()
                     $script:spsite.Load($newItem)
                     
@@ -312,13 +320,11 @@
                     if ($AsUser) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
                         Get-SPRListItem -List $List -Web $Web -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
-                    }
-                    elseif (-not $Quiet) {
+                    } elseif (-not $Quiet) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
                         Get-SPRListItem -List $List -Web $Web -Id $newItem.Id
                     }
-                }
-                catch {
+                } catch {
                     $failure = $true
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                     return
@@ -335,15 +341,13 @@
                 $thislist.Context.ExecuteQuery()
                 $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
                 $currentuser = $thislist.Context.CurrentUser.ToString()
-            }
-            else {
+            } else {
                 $currentuser = $script:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"
                 $errormessage = Get-PSFMessage -Errors | Select-Object -Last 1 -ExpandProperty Message
-            }
-            else {
+            } else {
                 $result = "Succeeded"
             }
             $elapsed = (Get-Date) - $start
