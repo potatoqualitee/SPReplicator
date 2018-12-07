@@ -36,6 +36,9 @@
     
     By default, User fields will be exported as string fields. Use this to keep the User field datatype.
 
+.PARAMETER NoUserLookup
+    Do not perform user lookups. So return "ad\jane.deaux" instead of "Jane Deaux, Esq."
+    
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -66,6 +69,7 @@
         [parameter(ValueFromPipeline)]
         [object]$InputObject,
         [switch]$EnableUserField,
+        [switch]$NoUserLookup,
         [switch]$EnableException
     )
     begin {
@@ -75,10 +79,10 @@
     process {
         if (-not $InputObject) {
             if ($Site) {
-                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web
+                $InputObject = Get-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -NoUserLookup $NoUserLookup
             }
             elseif ($script:spsite) {
-                $InputObject = Get-SPRListItem -List $List -Web $Web
+                $InputObject = Get-SPRListItem -List $List -Web $Web -NoUserLookup $NoUserLookup
             }
             else {
                 $failure = $true
@@ -88,7 +92,7 @@
         }
         
         if ($InputObject -is [Microsoft.SharePoint.Client.List]) {
-            $InputObject = $InputObject | Get-SPRListItem
+            $InputObject = $InputObject | Get-SPRListItem -NoUserLookup $NoUserLookup
         }
         
         $collection += $InputObject
