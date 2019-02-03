@@ -29,6 +29,7 @@ This module can be used for replicating data in a number of ways.
 * From SharePoint to SQL Server
 * From CSV to SharePoint
 * From SharePoint to CSV
+* From On-prem to SharePoint Online and back
 
 ## Usage examples
 
