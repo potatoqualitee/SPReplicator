@@ -19,6 +19,10 @@ Install-Module SPReplicator -Scope CurrentUser
 
 If you're scheduling tasks via Task Schedule or SQL Server agent, installing the module with administrative privileges is best because it will ensure all users have access via Program Files.
 
+## Command Reference
+
+For more details about commands, visit the [wiki](https://github.com/potatoqualitee/SPReplicator/wiki/Command-Reference) or use Get-Help.
+
 ## Usage scenarios
 
 This module can be used for replicating data in a number of ways.
@@ -98,9 +102,6 @@ Get-ADUser -Filter * | Add-SPRListItem -List ADList -AutoCreateList
 #### Results of built-in logger (New-SPRLogList and `-LogToList`)
 
 ![image](https://user-images.githubusercontent.com/8278033/43561352-63b655cc-95b2-11e8-93e0-90926df74d47.png)
-
-## Command Reference
-For more details about commands, visit the [wiki](https://github.com/potatoqualitee/SPReplicator/wiki/Command-Reference) or use Get-Help.
 
 ## Power BI
 A Power BI Template is included in the bin directory. More coming soon.
