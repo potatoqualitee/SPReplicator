@@ -1,10 +1,10 @@
 ﻿Function Update-SPRListItemAuthorEditor {
 <#
 .SYNOPSIS
-    Updates author (created by) from a SharePoint list.
+    Updates author (created by) of items in a SharePoint list.
 
 .DESCRIPTION
-    Updates author (created by) from a SharePoint list.
+    Updates author (created by) of items in a SharePoint list.
 
 .PARAMETER Identity
     The Identity of the user.
