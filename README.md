@@ -81,6 +81,9 @@ Get-ADUser -Filter * | Select SamAccountName, whateverelse | Add-SPRListItem -Li
 Get-ADUser -Filter * | Add-SPRListItem -List ADList -AutoCreateList
 
 ```
+#### Find out more
+
+This was just a subset of command examples. For more command examples, visit the [wiki](https://github.com/potatoqualitee/SPReplicator/wiki/Command-Reference) or use Get-Help.
 
 ## Selected screenshots
 
