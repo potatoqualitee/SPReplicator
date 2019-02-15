@@ -1,10 +1,10 @@
 ﻿Function Add-SPRListItemFile {
-<#
+    <#
 .SYNOPSIS
-    Saves items from a SharePoint list to a file.
+    Uploads a file to a SharePoint list.
 
 .DESCRIPTION
-     Saves items from a SharePoint list to a file.
+     Uploads a file to a SharePoint list.
 
 .PARAMETER List
     The human readable list name. So 'My List' as opposed to 'MyList', unless you named it MyList.
@@ -150,15 +150,15 @@
             $elapsed = (Get-Date) - $start
             $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
             [pscustomobject]@{
-                Title = $thislist.Title
-                ItemCount = $count
-                Result = $result
-                Type  = "Add"
-                RunAs = $currentuser
-                Duration = $duration
-                URL   = $url
+                Title      = $thislist.Title
+                ItemCount  = $count
+                Result     = $result
+                Type       = "Add"
+                RunAs      = $currentuser
+                Duration   = $duration
+                URL        = $url
                 FinishTime = Get-Date
-                Message = $errormessage
+                Message    = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
         [System.GC]::Collect()
