@@ -1,5 +1,5 @@
 ﻿Function Update-SPRListItemAuthorEditor {
-<#
+    <#
 .SYNOPSIS
     Updates author (created by) of items in a SharePoint list.
 
@@ -78,8 +78,8 @@
     begin {
         $script:updates = @()
         function Update-Row {
-			[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
-			[cmdletbinding()]
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+            [cmdletbinding()]
             param (
                 [object[]]$Row,
                 [string[]]$ColumnNames,
