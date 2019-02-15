@@ -72,7 +72,7 @@ We can import data two ways, using `Import-SPRListItem` or `Add-SPRListItem`
 Import-SPRListItem -List Employees -Path \\nas\replicationdata\Employees.csv
 
 # Import from SQL Server
-Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select fname, lname where id > 100" | Add-SPRListItem -List emps
+Invoke-DbaQuery -SqlInstance sql2017 -Query "Select fname, lname where id > 100" | Add-SPRListItem -List emps
 
 # Import any PowerShell object, really. So long as it has the properly named columns.
 Get-ADUser -Filter * | Select SamAccountName, whateverelse | Add-SPRListItem -List ADList
