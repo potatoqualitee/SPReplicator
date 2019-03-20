@@ -1,5 +1,5 @@
 ﻿Function Clear-SPRListItems {
-<#
+    <#
 .SYNOPSIS
     Deletes all items from a SharePoint list.
 
@@ -112,12 +112,18 @@
                             $done = $true
                         }
                     }
-                    $thislist.Context.ExecuteQuery()
+                    try {
+                        $thislist.Update()
+                        $thislist.Context.ExecuteQuery()
+                    }
+                    catch {
+                        $thislist.Context.ExecuteQuery()
+                    }
                     [pscustomobject]@{
-                        Site = $thislist.Context.Url
-                        List = $thislist.Title
+                        Site      = $thislist.Context.Url
+                        List      = $thislist.Title
                         ItemCount = $itemcount
-                        Status = "All records deleted"
+                        Status    = "All records deleted"
                     }
                 }
                 catch {
@@ -152,19 +158,19 @@
                 $result = "Succeeded"
             }
             
-            $elapsed = (Get-Date)-$start
+            $elapsed = (Get-Date) - $start
             $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
             
             [pscustomobject]@{
-                Title = $thislist.Title
-                ItemCount = $itemcount
-                Result = $result
-                Type  = "Clear"
-                RunAs = $currentuser
-                Duration = $duration
-                URL   = $url
+                Title      = $thislist.Title
+                ItemCount  = $itemcount
+                Result     = $result
+                Type       = "Clear"
+                RunAs      = $currentuser
+                Duration   = $duration
+                URL        = $url
                 FinishTime = Get-Date
-                Message = $errormessage
+                Message    = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
