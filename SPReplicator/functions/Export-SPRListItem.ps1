@@ -1,5 +1,5 @@
 ﻿Function Export-SPRListItem {
-<#
+    <#
 .SYNOPSIS
     Exports all items from a SharePoint list to a file.
 
@@ -101,7 +101,7 @@
         try {
             $columns = $collection | Select-Object -First 1 -ExpandProperty ListObject | Get-SPRColumnDetail |
             Where-Object {
-                ($PSItem.Name -in 'UID','RecurrenceData','XMLTZone','RecurrenceID', 'TimeZone', 'Duration', 'EventType' ) -or (-not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -notin 'Computed', 'Lookup' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments')
+                ($PSItem.Type -eq 'Lookup' -and $PSItem.FromBaseType -eq $false) -or ($PSItem.Name -in 'UID', 'RecurrenceData', 'XMLTZone', 'RecurrenceID', 'TimeZone', 'Duration', 'EventType' ) -or (-not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -ne 'Computed' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments')
             }
             $spdatatype = $columns | Select-SPRObject -Property Name, 'TypeAsString as Type'
 
@@ -156,15 +156,15 @@
             $elapsed = (Get-Date) - $start
             $duration = "{0:HH:mm:ss}" -f ([datetime]$elapsed.Ticks)
             [pscustomobject]@{
-                Title = $thislist.Title
-                ItemCount = ($collection).Count
-                Result = $result
-                Type  = "Export"
-                RunAs = $currentuser
-                Duration = $duration
-                URL   = $url
+                Title      = $thislist.Title
+                ItemCount  = ($collection).Count
+                Result     = $result
+                Type       = "Export"
+                RunAs      = $currentuser
+                Duration   = $duration
+                URL        = $url
                 FinishTime = Get-Date
-                Message = $errormessage
+                Message    = $errormessage
             } | Add-LogListItem -ListObject $LogToList -Quiet
         }
     }
