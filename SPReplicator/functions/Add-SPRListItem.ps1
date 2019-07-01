@@ -1,5 +1,5 @@
 ﻿Function Add-SPRListItem {
- <#
+    <#
 .SYNOPSIS
     Adds items to a SharePoint list.
 
@@ -147,7 +147,8 @@
                     }
                     $DataTypeMap = $tempdatatype
                 }
-            } else {
+            }
+            else {
                 $datatable = $firstobject | ConvertTo-DataTable
                 $listcolumns = $thislist | Get-SPRColumnDetail | Where-Object Title -ne Type
                 $columns = $listcolumns.Title
@@ -202,7 +203,8 @@
                 
                 if ($column.ColumnName) {
                     $cname = $column.ColumnName
-                } else {
+                }
+                else {
                     $cname = $column
                 }
                 
@@ -210,7 +212,8 @@
                 if ([System.Uri]::IsWellFormedUriString(($column.Table.$column | Select-Object -First 1 | Out-String), "Absolute") -or $type -eq 'URL') {
                     $xml = "<Field Type='URL' Name='$cname' StaticName='$cname' DisplayName='$cname' Format='Hyperlink'/>"
                     $null = $thislist | Add-SPRColumn -ColumnName $cname -Xml $xml
-                } else {
+                }
+                else {
                     $null = $thislist | Add-SPRColumn -ColumnName $cname -Type $type
                 }
             }
@@ -229,9 +232,11 @@
                 
                 if ($currentrow.ListObject) {
                     $columns = $currentrow.ListObject | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
-                } elseif ($currentrow -is [Microsoft.SharePoint.Client.List]) {
+                }
+                elseif ($currentrow -is [Microsoft.SharePoint.Client.List]) {
                     $columns = $currentrow | Get-SPRColumnDetail | Where-Object FromBaseType -eq $false | Select-Object -ExpandProperty Name
-                } else {
+                }
+                else {
                     $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq NoteProperty | Select-Object -ExpandProperty Name
                     
                     if (-not $columns) {
@@ -247,10 +252,27 @@
                     if ($datatype -eq 'Date and Time') {
                         if ($currentrow.$fieldname) {
                             $value = ((Get-Date $currentrow.$fieldname).ToUniversalTime()).ToString("yyyy-MM-ddTHH:mm:ssZ")
-                        } else {
+                        }
+                        else {
                             $value = $null
                         }
-                    } elseif ($datatype -eq 'Person or Group') {
+                    }
+                    elseif ($datatype -eq 'Lookup') {
+                        <# 
+                          FieldLookupValue is not supported in CSOM. Fortunately, there is a workaround.
+                          https://sharepoint.stackexchange.com/questions/157276/sharepoint-2013-how-to-update-multi-value-lookup-field-using-javascript-csom
+                          Basically, what we need is the following format: "1;#Open;#2;#Close;#3;#Closed"
+                        #>
+                        $lookupitem = @()
+                        $i = 0
+                        foreach ($var in $currentrow.$fieldname) {
+                            $null = $i++
+                            $lookupitem += $i
+                            $lookupitem += $var
+                        }
+                        $value = $lookupItem -join ";#"
+                    }
+                    elseif ($datatype -eq 'Person or Group') {
                         $value = $currentrow.$fieldname
                         if ($null -ne $value) {
                             if ($UserMap) {
@@ -268,10 +290,12 @@
                                 $value = $null
                             }
                         }
-                    } else {
+                    }
+                    else {
                         if ($datatype -ne 'Multiple lines of text') {
                             $value = [System.Security.SecurityElement]::Escape($currentrow.$fieldname)
-                        } else {
+                        }
+                        else {
                             $value = $currentrow.$fieldname
                         }
                         if ($value.Length -eq 0) {
@@ -282,8 +306,16 @@
                     # Skip reserved words, so far is only ID
                     if ($fieldname -notin 'ID', 'SPReplicatorDataType') {
                         Write-PSFMessage -Level Debug -Message "Adding $fieldname to row"
-                        $newItem.set_item($fieldname, $value)
-                    } else {
+                        if ($datatype -eq 'Lookup') {
+                            if (-not ($ColumnInfo | Where-Object Name -eq $fieldname).ReadOnlyField) {
+                                $newItem[$fieldname] = $value
+                            }
+                        }
+                        else {
+                            $newItem.set_item($fieldname, $value)
+                        }
+                    }
+                    else {
                         Write-PSFMessage -Level Debug -Message "Not adding $fieldname to row (reserved name)"
                     }
                 }
@@ -302,7 +334,8 @@
                 $failure = $true
                 Stop-PSFFunction -EnableException:$EnableException -Message "List does not exist. To auto-create, use -AutoCreateList"
                 return
-            } else {
+            }
+            else {
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $List -Action "Adding List $List")) {
                     $thislist = New-SPList
                 }
@@ -338,11 +371,13 @@
                     if ($AsUser) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
                         Get-SPRListItem -List $List -Web $Web -Id $newItem.Id | Update-SPRListItemAuthorEditor -UserObject $userobject -Quiet:$Quet -Confirm:$false
-                    } elseif (-not $Quiet) {
+                    }
+                    elseif (-not $Quiet) {
                         Write-PSFMessage -Level Verbose -Message "Getting that $($newItem.Id)"
                         Get-SPRListItem -List $List -Web $Web -Id $newItem.Id
                     }
-                } catch {
+                }
+                catch {
                     $failure = $true
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                     return
@@ -359,13 +394,15 @@
                 $thislist.Context.ExecuteQuery()
                 $url = "$($thislist.Context.Url)$($thislist.RootFolder.ServerRelativeUrl)"
                 $currentuser = $thislist.Context.CurrentUser.ToString()
-            } else {
+            }
+            else {
                 $currentuser = $script:spsite.CurrentUser.ToString()
             }
             if ($failure) {
                 $result = "Failed"
                 $errormessage = Get-PSFMessage -Errors | Select-Object -Last 1 -ExpandProperty Message
-            } else {
+            }
+            else {
                 $result = "Succeeded"
             }
             $elapsed = (Get-Date) - $start
