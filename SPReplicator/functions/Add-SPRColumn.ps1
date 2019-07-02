@@ -1,5 +1,5 @@
 ﻿Function Add-SPRColumn {
-<#
+    <#
 .SYNOPSIS
     Adds a column to a SharePoint list.
 
@@ -157,7 +157,7 @@
                     $ColumnName = $xmldata.Field.Name
                 }
                 if ((Test-PSFShouldProcess -PSCmdlet $PSCmdlet -Target $server.Url -Action "Added $ColumnName as $Type to $List")) {
-                    Write-PSFMessage -Level Debug -Message $xml
+                    Write-PSFMessage -Level Verbose -Message $xml
                     $null = $thislist.Fields.AddFieldAsXml($xml, $addtodefaultlist, $FieldOption)
                     $thislist.Update()
                     $server.Load($thislist)
