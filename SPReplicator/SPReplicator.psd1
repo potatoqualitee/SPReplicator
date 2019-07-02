@@ -1,95 +1,95 @@
 @{
 	
-	# Script module or binary module file associated with this manifest.
-	RootModule	      = 'SPReplicator.psm1'
+    # Script module or binary module file associated with this manifest.
+    RootModule        = 'SPReplicator.psm1'
 	
-	# Version number of this module.
-	ModuleVersion	  = '0.0.33'
+    # Version number of this module.
+    ModuleVersion     = '0.0.34'
 	
-	# ID used to uniquely identify this module
-	GUID			  = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
+    # ID used to uniquely identify this module
+    GUID              = 'e8af347b-2f8c-4cbb-b36d-33aed803b259'
 	
-	# Author of this module
-	Author		      = 'Chrissy LeMaire'
+    # Author of this module
+    Author            = 'Chrissy LeMaire'
 	
-	# Copyright statement for this module
-	Copyright		  = '(c) 2018 Chrissy LeMaire All rights reserved.'
+    # Copyright statement for this module
+    Copyright         = '(c) 2018 Chrissy LeMaire All rights reserved.'
 	
-	# Description of the functionality provided by this module
-	Description	      = 'SPReplicator helps replicate SharePoint list data from CSV, SQL Server, generic PowerShell objects, and other SharePoint lists.'
+    # Description of the functionality provided by this module
+    Description       = 'SPReplicator helps replicate SharePoint list data from CSV, SQL Server, generic PowerShell objects, and other SharePoint lists.'
 	
-	# Minimum version of the Windows PowerShell engine required by this module
-	# PowerShellVersion = ''
+    # Minimum version of the Windows PowerShell engine required by this module
+    # PowerShellVersion = ''
 	
-	# Name of the Windows PowerShell host required by this module
-	# PowerShellHostName = ''
+    # Name of the Windows PowerShell host required by this module
+    # PowerShellHostName = ''
 	
-	# Minimum version of the Windows PowerShell host required by this module
-	# PowerShellHostVersion = ''
+    # Minimum version of the Windows PowerShell host required by this module
+    # PowerShellHostVersion = ''
 	
-	# Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-	# DotNetFrameworkVersion = ''
+    # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+    # DotNetFrameworkVersion = ''
 	
-	# Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-	# CLRVersion = ''
+    # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+    # CLRVersion = ''
 	
-	# Processor architecture (None, X86, Amd64) required by this module
-	# ProcessorArchitecture = ''
+    # Processor architecture (None, X86, Amd64) required by this module
+    # ProcessorArchitecture = ''
 	
-	# Modules that must be imported into the global environment prior to importing this module
-	RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.25.107' })
+    # Modules that must be imported into the global environment prior to importing this module
+    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.25.107' })
 	
-	# Assemblies that must be loaded prior to importing this module
-	# RequiredAssemblies = @()
+    # Assemblies that must be loaded prior to importing this module
+    # RequiredAssemblies = @()
 	
-	# Script files (.ps1) that are run in the caller's environment prior to importing this module.
-	# ScriptsToProcess = @()
+    # Script files (.ps1) that are run in the caller's environment prior to importing this module.
+    # ScriptsToProcess = @()
 	
-	# Type files (.ps1xml) to be loaded when importing this module
-	# TypesToProcess    = @("xml\SPReplicator.Types.ps1xml")
+    # Type files (.ps1xml) to be loaded when importing this module
+    # TypesToProcess    = @("xml\SPReplicator.Types.ps1xml")
 	
-	# Format files (.ps1xml) to be loaded when importing this module
-	# FormatsToProcess = @()
+    # Format files (.ps1xml) to be loaded when importing this module
+    # FormatsToProcess = @()
 	
-	# Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-	# NestedModules = @()
+    # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
+    # NestedModules = @()
 	
-	# Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-	FunctionsToExport = @(
-		'Add-SPRListItem',
-		'Add-SPRColumn',
-		'Clear-SPRListItems',
-		'Connect-SPRSite',
-		'Disconnect-SPRSite',
-		'Export-SPRListItem',
-		'Get-SPRColumnDetail',
-		'Get-SPRList',
-		'Get-SPRListItem',
-		'Get-SPRListTemplate',
-		'Get-SPRConnectedSite',
-		'Import-SPRListItem',
-		'New-SPRList',
-		'Remove-SPRList'
-		'Remove-SPRListItem',
-		'Update-SPRListItem',
-		'Get-SPRConfig',
-		'Set-SPRConfig',
-		'Select-SPRObject',
-		'Get-SPRUser',
-		'Get-SPRWeb',
-		'Update-SPRListItemAuthorEditor',
-		'Get-SPRListView',
-		'New-SPRLogList',
-		'Set-SPRListFieldValue',
-		'Copy-SPRFile',
-		'Get-SPRLogList',
-		'Set-SPRLogList',
-		'Reset-SPRConfig',
-		#'New-SPRListTemplate',
-		'Remove-SPRListTemplate',
-		'Add-SPRUser',
-		'Set-SPRUserPropertyValue'
-		'Remove-SPRUser',
+    # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
+    FunctionsToExport = @(
+        'Add-SPRListItem',
+        'Add-SPRColumn',
+        'Clear-SPRListItems',
+        'Connect-SPRSite',
+        'Disconnect-SPRSite',
+        'Export-SPRListItem',
+        'Get-SPRColumnDetail',
+        'Get-SPRList',
+        'Get-SPRListItem',
+        'Get-SPRListTemplate',
+        'Get-SPRConnectedSite',
+        'Import-SPRListItem',
+        'New-SPRList',
+        'Remove-SPRList'
+        'Remove-SPRListItem',
+        'Update-SPRListItem',
+        'Get-SPRConfig',
+        'Set-SPRConfig',
+        'Select-SPRObject',
+        'Get-SPRUser',
+        'Get-SPRWeb',
+        'Update-SPRListItemAuthorEditor',
+        'Get-SPRListView',
+        'New-SPRLogList',
+        'Set-SPRListFieldValue',
+        'Copy-SPRFile',
+        'Get-SPRLogList',
+        'Set-SPRLogList',
+        'Reset-SPRConfig',
+        #'New-SPRListTemplate',
+        'Remove-SPRListTemplate',
+        'Add-SPRUser',
+        'Set-SPRUserPropertyValue'
+        'Remove-SPRUser',
         'Get-SPRUserProfile',
         'Add-SPRListItemFile',
         'Copy-SPRListItemFile',
@@ -98,62 +98,62 @@
         'Remove-SPRListFolder',
         'Get-SPRContentType',
         'Get-SPRContentTypeField'
-	)
+    )
 	
-	# Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-	CmdletsToExport   = @()
+    # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
+    CmdletsToExport   = @()
 	
-	# Variables to export from this module
-	VariablesToExport = @()
+    # Variables to export from this module
+    VariablesToExport = @()
 	
-	# Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-	AliasesToExport   = @()
+    # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
+    AliasesToExport   = @()
 	
-	# DSC resources to export from this module
-	# DscResourcesToExport = @()
+    # DSC resources to export from this module
+    # DscResourcesToExport = @()
 	
-	# List of all modules packaged with this module
-	# ModuleList = @()
+    # List of all modules packaged with this module
+    # ModuleList = @()
 	
-	# List of all files packaged with this module
-	# FileList = @()
+    # List of all files packaged with this module
+    # FileList = @()
 	
-	# Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-	PrivateData	      = @{
+    # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
+    PrivateData       = @{
 		
-		PSData = @{
+        PSData = @{
 			
-			# Tags applied to this module. These help with module discovery in online galleries.
-			Tags	   = @('SharePoint', 'data', 'replication', 'SQLServer', 'CSV', 'import', 'export')
+            # Tags applied to this module. These help with module discovery in online galleries.
+            Tags       = @('SharePoint', 'data', 'replication', 'SQLServer', 'CSV', 'import', 'export')
 			
-			# A URL to the license for this module.
-			LicenseUri = 'https://github.com/potatoqualitee/SPReplicator/blob/master/LICENSE'
+            # A URL to the license for this module.
+            LicenseUri = 'https://github.com/potatoqualitee/SPReplicator/blob/master/LICENSE'
 			
-			# A URL to the main website for this project.
-			ProjectUri = 'https://github.com/potatoqualitee/SPReplicator'
+            # A URL to the main website for this project.
+            ProjectUri = 'https://github.com/potatoqualitee/SPReplicator'
 			
-			# A URL to an icon representing this module.
-			IconUri    = 'https://user-images.githubusercontent.com/8278033/42554599-39b769a6-8481-11e8-8b6a-379f4a3e54e6.png'
+            # A URL to an icon representing this module.
+            IconUri    = 'https://user-images.githubusercontent.com/8278033/42554599-39b769a6-8481-11e8-8b6a-379f4a3e54e6.png'
 			
-			# ReleaseNotes of this module
-			# ReleaseNotes = ''
+            # ReleaseNotes of this module
+            # ReleaseNotes = ''
 			
-		} # End of PSData hashtable
+        } # End of PSData hashtable
 		
-	} # End of PrivateData hashtable
+    } # End of PrivateData hashtable
 	
-	# HelpInfo URI of this module
-	# HelpInfoURI = ''
+    # HelpInfo URI of this module
+    # HelpInfoURI = ''
 	
-	# Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-	# DefaultCommandPrefix = ''
+    # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
+    # DefaultCommandPrefix = ''
 	
 }
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUtc7KUGEL0IztODTmg8lJpZoj
-# E7eggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUWu4A8Ti/9FKJlp8QiZIeAUj6
+# /luggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -284,22 +284,22 @@
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQU7v3wQHEHb92qyrQIPcrl1yjPiHUwDQYJKoZIhvcNAQEBBQAE
-# ggEACWkFWF69yon77qY33yqfKj+8pC1Q0F8ZrNVWxFK90tx6L5FCNc4PVe6T9rTx
-# Yt3ciuBvra2bKd45xCgNIhh+IQEecGLfIDnNlT0v83N/shyhJx77Fc6h1O0RIOSC
-# Mh1xwVlKzI0dSIV0iLoNEKwYAryUqdnHrQFpFCCyJz9LpSGTD1Wo4l9cjdWv5xK2
-# PNyYIaPSJ0+b6RuCG6CpYi6gb6/luzrVNWFtpvuj+WLkMuPOAyrOxI70vc5+IB6u
-# Zo5ykit4HK7vG8IVm0HhSsJS/6VHz8ZyovQtqgljvDHJteuhVsHdrPjkCkP+lPcE
-# 0/hNPQ5EohP2iGNN2zXqayGTOaGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQUsg2oQA8KkSUrP32Pt/0QWFCMdAcwDQYJKoZIhvcNAQEBBQAE
+# ggEAV0ibOfenyuJNKAIiCmFPmhCdzQ8Q8dTKL6halVsUNNvmgmxnqI0cxbaGHnQW
+# 47YPqs+q4h0A2MYlf1MG9Nn74tPJZl7zca9Fy068PLpUdFbXVIZ2RIwS6OQaMW3F
+# aRc6ZhYDB3iVEJ6oz0sMVTtJ6x1CYmhG2pE9LHgn+dbHw0wqGo6Xjg/nRw1RqgnE
+# vrJEuM/7HNabptJOmhGLKLUn8TKXjnF0a0Ox7UocEdrGo7OzNMFTWVWs5C+gbdaz
+# IQrQwMjc6p/cCk4PD4OYndjhTgoPeck6zU27SCFuM3S14GIY6CmJ29dppD3spgbm
+# BG2YAshlKeVMDWsEYp9CfyH98qGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgxMjA3MTQ0NTMwWjAj
-# BgkqhkiG9w0BCQQxFgQUb+Weu9CzXuYO0iAkE6/iRKu9QMIwDQYJKoZIhvcNAQEB
-# BQAEggEACpF/q9GoSSOj5n03MOWlq5QlrUynB/ajE4LIqG2APp4oDH5D1+73JNBw
-# VpzDpo5lT47bYO4UcHLoKptWzKMCUUKHwcnwxc705pa9q2QfYYhzBZPgdsUWK0ea
-# hH8c5Ae8Q36s4Ikg+fkWLc/GecE/PXz/AIjqF7bv0vyILBomSh2LerRlB4snEGbd
-# QDvmCjqNSLiWeUMxbBwMPCkxJvKotU8NC1qiLqxvf59n7cXe4jbvrLvC8hllWKC2
-# DZTOhqTSZsdwEGKa0pDa16MVm1HxHz3crUFIAxSPeaITjp79Y00161DD4UYl9ehF
-# 22t+8wLLwajUkho2856BTiZsaAI4AA==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTkwNzAyMTE1NzE5WjAj
+# BgkqhkiG9w0BCQQxFgQURiC2UhRcGUUpIMuj7q5pnQL657QwDQYJKoZIhvcNAQEB
+# BQAEggEALJdVyMxC8VUKr558mqy1aQdV/2/Lb8BoOnoD47bwggb1Lc9r6UJ7lL8y
+# Rd+xmuOe4pqbgxpSQgnGsCmQBuWcfddLcP4Qq26SVgwJsXc1SibXR0fthTDiWJPY
+# SYmEQ4v0tlnMPHMRp5PtlvB4zFjKdtfSuGtlY3fjOLXBSNywKMXjxTtP4SI/Pm1Q
+# ArUAQOgs1FBMaD6c7XEcmbqR+MgIEb/72mzHjhVrfKOLNp3fUxbRT3HbtbpcO67K
+# X/dlLqGj/ws9OJCEPJxZ5ypo1s66hhUM0JCHksnGDH9Bj6pGjHPFTzjmlP7+pKbV
+# xxcj7DiD6F4uwtXAHTUdCppH9ac2Pw==
 # SIG # End signature block
