@@ -241,7 +241,7 @@
                     
                     if (-not $columns) {
                         $columns = $currentrow.PsObject.Members | Where-Object MemberType -eq Property | Select-Object -ExpandProperty Name |
-                        Where-Object {
+                            Where-Object {
                             $_ -notin 'RowError', 'RowState', 'Table', 'ItemArray', 'HasErrors'
                         }
                     }
@@ -312,6 +312,7 @@
                             }
                         }
                         else {
+                            if ($value.Count -gt 1) { $value = $value -join ", " }
                             $newItem.set_item($fieldname, $value)
                         }
                     }
