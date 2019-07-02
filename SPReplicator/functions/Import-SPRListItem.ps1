@@ -1,5 +1,5 @@
 ﻿Function Import-SPRListItem {
-<#
+    <#
 .SYNOPSIS
     Imports all items from a file into a SharePoint list.
 
@@ -75,8 +75,8 @@
     Imports all items from C:\temp\mylist.dat to My List on intranet.ad.local. Remaps People Picker entry brice.hagood to bhagood to accommodate for different naming conventions. Otherwise, People Picker will attempt to resolve brice.hagood on the potentially new domain.
 
 #>
-	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingEmptyCatchBlock", "")]
-	[CmdletBinding(SupportsShouldProcess)]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingEmptyCatchBlock", "")]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Position = 0, Mandatory, HelpMessage = "Human-readble SharePoint list name")]
         [string]$List,
@@ -122,16 +122,21 @@
                 catch {
                     # Don't care because it may or may not exist
                 }
-                if ($file.length/1MB -gt 100) {
+                if ($file.length / 1MB -gt 100) {
                     if ($Column) {
                         $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -Property $Column | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
-                    } elseif ($ExcludeColumn) {
+                    }
+                    elseif ($ExcludeColumn) {
                         $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Select-SPRObject -ExcludeProperty $ExcludeColumn | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
-                    } else {
+                    }
+                    else {
                         $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data | Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
                     }
-                } else {
+                }
+                else {
                     $items = Import-PSFClixml -Path $file | Select-Object -ExpandProperty Data
+                    $ExcludeColumn += $datatypemap | Where-Object { $PSItem.Type -eq "Lookup" -and $PSItem.ReadOnly -eq $true } | Select-Object -ExpandProperty Name
+
                     if ($Column) {
                         $items = $items | Select-SPRObject -Property $Column
                     }
@@ -140,7 +145,8 @@
                     }
                     Add-SPRListItem -Site $Site -Credential $Credential -List $List -Web $Web -AutoCreateList:$AutoCreateList -InputObject $items -AsUser $AsUser -Quiet:$Quiet -LogToList $LogToList -DataTypeMap $datatypemap -Column $Column -ExcludeColumn $ExcludeColumn -DomainMap $DomainMap -UserMap $UserMap
                 }
-            } catch {
+            }
+            catch {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
             }
         }
