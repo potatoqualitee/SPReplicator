@@ -100,7 +100,7 @@
     end {
         try {
             $columns = $collection | Select-Object -First 1 -ExpandProperty ListObject | Get-SPRColumnDetail |
-            Where-Object {
+                Where-Object {
                 ($PSItem.Type -eq 'Lookup' -and $PSItem.FromBaseType -eq $false) -or ($PSItem.Name -in 'UID', 'RecurrenceData', 'XMLTZone', 'RecurrenceID', 'TimeZone', 'Duration', 'EventType' ) -or (-not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -ne 'Computed' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments')
             }
             $spdatatype = $columns | Select-SPRObject -Property Name, 'TypeAsString as Type'
@@ -121,6 +121,7 @@
                 $spdatatype = $tempdatatype
             }
             
+            $columns = $columns | Where-Object ReadOnlyField -eq $false
             $columnsnames = $columns.Name | Select-Object -Unique
             [PSCustomObject]@{
                 SPReplicatorDataType = $spdatatype
