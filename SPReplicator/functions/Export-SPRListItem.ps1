@@ -121,7 +121,7 @@
                 $spdatatype = $tempdatatype
             }
             
-            $columns = $columns | Where-Object ReadOnlyField -eq $false
+            # $columns = $columns | Where-Object ReadOnlyField -eq $false
             $columnsnames = $columns.Name | Select-Object -Unique
             [PSCustomObject]@{
                 SPReplicatorDataType = $spdatatype
