@@ -197,7 +197,7 @@
                     }
                 }
                 
-                if ($type -notin $validcolumntypes -or (-not $AllowUserField -and $type -eq 'User')) {
+                if ($type -notin $validcolumntypes -or (-not $AllowUserField -and $type -eq "User") -or $type -eq "Lookup") {
                     $type = "Note"
                 }
                 

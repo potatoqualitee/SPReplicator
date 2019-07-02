@@ -100,22 +100,24 @@
     end {
         try {
             $columns = $collection | Select-Object -First 1 -ExpandProperty ListObject | Get-SPRColumnDetail |
-            Where-Object {
+                Where-Object {
                 ($PSItem.Type -eq 'Lookup' -and $PSItem.FromBaseType -eq $false) -or ($PSItem.Name -in 'UID', 'RecurrenceData', 'XMLTZone', 'RecurrenceID', 'TimeZone', 'Duration', 'EventType' ) -or (-not $psitem.Hidden -and -not $PSItem.ReadOnly -and $PSItem.Type -ne 'Computed' -and $PSItem.Name -notin 'Created', 'Author', 'Editor', '_UIVersionString', 'Modified', 'Attachments')
             }
-            $spdatatype = $columns | Select-SPRObject -Property Name, 'TypeAsString as Type'
+            $spdatatype = $columns | Select-SPRObject -Property Name, 'TypeAsString as Type', 'ReadOnlyField as ReadOnly'
 
             if (-not $EnableUserField) {
                 $tempdatatype = @()
                 foreach ($dt in $spdatatype) {
                     $name = $dt.Name
                     $type = $dt.Type
+                    $readonly = $dt.ReadOnly
                     if ($type -eq 'User') {
                         $type = 'Text'
                     }
                     $tempdatatype += [pscustomobject]@{
-                        Name = $name
-                        Type = $type
+                        Name     = $name
+                        Type     = $type
+                        ReadOnly = $readonly
                     }
                 }
                 $spdatatype = $tempdatatype
