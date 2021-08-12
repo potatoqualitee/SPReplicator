@@ -7,7 +7,7 @@ Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck | Out-Null
 
 #Get Pester (to run tests)
 Write-Host -Object "appveyor.prep: Install Pester" -ForegroundColor DarkGreen
-choco install pester | Out-Null
+choco install pester --version 4.10.1 | Out-Null
 
 #Get PSFramework
 Write-Host -Object "appveyor.prep: Install PSFramework" -ForegroundColor DarkGreen
