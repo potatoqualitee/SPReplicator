@@ -4,7 +4,8 @@ version: 0.0.{build}
 cache:
 - C:\ProgramData\chocolatey\bin -> appveyor.yml
 - C:\ProgramData\chocolatey\lib -> appveyor.yml
-- C:\Program Files\WindowsPowerShell\Modules -> appveyor.yml
+- C:\Program Files\WindowsPowerShell\Modules\PSScriptAnalyzer -> appveyor.yml
+- C:\Program Files\WindowsPowerShell\Modules\PSFramework -> appveyor.yml
 
 shallow_clone: true
   
