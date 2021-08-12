@@ -3,10 +3,9 @@ param (
 )
 
 Write-Host "Starting Tests" -ForegroundColor Green
-if ($env:BUILD_BUILDURI -like "vstfs*")
-{
+if ($env:BUILD_BUILDURI -like "vstfs*") {
 	Write-Host "Installing Pester" -ForegroundColor Cyan
-    Install-Module Pester -Force -SkipPublisherCheck
+	Install-Module Pester -RequiredVersion 4.10.1 -Force -SkipPublisherCheck
 	Write-Host "Installing PSFramework" -ForegroundColor Cyan
 	Invoke-WebRequest "https://raw.githubusercontent.com/PowershellFrameworkCollective/psframework/master/install.ps1" -UseBasicParsing | Invoke-Expression
 }
@@ -49,22 +48,20 @@ foreach ($file in (Get-ChildItem "$PSScriptRoot\general" -Filter "*.Tests.ps1"))
 #>
 
 Write-PSFMessage -Level Important -Message "Proceeding with individual tests"
-foreach ($file in (Get-ChildItem "$PSScriptRoot\functions" -Recurse -File -Filter "*Online.Tests.ps1"))
-{
+foreach ($file in (Get-ChildItem "$PSScriptRoot\functions" -Recurse -File -Filter "*Online.Tests.ps1")) {
 	Write-PSFMessage -Level Significant -Message "  Executing $($file.Name)"
 	$results = Invoke-Pester -Script $file.FullName -PassThru
-	foreach ($result in $results)
-	{
+	foreach ($result in $results) {
 		$totalRun += $result.TotalCount
 		$totalFailed += $result.FailedCount
 		$result.TestResult | Where-Object { -not $_.Passed } | ForEach-Object {
 			$name = $_.Name
 			$testresults += [pscustomobject]@{
-				Describe   = $_.Describe
-				Context    = $_.Context
-				Name	   = "It $name"
-				Result	   = $_.Result
-				Message    = $_.FailureMessage
+				Describe = $_.Describe
+				Context  = $_.Context
+				Name     = "It $name"
+				Result   = $_.Result
+				Message  = $_.FailureMessage
 			}
 		}
 	}
@@ -75,7 +72,6 @@ $testresults | Sort-Object Describe, Context, Name, Result, Message | Format-Lis
 if ($totalFailed -eq 0) { Write-PSFMessage -Level Critical -Message "All <c='em'>$totalRun</c> tests executed without failure" }
 else { Write-PSFMessage -Level Critical -Message "<c='em'>$totalFailed tests</c> out of <c='sub'>$totalRun</c> tests failed" }
 
-if ($totalFailed -gt 0)
-{
+if ($totalFailed -gt 0) {
 	throw "$totalFailed / $totalRun tests failed"
 }
