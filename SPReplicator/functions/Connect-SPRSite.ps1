@@ -165,6 +165,13 @@
             $script:spsite.ExecuteQuery()
             $rootweb = $getsite.get_rootWeb()
             
+            $script:spsite.add_ExecutingWebRequest({
+                param($Source, $EventArgs)
+                $request = $EventArgs.WebRequestExecutor.WebRequest
+                $request.UserAgent = "SPReplicator PowerShell module"
+            })
+            $script:spsite.ExecuteQuery()
+
             Add-Member -InputObject $rootweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name RootWeb -Value $rootweb -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name Location -Value $thislocation -Force
