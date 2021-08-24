@@ -88,26 +88,23 @@
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         try {
             if ($AuthenticationMode -eq "WebLogin") {
-                $AuthenticationManager = New-Object OfficeDevPnP.Core.AuthenticationManager
-                $script:spsite = $AuthenticationManager.GetWebLoginClientContext($Site)
-
-                if ($script:spsite) {
-                    try {
-                        $script:spsite.Load($script:spsite.Web)
-                        $script:spsite.ExecuteQuery()
-                    } catch {
-                        Stop-PSFFunction -Message "Could not connect to the site collection at $Site" -ErrorRecord $_
-                        return
-                    }
-                } else {
-                    Stop-PSFFunction -Message "Could not connect to the site collection at $Site"
+                try {
+                    $script:spsite = (Connect-PnPOnline -ReturnConnection -LaunchBrowser -PnPManagementShell -Url $Site).Context
+                    $script:spsite.Load($script:spsite.Web)
+                    $script:spsite.ExecuteQuery()
+                } catch {
+                    Stop-PSFFunction -Message "Could not connect to the site collection at $Site" -ErrorRecord $_
                     return
                 }
             } elseif ($AuthenticationMode -eq "AppOnly") {
-                $script:spsite.Credentials = $Credential.GetNetworkCredential()
-                Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
-                $AuthenticationManager = New-Object OfficeDevPnP.Core.AuthenticationManager
-                $script:spsite = $AuthenticationManager.GetACSAppOnlyContext($Site, $Credential.UserName, $Credential.Password)
+                try {
+                    $script:spsite = (Connect-PnPOnline -ReturnConnection -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName -Url $Site -WarningAction Ignore).Context
+                    $script:spsite.Load($script:spsite.Web)
+                    $script:spsite.ExecuteQuery()
+                } catch {
+                    Stop-PSFFunction -Message "Could not connect to the site collection at $Site. Please check that you've followed all the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs" -ErrorRecord $_
+                    return
+                }
             } else {
                 $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
 
