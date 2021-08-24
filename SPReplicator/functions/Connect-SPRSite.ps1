@@ -88,6 +88,10 @@
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         try {
             if ($AuthenticationMode -eq "WebLogin") {
+                if ($PSVersionTable.PSEdition -eq "Core") {
+                    Stop-PSFFunction -Message "Core does not work with WebLogin. Please create an app and use AppOnly instead. See https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/development-experience-tenant-apponly-permissions-in-sharepoint-online for more information"
+                    return
+                }
                 $AuthenticationManager = New-Object OfficeDevPnP.Core.AuthenticationManager
                 $script:spsite = $AuthenticationManager.GetWebLoginClientContext($Site)
 
@@ -104,8 +108,8 @@
                     return
                 }
             } elseif ($AuthenticationMode -eq "AppOnly") {
-                $script:spsite.Credentials = $Credential.GetNetworkCredential()
-                Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
+                #$script:spsite.Credentials = $Credential.GetNetworkCredential()
+                #Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
                 $AuthenticationManager = New-Object OfficeDevPnP.Core.AuthenticationManager
                 $script:spsite = $AuthenticationManager.GetAppOnlyAuthenticatedContext($Site, $Credential.UserName, $Credential.Password)
             } else {
