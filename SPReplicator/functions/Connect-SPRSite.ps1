@@ -88,7 +88,7 @@
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         try {
             if ($AuthenticationMode -eq "WebLogin") {
-                $AuthenticationManager = New-Object OfficeDevPnP.Core.AuthenticationManager
+                $AuthenticationManager = New-Object PnP.Framework.AuthenticationManager
                 $script:spsite = $AuthenticationManager.GetWebLoginClientContext($Site)
 
                 if ($script:spsite) {
@@ -106,8 +106,8 @@
             } elseif ($AuthenticationMode -eq "AppOnly") {
                 $script:spsite.Credentials = $Credential.GetNetworkCredential()
                 Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
-                $AuthenticationManager = New-Object OfficeDevPnP.Core.AuthenticationManager
-                $script:spsite = $AuthenticationManager.GetAppOnlyAuthenticatedContext($Site, $Credential.UserName, $Credential.Password)
+                $AuthenticationManager = New-Object PnP.Framework.AuthenticationManager
+                $script:spsite = $AuthenticationManager.GetACSAppOnlyContext($Site, $Credential.UserName, $Credential.Password)
             } else {
                 $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
 
