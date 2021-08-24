@@ -1,4 +1,6 @@
 ﻿Get-ChildItem "$script:ModuleRoot\bin\" -Recurse | Unblock-File -ErrorAction SilentlyContinue
+Add-Type -Path "$script:ModuleRoot\bin\PnP.Framework.dll"
+Add-Type -Path "$script:ModuleRoot\bin\PnP.Core.dll"
 
 if ($PSVersionTable.PSEdition -eq "Core") {
     Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.Runtime.Portable.dll"
@@ -9,6 +11,3 @@ if ($PSVersionTable.PSEdition -eq "Core") {
     Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.Runtime.dll"
     Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.UserProfiles.dll"
 }
-
-Add-Type -Path "$script:ModuleRoot\bin\PnP.Framework.dll"
-Add-Type -Path "$script:ModuleRoot\bin\PnP.Core.dll"
