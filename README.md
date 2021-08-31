@@ -107,7 +107,7 @@ This was just a subset of command examples. For more command examples, visit the
 ![image](https://user-images.githubusercontent.com/8278033/43561352-63b655cc-95b2-11e8-93e0-90926df74d47.png)
 
 ## Power BI
-A Power BI Template is included in the bin directory. More coming soon.
+A Power BI Template can be downloaded from [here](https://github.com/potatoqualitee/SPReplicator/blob/af341f5cab4099c6efccaca965921ee2a36e4c2d/SPReplicator/bin/SPReplicator.pbit).
 
 ![image](https://user-images.githubusercontent.com/8278033/43371234-568d7622-9329-11e8-9100-df03d7a442bc.png)
 
