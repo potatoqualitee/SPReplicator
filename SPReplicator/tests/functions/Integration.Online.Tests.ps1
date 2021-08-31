@@ -6,8 +6,18 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         if ($env:appveyor) {
             $env:psmodulepath = "$env:psmodulepath; C:\projects; C:\projects\SPReplicator"
         }
+        if ($env:GITHUB_TOKEN) {
+            Write-Warning GITHUB
+            $script:mylist = "My Actions List"
+            $script:filename = "/tmp/$script:mylist.xml"
+            $script:onlinesite = "https://netnerds.sharepoint.com"
+            $secpasswd = ConvertTo-SecureString $env:CLIENTSECRET -AsPlainText -Force
+            $script:onlinecred = New-Object System.Management.Automation.PSCredential ($env:CLIENTID, $secpasswd)
+            $PSDefaultParameterValues["Connect-SPRSite:AuthenticationMode"] = "AppOnly"
+        }
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
+        $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, 'Sample test create new list' -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
@@ -20,7 +30,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         $results = Set-SPRConfig -Name location -Value $oldconfig.Value
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
-    
+
     Context "Connect-SPRSite" {
         It "Connects to a site" {
             $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
@@ -30,11 +40,11 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.RequestTimeout | Should -Be 180000
         }
     }
-    
+
     if ($erz -or $warn) {
         throw "no more, test failed"
     }
-    
+
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
@@ -42,7 +52,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.RequestTimeout | Should -Be 180000
         }
     }
-    
+
     Context "Get-SPRWeb" {
         It "Gets a web" {
             $results = Get-SPRWeb | Select-Object -First 1
@@ -50,7 +60,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.RecycleBinEnabled | Should -Not -Be $null
         }
     }
-    
+
     Context "Get-SPRListTemplate" {
         It "Gets all template info" {
             $results = Get-SPRListTemplate
@@ -66,7 +76,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Name | Should -Be 'Custom List'
         }
     }
-    
+
     Context "New-SPRList" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -85,7 +95,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results | Should -Be $null
         }
     }
-    
+
     Context "Get-SPRList" {
         $script:spsite = $null
         It "Gets a list named $script:mylist with a basetype GenericList" {
@@ -98,7 +108,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be $script:mylist
         }
     }
-    
+
     Context "Add-SPRColumn" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -128,7 +138,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.List | Should -Be $script:mylist
         }
     }
-    
+
     Context "Get-SPRColumnDetail" {
         It "Gets a list named $script:mylist with a basetype GenericList" {
             $results = Get-SPRColumnDetail -List $script:mylist
@@ -142,7 +152,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Name.Count | Should -BeGreaterThan 10
         }
     }
-    
+
     Context "Add-SPRListItem" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -166,8 +176,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         It "Adds datatable results to list and doesn't require Site since we used connect earlier" {
             if ($PSVersionTable.PSEdition -ne "Core" -and $env:COMPUTERNAME -eq "workstationx") {
                 $dt = Invoke-DbaSqlQuery -SqlInstance sql2017 -Query "Select Title = 'Hello SQL', TestColumn = 'Sample SQL Data'"
-            }
-            else {
+            } else {
                 $dt = New-Object System.Data.Datatable
                 [void]$dt.Columns.Add("Title")
                 [void]$dt.Columns.Add("TestColumn")
@@ -205,7 +214,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             Remove-SPRList -List $newList -Confirm:$false -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
     }
-    
+
     Context "Get-SPRListItem" {
         It "Gets data from $script:mylist" {
             $results = Get-SPRListItem -List $script:mylist -Site $script:onlinesite -Credential $script:onlinecred
@@ -214,14 +223,14 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.TestColumn | Should -Contain 'Sample SQL Data'
             $script:id = $results[0].Id
         }
-        
+
         It "Gets one data based on ID ($script:id), doesn't require Site" {
             $results = Get-SPRListItem -List $script:mylist -Id $script:id
             $results.Title.Count | Should -Be 1
             $results.Id | Should -Be $script:id
         }
     }
-    
+
     Context "Get-SPRListView" {
         It "Returns at least one view with some xml" {
             $results = Get-SPRListView -List $script:mylist
@@ -238,7 +247,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Not -Be $null
         }
     }
-    
+
     Context "Export-SPRListItem" {
         It "Gets data from $script:mylist" {
             if ((Test-Path $script:filename)) {
@@ -248,7 +257,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $result.FullName | Should -Be $script:filename
         }
     }
-    
+
     Context "Copy-SPRFile" {
         if ((Test-Path $script:filename)) {
             Remove-Item $script:filename
@@ -264,7 +273,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $result.FullName | Should -Be "$home\Documents\My Test List.xml"
         }
     }
-    
+
     Context "Import-SPRListItem" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -279,7 +288,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             (Get-SPRListItem -List $script:mylist).Title.Count | Should -BeGreaterThan $count
         }
     }
-    
+
     Context "Add-SPRListItem" {
         It "Imports data from $script:filename" {
             $count = (Get-SPRListItem -List $script:mylist).Title.Count
@@ -288,13 +297,13 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Contain 'Hello SQL'
         }
     }
-    
+
     Context "Update-SPRListItem" {
         (Import-PSFCliXml -Path $script:filename) | Export-Clixml -Path $script:filename
         (Get-Content $script:filename).replace('Hello SQL', 'ScooptyScoop') | Set-Content $script:filename
         (Get-Content $script:filename).replace('Sample SQL Data', 'ScooptyData') | Set-Content $script:filename
         $updates = Import-CliXml -Path $script:filename | Select-Object -ExpandProperty Data
-        
+
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
             $results = Get-SPRListItem -List $script:mylist | Update-SPRListItem -UpdateObject $updates -Confirm:$false -WhatIf
@@ -316,15 +325,15 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Contain 'Hello3'
         }
     }
-    
+
     Context "Get-SPRUser" {
-        It "Gets users from $script:onlinesite"  {
+        It "Gets users from $script:onlinesite" {
             $results = Get-SPRUser
             $results.Title | Should -Contain 'System Account'
             $results.Title.Count | Should -BeGreaterThan 2
         }
     }
-    
+
     Context "Select-SPRObject" {
         It "Gets data from $script:mylist and excludes other data" {
             $results = Get-SPRListItem -List $script:mylist | Select-SPRObject -Property 'Title as Test1234'
@@ -333,7 +342,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Test1234 | Should -Contain 'ScooptyScoop'
         }
     }
-    
+
     Context "Update-SPRListItemAuthorEditor" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -351,7 +360,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Author | Should -Contain (Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred).CurrentUser.Title
         }
     }
-    
+
     Context "Set-SPRListFieldValue" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -359,9 +368,9 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results | Should -Be $null
             Import-Module SPReplicator -Force
         }
-        
+
         $current = Get-SPRListItem -List $script:mylist
-        
+
         It "Updates a single column on $script:mylist" {
             $pre = $current | Select-Object -Last 1
             $results = Get-SPRListItem -List $script:mylist | Select-Object -Last 1 | Set-SPRListFieldValue -Column Title -Value ABC -Confirm:$false
@@ -378,7 +387,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $pre.TestColumn | Should -Be $post.TestColumn
         }
     }
-    
+
     Context "New-SPRLogList" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -402,7 +411,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results | Remove-SPRList -Confirm:$false
         }
     }
-    
+
     Context "Remove-SPRListItem" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -419,7 +428,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $row | Should -Be $null
         }
     }
-    
+
     Context "Clear-SPRListItems" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -433,7 +442,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             Get-SPRList -List $script:mylist | Select-Object -ExpandProperty ItemCount | Should -Be 0
         }
     }
-    
+
     Context "Remove-SPRList" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
@@ -471,36 +480,36 @@ Describe "Online Final Tests" -Tag "Finaltests" {
         $nowusers = Get-SPRUser
         $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-        
+
         It "Site has the same number of webs as before" {
             $originalwebs.Count | Should -Be $nowwebs.Count
         }
-        
+
         It "Site has the same number of lists as before" {
             $originallists.Count | Should -Be $nowlists.Count
         }
-        
+
         It "Site has the same number of users as before" {
             $originalusers.Count | Should -Be $nowusers.Count
         }
-        
+
         It "Lists still have $originalsum items" {
             $originalsum | Should -Be $nowlistssum
             $originalsum | Should -BeGreaterThan 0
         }
-        
+
         foreach ($web in $originalwebs) {
             It "$($web.Title) currently exists" {
                 $nowwebs.Title | Should -contain $web.Title
             }
         }
-        
+
         foreach ($list in $originallists) {
             It "$($list.Title) currently exists" {
                 $nowlists.Title | Should -contain $list.Title
             }
         }
-        
+
         foreach ($user in $originalusers) {
             It "$($user.Title) currently exists" {
                 $nowusers.Title | Should -contain $user.Title

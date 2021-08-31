@@ -1,0 +1,28 @@
+name: Run Linux Tests
+on: [push]
+defaults:
+  run:
+    shell: pwsh
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name:  Setup docker images
+        run: |
+          # create a shared network
+          docker network create localnet
+
+      - name: Run tests
+        env:
+          CLIENTID: ${{secrets.CLIENTID}}
+          CLIENTSECRET: ${{secrets.CLIENTSECRET}}
+        run: |
+          $results = Invoke-Pester ./SPReplicator/tests/functions/Integration.Online.Tests.ps1 -Output Detailed -PassThru
+          if ($results.Result -ne "Passed") {
+              throw "There were $($results.FailedCount) failed tests."
+          }
