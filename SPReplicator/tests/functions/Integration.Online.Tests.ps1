@@ -25,13 +25,12 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         $originalusers = Get-SPRUser
     }
     AfterAll {
-        return
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $results = Set-SPRConfig -Name location -Value $oldconfig.Value
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
-    return
+
     Context "Connect-SPRSite" {
         It "Connects to a site" {
             $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
