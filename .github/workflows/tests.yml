@@ -12,11 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name:  Setup docker images
-        run: |
-          # create a shared network
-          docker network create localnet
-
       - name: Run tests
         env:
           CLIENTID: ${{secrets.CLIENTID}}

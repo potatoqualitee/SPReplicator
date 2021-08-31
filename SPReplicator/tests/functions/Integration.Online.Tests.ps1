@@ -5,9 +5,8 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         if ($env:appveyor) {
             $env:psmodulepath = "$env:psmodulepath; C:\projects; C:\projects\SPReplicator"
-        }
-        if ($env:GITHUB_TOKEN) {
-            Write-Warning GITHUB
+        } else {
+            $env:psmodulepath = "$env:psmodulepath:/home/runner/work/SPReplicator/SPReplicator"
             $script:mylist = "My Actions List"
             $script:filename = "/tmp/$script:mylist.xml"
             $script:onlinesite = "https://netnerds.sharepoint.com"
