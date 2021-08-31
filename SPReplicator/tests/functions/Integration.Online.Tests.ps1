@@ -13,6 +13,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $secpasswd = ConvertTo-SecureString $env:CLIENTSECRET -AsPlainText -Force
             $script:onlinecred = New-Object System.Management.Automation.PSCredential ($env:CLIENTID, $secpasswd)
             $PSDefaultParameterValues["Connect-SPRSite:AuthenticationMode"] = "AppOnly"
+            Import-Module /home/runner/work/SPReplicator/SPReplicator/SPReplicator/SPReplicator.psd1
         }
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
