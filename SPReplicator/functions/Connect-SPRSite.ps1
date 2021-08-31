@@ -106,30 +106,43 @@
                     return
                 }
             } else {
-                $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
-
                 #Setup Authentication Manager
                 if ($Credential) {
                     if ($Location -eq "Onprem") {
+                        $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
                         $script:spsite.Credentials = $Credential.GetNetworkCredential()
                         Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
                     } else {
-                        if ($PSVersionTable.PSEdition -eq "Core") {
-                            Stop-PSFFunction -Message "Core works with Onprem but not yet SharePoint online, waiting for working DLL :("
-                            return
-                        } else {
-                            $credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($Credential.UserName, $Credential.Password)
-                            $script:spsite.Credentials = $credentials
-                            Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+                        $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site).Context
+                        Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+                    }
+                } else {
+                    if ($PSVersionTable.PSEdition -eq "Core") {
+                        $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
+                        if (-not $script:spsite.ExecuteQuery) {
+                            # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
+                            Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
+                                if ($script:spsite.HasPendingRequest) {
+                                    $script:spsite.ExecuteQueryAsync().Wait()
+                                }
+                            } -Force
                         }
+                    } else {
+                        $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
                     }
                 }
             }
 
-            if ($script:spsite.HasPendingRequest) {
-                $script:spsite.ExecuteQueryAsync().Wait()
+            if ($PSVersionTable.PSEdition -ne "Core") {
+                $script:spsite.add_ExecutingWebRequest( {
+                        param($Source, $EventArgs)
+                        $request = $EventArgs.WebRequestExecutor.WebRequest
+                        if (($request | Get-Member UserAgent)) {
+                            $request.UserAgent = "SPReplicator PowerShell module"
+                        }
+                    })
+                $script:spsite.ExecuteQuery()
             }
-
             Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
 
             if (-not $script:spsite.ExecuteQuery) {
@@ -146,7 +159,7 @@
             Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
 
             $script:spsite.Load($script:spweb.CurrentUser)
-            $script:spsite.ExecuteQuery();
+            $script:spsite.ExecuteQuery()
             $loginname = $script:spweb.CurrentUser.LoginName
 
             $script:spsite.Load($script:spweb)
@@ -174,13 +187,6 @@
             $script:spsite.Load($getsite)
             $script:spsite.ExecuteQuery()
             $rootweb = $getsite.get_rootWeb()
-
-            $script:spsite.add_ExecutingWebRequest( {
-                    param($Source, $EventArgs)
-                    $request = $EventArgs.WebRequestExecutor.WebRequest
-                    $request.UserAgent = "SPReplicator PowerShell module"
-                })
-            $script:spsite.ExecuteQuery()
 
             Add-Member -InputObject $rootweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name RootWeb -Value $rootweb -Force

@@ -42,13 +42,18 @@ Function Invoke-SPRWebRequest {
             Stop-PSFFunction -EnableException:$EnableException -Message "You must connect to a site using Connect-SPRSite"
             return
         }
-    
+
+        if ($PSVersionTable.PSEdition -eq "Core") {
+            Stop-PSFFunction -EnableException:$EnableException -Message "Core not supported yet :("
+            return
+        }
+
         try {
             # https://github.com/janikvonrotz/PowerShell-PowerUp/blob/master/functions/SharePoint%20Online/Switch-SPOEnableDisableSolution.ps1
             $request = $script:spsite.WebRequestExecutorFactory.CreateWebRequestExecutor($script:spsite, $Url).WebRequest
-            
+
             $request.Method = "GET"
-            
+
             if ($script:spsite.Credentials) {
                 $authCookieValue = $script:spsite.Credentials.GetAuthenticationCookie($script:spsite.Url)
                 # Create fed auth Cookie
@@ -68,7 +73,7 @@ Function Invoke-SPRWebRequest {
             if ($Raw) {
                 $request
             } else {
-                $sr = New-Object System.IO.StreamReader($request.GetResponse().GetResponseStream()) 
+                $sr = New-Object System.IO.StreamReader($request.GetResponse().GetResponseStream())
                 $sr.ReadToEnd()
             }
         } catch {
