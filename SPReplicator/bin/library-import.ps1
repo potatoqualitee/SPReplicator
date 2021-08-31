@@ -1,8 +1,8 @@
-﻿Import-Module "$script:ModuleRoot\bin\PnP.PowerShell" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-$pnpbin = Split-Path -Path (Get-Module -Name PnP.PowerShell).Path
-
+﻿# Help on-prem work in Core
 if ($PSVersionTable.PSEdition -eq "Core") {
-    $script:pnplibs = @("$pnpbin\Core\Microsoft.SharePoint.Client.Runtime.dll","$pnpbin\Core\Microsoft.SharePoint.Client.dll")
-} else {
-    $script:pnplibs = @("$pnpbin\Framework\Microsoft.SharePoint.Client.Runtime.dll","$pnpbin\Framework\Microsoft.SharePoint.Client.dll")
+    Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.Runtime.Portable.dll" -Verbose
+    Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.Portable.dll" -Verbose
+    Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.UserProfiles.Portable.dll" -Verbose
 }
+
+Import-Module "$script:ModuleRoot\bin\PnP.PowerShell" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue

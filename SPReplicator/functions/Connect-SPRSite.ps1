@@ -118,30 +118,31 @@
                     }
                 } else {
                     if ($PSVersionTable.PSEdition -eq "Core") {
-                        #Stop-PSFFunction -Message "The Credential parameter must be used when connecting to SharePoint with Core"
-                        #return
                         $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
+                        if (-not $script:spsite.ExecuteQuery) {
+                            # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
+                            Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
+                                if ($script:spsite.HasPendingRequest) {
+                                    $script:spsite.ExecuteQueryAsync().Wait()
+                                }
+                            } -Force
+                        }
                     } else {
                         $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
                     }
                 }
             }
 
-            $script:spsite.add_ExecutingWebRequest( {
-                    param($Source, $EventArgs)
-                    $request = $EventArgs.WebRequestExecutor.WebRequest
-                    $requestheaders = $EventArgs.WebRequestExecutor.RequestHeaders
-                    $request.UserAgent = "SPReplicator PowerShell module"
-                    #$requestheaders.Remove("X-FORMS_BASED_AUTH_ACCEPTED")
-                    #$requestheaders.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f")
-                    $requestheaders.Add("Authorization","Basic")
-                })
-            $script:spsite.ExecuteQuery()
-
-            if ($script:spsite.HasPendingRequest) {
-                $script:spsite.ExecuteQueryAsync().Wait()
+            if ($PSVersionTable.PSEdition -ne "Core") {
+                $script:spsite.add_ExecutingWebRequest( {
+                        param($Source, $EventArgs)
+                        $request = $EventArgs.WebRequestExecutor.WebRequest
+                        if (($request | Get-Member UserAgent)) {
+                            $request.UserAgent = "SPReplicator PowerShell module"
+                        }
+                    })
+                $script:spsite.ExecuteQuery()
             }
-
             Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
 
             if (-not $script:spsite.ExecuteQuery) {
