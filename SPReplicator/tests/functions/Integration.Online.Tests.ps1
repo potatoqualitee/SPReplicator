@@ -35,8 +35,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         It "Connects to a site" {
             $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
             $erz | Should -Be $null
-            $warn | Should -Be $null
-            $results.Url | Should -Be $script:onlinesite
+            $results.Url | Should -match $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
     }
