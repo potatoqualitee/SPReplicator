@@ -33,7 +33,7 @@ jobs:
           CLIENTSECRET: ${{secrets.CLIENTSECRET}}
         run: |
           Import-Module -Name Pester -RequiredVersion 4.10.1
-          $results = Invoke-Pester ./SPReplicator/tests/functions/Integration.Online.Tests.ps1 -Output Detailed -PassThru
+          $results = Invoke-Pester ./SPReplicator/tests/functions/Integration.Online.Tests.ps1 -OutputFormat Detailed -PassThru
           if ($results.Result -ne "Passed") {
               throw "There were $($results.FailedCount) failed tests."
           }
