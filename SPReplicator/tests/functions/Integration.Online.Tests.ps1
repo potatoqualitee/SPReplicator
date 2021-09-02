@@ -5,6 +5,8 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         if ($env:appveyor) {
             $env:psmodulepath = "$env:psmodulepath; C:\projects; C:\projects\SPReplicator"
+            $PSDefaultParameterValues["*-SPR:Site"] = $script:onlinesite
+            $PSDefaultParameterValues["*-SPR:Credential"] = $script:onlinecred
         } else {
             $env:psmodulepath = "$env:psmodulepath:/home/runner/work/SPReplicator/SPReplicator"
             $script:mylist = "My Actions List"
@@ -18,14 +20,14 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
         $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
-        $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, 'Sample test create new list' -WarningAction SilentlyContinue 3> $null
+        $thislist = Get-SPRList -List $script:mylist, 'Sample test create new list' -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
         $originalwebs = Get-SPRWeb
         $originalusers = Get-SPRUser
     }
     AfterAll {
-        $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
+        $thislist = Get-SPRList -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $results = Set-SPRConfig -Name location -Value $oldconfig.Value
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
@@ -33,7 +35,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
 
     Context "Connect-SPRSite" {
         It "Connects to a site" {
-            $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
+            $results = Connect-SPRSite -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
             $erz | Should -Be $null
             $results.Url | Should -match $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
@@ -47,7 +49,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
-            $results.Url | Should -Be $script:onlinesite
+            $results.Url | Should -match $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -55,7 +57,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRWeb" {
         It "Gets a web" {
             $results = Get-SPRWeb | Select-Object -First 1
-            $results.Url | Should -Be $script:onlinesite
+            $results.Url | Should -match $script:onlinesite
             $results.RecycleBinEnabled | Should -Not -Be $null
         }
     }
@@ -515,4 +517,5 @@ Describe "Online Final Tests" -Tag "Finaltests" {
             }
         }
     }
+} }
 }
