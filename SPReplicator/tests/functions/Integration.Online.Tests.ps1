@@ -50,7 +50,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
-            $results.Url | Should -Be $script:onlinesite
+            $results.Url | Should -match $script:onlinesite
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -58,7 +58,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRWeb" {
         It "Gets a web" {
             $results = Get-SPRWeb | Select-Object -First 1
-            $results.Url | Should -Be $script:onlinesite
+            $results.Url | Should -match $script:onlinesite
             $results.RecycleBinEnabled | Should -Not -Be $null
         }
     }
