@@ -1,5 +1,5 @@
 ﻿# Help on-prem work in Core
-if ($PSVersionTable.PSEdition -eq "Core") {
+if ($PSVersionTable.PSEdition -eq "Core" -and $PSVersionTable.PSEdition -notmatch "Windows") {
     Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.Runtime.Portable.dll" -Verbose
     Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.Portable.dll" -Verbose
     Add-Type -Path "$script:ModuleRoot\bin\Microsoft.SharePoint.Client.UserProfiles.Portable.dll" -Verbose
