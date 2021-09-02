@@ -9,7 +9,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         if ($env:appveyor) {
             $env:psmodulepath = "$env:psmodulepath; C:\projects; C:\projects\SPReplicator"
         } else {
-            $env:psmodulepath = "$env:psmodulepath:/home/runner/work/SPReplicator/SPReplicator"
+            $ENV:PSModulePath = "$ENV:PSModulePath:/home/runner/work/SPReplicator/SPReplicator"
             $script:mylist = "My Actions List"
             $script:filename = "/tmp/$script:mylist.xml"
             $script:onlinesite = "https://netnerds.sharepoint.com/"
