@@ -31,7 +31,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         $results = Set-SPRConfig -Name location -Value $oldconfig.Value
-        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
+        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue 3> $null
     }
 
     Context "Connect-SPRSite" {
@@ -227,6 +227,10 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         }
 
         It "Gets one data based on ID ($script:id)" {
+            if (-not $script:id) {
+                $results = Get-SPRListItem -List $script:mylist
+                $script:id = $results[0].Id
+            }
             $results = Get-SPRListItem -List $script:mylist -Id $script:id
             $results.Title.Count | Should -Be 1
             $results.Id | Should -Be $script:id
