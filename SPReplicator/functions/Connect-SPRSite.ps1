@@ -17,7 +17,7 @@
     Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
 .PARAMETER AuthenticationMode
-    Specifies the authentication modes of the client Web request.
+    Specifies the authentication mode. Default is "Default". Other options are WebLogin and AppOnly
 
 .PARAMETER Location
     Onprem or Online, this only needs to be set once, then it's cached. See Get-SPRConfig for more information.
@@ -48,6 +48,17 @@
     Creates a connection to SharePoint Online using the credential me@mycorp.onmicrosoft.com
 
     By default, this module is set to On-Premises. To change this use: Set-SPRConfig -Name Location -Value Online
+
+.EXAMPLE
+    Connect-SPRSite -Site https://corp.sharepoint.com -AuthenticationMode WebLogin
+
+    Pops open a browser and logs into SharePoint Online using a token that you paste into the browser
+
+.EXAMPLE
+    Connect-SPRSite -Site https://corp.sharepoint.com -AuthenticationMode AppOnly -Credential 1e36c5cc-5281-4235-a84f-c94dc2de8800
+
+    Logs into SharePoint Online using the AppOnly token. Please ensure you've followed all of the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs
+
 #>
     [CmdletBinding()]
     param (
