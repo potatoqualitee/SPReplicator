@@ -143,13 +143,9 @@
                     })
                 $script:spsite.ExecuteQuery()
             }
-
             Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
-        } catch {
-            Stop-PSFFunction -EnableException:$EnableException -Message "FIRST" -ErrorRecord $_ -Continue
-        }
-        try {
-            if (-not ($script:spsite | Get-Member ExecuteQuery)) {
+
+            if (-not $script:spsite.ExecuteQuery) {
                 # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
                 Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
                     if ($script:spsite.HasPendingRequest) {
@@ -160,10 +156,6 @@
 
             $script:spweb = $script:spsite.Web
 
-        } catch {
-            Stop-PSFFunction -EnableException:$EnableException -Message "SECOND" -ErrorRecord $_ -Continue
-        }
-        try {
             Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
 
             $script:spsite.Load($script:spweb.CurrentUser)
@@ -196,10 +188,6 @@
             $script:spsite.ExecuteQuery()
             $rootweb = $getsite.get_rootWeb()
 
-        } catch {
-            Stop-PSFFunction -EnableException:$EnableException -Message "THIRD" -ErrorRecord $_ -Continue
-        }
-        try {
             Add-Member -InputObject $rootweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name RootWeb -Value $rootweb -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name Location -Value $thislocation -Force
