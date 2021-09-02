@@ -1,6 +1,6 @@
 ﻿Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 . "$PSScriptRoot\..\constants.ps1"
-if ($env:appveyor) {
+if ($env:appveyor1) {
     $PSDefaultParameterValues["*-SPR*:Site"] = $script:onlinesite
     $PSDefaultParameterValues["*-SPR*:Credential"] = $script:onlinecred
 }
@@ -12,7 +12,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $env:psmodulepath = "$env:psmodulepath:/home/runner/work/SPReplicator/SPReplicator"
             $script:mylist = "My Actions List"
             $script:filename = "/tmp/$script:mylist.xml"
-            $script:onlinesite = "https://netnerds.sharepoint.com"
+            $script:onlinesite = "https://netnerds.sharepoint.com/"
             $secpasswd = ConvertTo-SecureString $env:CLIENTSECRET -AsPlainText -Force
             $script:onlinecred = New-Object System.Management.Automation.PSCredential ($env:CLIENTID, $secpasswd)
             $PSDefaultParameterValues["Connect-SPRSite:AuthenticationMode"] = "AppOnly"
