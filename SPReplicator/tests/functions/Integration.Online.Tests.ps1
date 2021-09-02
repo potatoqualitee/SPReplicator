@@ -261,18 +261,20 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     }
 
     Context "Copy-SPRFile" {
-        if ((Test-Path $script:filename)) {
-            Remove-Item $script:filename
-        }
-        It "Supports WhatIf" {
-            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
-            $results = Export-SPRListItem -List $script:mylist -Path $script:filename | Copy-SPRFile -Destination (Split-Path $script:filename) -WhatIf
-            $results | Should -Be $null
-            Import-Module SPReplicator -Force
-        }
-        It "Successfully copies a file" {
-            $result = Export-SPRListItem -List $script:mylist -Path $script:filename | Copy-SPRFile -Destination (Split-Path $script:filename)
-            $result.FullName | Should -Be $script:filename
+        if ($env:appveyor) {
+            if ((Test-Path $script:filename)) {
+                Remove-Item $script:filename
+            }
+            It "Supports WhatIf" {
+                InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
+                $results = Export-SPRListItem -List $script:mylist -Path $script:filename | Copy-SPRFile -Destination (Split-Path $script:filename) -WhatIf
+                $results | Should -Be $null
+                Import-Module SPReplicator -Force
+            }
+            It "Successfully copies a file" {
+                $result = Export-SPRListItem -List $script:mylist -Path $script:filename | Copy-SPRFile -Destination (Split-Path $script:filename)
+                $result.FullName | Should -Be $script:filename
+            }
         }
     }
 
