@@ -129,7 +129,7 @@ Function Get-SPRListItem {
                         $single = $thislist.GetItemById($number)
                         $thislist.Context.Load($single)
                         $thislist.Context.ExecuteQuery()
-                        $listItems += $thislist.GetItemById($number)
+                        $listItems += $single
                     }
                 }
                 elseif ($View) {

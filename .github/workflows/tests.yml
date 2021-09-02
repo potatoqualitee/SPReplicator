@@ -1,0 +1,39 @@
+name: Run Linux Tests
+on: [push]
+defaults:
+  run:
+    shell: pwsh
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create variables for module cacher
+        id: psmodulecache
+        uses: potatoqualitee/psmodulecache@v3.5
+        with:
+          modules-to-cache: PSFramework, Pester:4.10.1
+      - name: Run module cacher action
+        id: cacher
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.psmodulecache.outputs.modulepath }}
+          key: ${{ steps.psmodulecache.outputs.keygen }}
+      - name: Install PowerShell modules
+        if: steps.cacher.outputs.cache-hit != 'true'
+        uses: potatoqualitee/psmodulecache@v3.5
+
+      - name: Run tests
+        env:
+          CLIENTID: ${{secrets.CLIENTID}}
+          CLIENTSECRET: ${{secrets.CLIENTSECRET}}
+        run: |
+          Import-Module -Name Pester -RequiredVersion 4.10.1
+          $results = Invoke-Pester ./SPReplicator/tests/functions/Integration.Online.Tests.ps1 -PassThru
+          if ($results.FailedCount -gt 0) {
+              throw "There were $($results.FailedCount) failed tests."
+          }
