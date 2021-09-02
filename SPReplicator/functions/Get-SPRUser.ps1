@@ -100,7 +100,7 @@
                     $script:spsite.ExecuteQuery()
                     # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
                     if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                        $users = $users | Select-Object -ExcludeProperty Alerts
+                        $users = $users | Select-DefaultView -ExcludeProperty Alerts
                     }
                     $users | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                 }
