@@ -38,7 +38,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         It "Connects to a site" {
             $results = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred -ErrorVariable erz -WarningAction SilentlyContinue -WarningVariable warn -EnableException
             $erz | Should -Be $null
-            $results.Url | Should -match $script:onlinesite
+            $results.Url | Should -match sharepoint.com
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -50,7 +50,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRConnectedSite" {
         It "Gets connected site information" {
             $results = Get-SPRConnectedSite
-            $results.Url | Should -match $script:onlinesite
+            $results.Url | Should -match sharepoint.com
             $results.RequestTimeout | Should -Be 180000
         }
     }
@@ -58,7 +58,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Context "Get-SPRWeb" {
         It "Gets a web" {
             $results = Get-SPRWeb | Select-Object -First 1
-            $results.Url | Should -match $script:onlinesite
+            $results.Url | Should -match sharepoint.com
             $results.RecycleBinEnabled | Should -Not -Be $null
         }
     }
