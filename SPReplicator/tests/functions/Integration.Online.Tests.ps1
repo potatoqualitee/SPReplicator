@@ -1,12 +1,13 @@
 ﻿Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 . "$PSScriptRoot\..\constants.ps1"
-
+if ($env:appveyor) {
+    $PSDefaultParameterValues["*-SPR*:Site"] = $script:onlinesite
+    $PSDefaultParameterValues["*-SPR*:Credential"] = $script:onlinecred
+}
 Describe "Online Integration Tests" -Tag "IntegrationTests" {
     BeforeAll {
         if ($env:appveyor) {
             $env:psmodulepath = "$env:psmodulepath; C:\projects; C:\projects\SPReplicator"
-            $PSDefaultParameterValues["*-SPR*:Site"] = $script:onlinesite
-            $PSDefaultParameterValues["*-SPR*:Credential"] = $script:onlinecred
         } else {
             $env:psmodulepath = "$env:psmodulepath:/home/runner/work/SPReplicator/SPReplicator"
             $script:mylist = "My Actions List"
