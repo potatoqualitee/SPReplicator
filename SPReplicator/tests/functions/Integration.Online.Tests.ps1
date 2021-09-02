@@ -188,7 +188,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Title | Should -Be 'Hello SQL'
             $results.TestColumn | Should -Be 'Sample SQL Data'
         }
-        It "Quietly adds new objects to list" {
+        It "Quietly adds new objects to list $script:mylist" {
             $object = @()
             $object += [pscustomobject]@{ Title = 'Sup'; TestColumn = 'Sample Sup'; }
             $object += [pscustomobject]@{ Title = 'Sup2'; TestColumn = 'Sample Sup2'; }
