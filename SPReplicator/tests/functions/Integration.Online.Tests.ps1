@@ -397,14 +397,8 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     }
 
     Context "New-SPRLogList" {
-        It "Supports WhatIf" {
-            InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
-            $results = New-SprLogList -Title SPReplicator -WhatIf -WarningAction SilentlyContinue
-            $results | Should -Be $null
-            Import-Module SPReplicator -Force
-        }
         It "Creates a new log list" {
-            $results = New-SprLogList -Title SPReplicator -WarningAction SilentlyContinue
+            $results = New-SprLogList -Title "SPReplicator $ENV:USER" -WarningAction SilentlyContinue
             if ($results) {
                 $columns = $results | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
                 $columns | Should -Contain "FinishTime"
@@ -415,7 +409,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
                 $columns | Should -Contain "RunAs"
                 $columns | Should -Contain "Message"
                 $columns | Should -Contain "URL"
-                $results.Title | Should -Be "SPReplicator"
+                $results.Title | Should -Be "SPReplicator $ENV:USER"
                 $results.BaseType | Should -Be "GenericList"
                 $results | Remove-SPRList -Confirm:$false
             }
@@ -480,7 +474,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             ($results | Where-Object Name -eq location).Value | Should -Be 'Online'
         }
     }
-    $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
+    $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "SPReplicator $ENV:USER" -WarningAction SilentlyContinue 3> $null
     $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
     Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
 }
@@ -530,7 +524,7 @@ Describe "Online Final Tests" -Tag "Finaltests" {
             }
         }
     }
-    $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist -WarningAction SilentlyContinue 3> $null
+    $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "SPReplicator $ENV:USER" -WarningAction SilentlyContinue 3> $null
     $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
     Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
 }
