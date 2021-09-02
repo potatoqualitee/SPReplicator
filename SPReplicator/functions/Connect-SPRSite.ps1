@@ -114,7 +114,9 @@
                         Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $Credential.UserName } -Force
                     } else {
                         $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site).Context
-                        Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+                        if ($script:spsite.Credentials) {
+                            Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+                        }
                     }
                 } else {
                     if ($PSVersionTable.PSEdition -eq "Core") {
