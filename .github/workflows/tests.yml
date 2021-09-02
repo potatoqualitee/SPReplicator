@@ -32,7 +32,7 @@ jobs:
           CLIENTID: ${{secrets.CLIENTID}}
           CLIENTSECRET: ${{secrets.CLIENTSECRET}}
         run: |
-          $results = Invoke-Pester ./SPReplicator/tests/functions/Integration.GitHub.Tests.ps1 -Output Detailed -PassThru
+          $results = Invoke-Pester ./SPReplicator/tests/functions/Integration.Online.Tests.ps1 -Output Detailed -PassThru
           if ($results.Result -ne "Passed") {
               throw "There were $($results.FailedCount) failed tests."
           }
