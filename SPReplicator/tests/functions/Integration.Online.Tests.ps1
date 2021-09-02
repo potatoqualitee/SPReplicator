@@ -479,52 +479,54 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
 }
 
-Describe "Online Final Tests" -Tag "Finaltests" {
-    Context "Checking to ensure all original data has remained" {
-        $nowlists = Get-SPRList | Where-Object Title -ne "SPRLog"
-        $nowwebs = Get-SPRWeb
-        $nowusers = Get-SPRUser
-        $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-        $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+if (-not $IsLinux) {
+    Describe "Online Final Tests" -Tag "Finaltests" {
+        Context "Checking to ensure all original data has remained" {
+            $nowlists = Get-SPRList | Where-Object Title -ne "SPRLog"
+            $nowwebs = Get-SPRWeb
+            $nowusers = Get-SPRUser
+            $originalsum = $originallists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+            $nowlistssum = $nowlists.ItemCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
 
-        It "Site has the same number of webs as before" {
-            $originalwebs.Count | Should -Be $nowwebs.Count
-        }
+            It "Site has the same number of webs as before" {
+                $originalwebs.Count | Should -Be $nowwebs.Count
+            }
 
-        It "Site has the same number of lists as before" {
-            # well, since github runs it too, give it some leeway
-            $originallists.Count | Should -BeGreaterOrEqual ($nowlists.Count - 2)
-        }
+            It "Site has the same number of lists as before" {
+                # well, since github runs it too, give it some leeway
+                $originallists.Count | Should -BeGreaterOrEqual ($nowlists.Count - 2)
+            }
 
-        It "Site has the same number of users as before" {
-            # well, since github runs it too, give it some leeway
-            $originalusers.Count | Should -BeGreaterOrEqual ($nowusers.Count - 2)
-        }
+            It "Site has the same number of users as before" {
+                # well, since github runs it too, give it some leeway
+                $originalusers.Count | Should -BeGreaterOrEqual ($nowusers.Count - 2)
+            }
 
-        It "Lists still have $originalsum items" {
-            #$originalsum | Should -Be $nowlistssum
-            $originalsum | Should -BeGreaterThan 0
-        }
+            It "Lists still have $originalsum items" {
+                #$originalsum | Should -Be $nowlistssum
+                $originalsum | Should -BeGreaterThan 0
+            }
 
-        foreach ($web in $originalwebs) {
-            It "$($web.Title) currently exists" {
-                $nowwebs.Title | Should -contain $web.Title
+            foreach ($web in $originalwebs) {
+                It "$($web.Title) currently exists" {
+                    $nowwebs.Title | Should -contain $web.Title
+                }
+            }
+
+            foreach ($list in $originallists) {
+                It "$($list.Title) currently exists" {
+                    $nowlists.Title | Should -contain $list.Title
+                }
+            }
+
+            foreach ($user in $originalusers) {
+                It "$($user.Title) currently exists" {
+                    $nowusers.Title | Should -contain $user.Title
+                }
             }
         }
-
-        foreach ($list in $originallists) {
-            It "$($list.Title) currently exists" {
-                $nowlists.Title | Should -contain $list.Title
-            }
-        }
-
-        foreach ($user in $originalusers) {
-            It "$($user.Title) currently exists" {
-                $nowusers.Title | Should -contain $user.Title
-            }
-        }
+        $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "SPReplicator $ENV:USER" -WarningAction SilentlyContinue 3> $null
+        $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
+        Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
     }
-    $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "SPReplicator $ENV:USER" -WarningAction SilentlyContinue 3> $null
-    $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-    Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
 }
