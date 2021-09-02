@@ -359,7 +359,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         }
         It "Doesn't update other things" {
             $results = Get-SPRListItem -List $script:mylist
-            $results.Author | Should -Contain (Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred).CurrentUser.Title
+            $results.Author | Should -Contain (Get-SPRUser | Where-Object LoginName -eq (Get-SPRConnectedSite).CurrentUser).Title
         }
     }
 
