@@ -400,7 +400,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             Import-Module SPReplicator -Force
         }
         It "Creates a new log list" {
-            $results = New-SprLogList -Title SPReplicator
+            $results = New-SprLogList -Title SPReplicator -WarningAction SilentlyContinue
             if ($results) {
                 $columns = $results | Get-SPRColumnDetail | Select-Object -ExpandProperty Name
                 $columns | Should -Contain "FinishTime"
