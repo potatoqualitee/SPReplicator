@@ -1,6 +1,10 @@
 $script:ModuleRoot = $PSScriptRoot
 $script:site = "https://sharepoint2016"
-$script:mylist = "My Test List"
+if ($env:appveyor) {
+    $script:mylist = "My Test List"
+} else {
+    $script:mylist = "My Actions List"
+}
 $script:filename = "$script:ModuleRoot\$script:mylist.xml"
 $script:onlinesite = "https://netnerds.sharepoint.com/"
 if ($env:sponlinecred) {
