@@ -21,9 +21,9 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
         $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
-        $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, 'Sample test create new list' -WarningAction SilentlyContinue 3> $null
+        $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "Sample test create new list $ENV:USER" -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $originallists = Get-SPRList | Where-Object Title -ne "SPRLog"
+        $originallists = Get-SPRList | Where-Object Title -ne "SPRLog" | Where-Object Title -notmatch "Sample"
         $originalwebs = Get-SPRWeb
         $originalusers = Get-SPRUser
     }
@@ -395,7 +395,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
     Context "New-SPRLogList" {
         It "Supports WhatIf" {
             InModuleScope SPReplicator { Mock Test-PSFShouldProcess { $null } }
-            $results = New-SprLogList -Title SPReplicator -WhatIf
+            $results = New-SprLogList -Title SPReplicator -WhatIf -WarningAction SilentlyContinue
             $results | Should -Be $null
             Import-Module SPReplicator -Force
         }
