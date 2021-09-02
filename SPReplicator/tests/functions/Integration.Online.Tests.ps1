@@ -23,7 +23,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
         $null = Connect-SPRSite -Site $script:onlinesite -Credential $script:onlinecred
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "Sample test create new list $ENV:USER" -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
-        $originallists = Get-SPRList | Where-Object Title -ne "SPRLog" | Where-Object Title -notmatch "Sample"
+        $originallists = Get-SPRList | Where-Object Title -ne "SPRLog" | Where-Object Title -notmatch "Sample" | Where-Object Title -notmatch "Action"
         $originalwebs = Get-SPRWeb
         $originalusers = Get-SPRUser
     }
