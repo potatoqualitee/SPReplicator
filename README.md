@@ -2,7 +2,7 @@
 
 <img align="left" src=https://user-images.githubusercontent.com/8278033/42554599-39b769a6-8481-11e8-8b6a-379f4a3e54e6.png alt="SPReplicator logo">SPReplicator is a PowerShell module that helps replicate SharePoint list data. 
 
-This module uses the SharePoint Client Side Object Model (CSOM) and all required libraries and dlls are included. Installing the SharePoint binaries is **not required** for the replication to work 👍 Thank you Microsoft for the redistributable nuget.
+This module uses the SharePoint Client Side Object Model (CSOM), the PnP.PowerShell module and all required libraries and dlls are included. Installing the SharePoint binaries is **not required** for the replication to work 👍 Thank you Microsoft for the redistributable nuget and PnP.PowerShell.
 
 SPReplicator works with both on-prem and SharePoint Online and is currently in beta. It also works on .NET Core, so it's cross-platform, and supports Windows, macOS and Linux.
 
