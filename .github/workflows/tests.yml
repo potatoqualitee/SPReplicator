@@ -32,7 +32,7 @@ jobs:
           CLIENTID: ${{secrets.CLIENTID}}
           CLIENTSECRET: ${{secrets.CLIENTSECRET}}
         run: |
-          $ENV:PSModulePath = "$ENV:PSModulePath:/home/runner/.local/share/powershell/:/home/runner/work/SPReplicator/SPReplicator"
+          $ENV:PSModulePath = "$($ENV:PSModulePath):/home/runner/.local/share/powershell/:/home/runner/work/SPReplicator/SPReplicator"
           Import-Module PSFramework
           Import-Module SPReplicator
           Import-Module -Name Pester -RequiredVersion 4.10.1
