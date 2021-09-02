@@ -219,14 +219,14 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
 
     Context "Get-SPRListItem" {
         It "Gets data from $script:mylist" {
-            $results = Get-SPRListItem -List $script:mylist -Site $script:onlinesite -Credential $script:onlinecred
+            $results = Get-SPRListItem -List $script:mylist
             $results.Title.Count | Should -BeGreaterThan 1
             $results.Title | Should -Contain 'Hello SQL'
             $results.TestColumn | Should -Contain 'Sample SQL Data'
             $script:id = $results[0].Id
         }
 
-        It "Gets one data based on ID ($script:id), doesn't require Site" {
+        It "Gets one data based on ID ($script:id)" {
             $results = Get-SPRListItem -List $script:mylist -Id $script:id
             $results.Title.Count | Should -Be 1
             $results.Id | Should -Be $script:id
