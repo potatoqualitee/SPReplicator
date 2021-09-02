@@ -147,7 +147,7 @@
                             Add-Member -InputObject $spuser -MemberType NoteProperty -Name FormattedLogin -Value $("{0};#{1}" -f $spuser.Id, $spuser.LoginName) -Force
                             # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
                             if ((Get-PSFConfigValue -FullName SPReplicator.Location) -eq "Online") {
-                                $spuser | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
+                                $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType -ExcludeProperty Alerts
                             }
                             else {
                                 $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
