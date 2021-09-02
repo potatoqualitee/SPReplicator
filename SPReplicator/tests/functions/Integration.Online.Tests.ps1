@@ -202,7 +202,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.TestColumn | Should -Contain 'Sample Sup3'
         }
         It "Autocreates new list and adds new items as user System Account" {
-            $newList = 'Sample test create new list'
+            $newList = "Sample test create new list $ENV:USER"
             $object = @()
             $object += [pscustomobject]@{ Title = 'Hello'; TestColumn = 'Sample Data'; }
             $object += [pscustomobject]@{ Title = 'Hello2'; TestColumn = 'Sample Data2'; }
