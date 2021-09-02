@@ -2,10 +2,12 @@ $script:ModuleRoot = $PSScriptRoot
 $script:site = "https://sharepoint2016"
 if ($env:appveyor) {
     $script:mylist = "My Test List"
+    $script:filename = "$script:ModuleRoot\$script:mylist.xml"
 } else {
     $script:mylist = "My Actions List"
+    $script:filename = "/tmp/$script:mylist.xml"
 }
-$script:filename = "$script:ModuleRoot\$script:mylist.xml"
+
 $script:onlinesite = "https://netnerds.sharepoint.com/"
 if ($env:sponlinecred) {
     $secpasswd = ConvertTo-SecureString $env:sponlinecred -AsPlainText -Force
