@@ -66,7 +66,7 @@
         [string]$Site,
         [PSCredential]$Credential,
         [PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
-        [string]$Location,
+        [string]$Location = (Get-SPRConfig -Name location).Value,
         [ValidateSet("Default", "WebLogin", "AppOnly")]
         [string]$AuthenticationMode = "Default",
         [switch]$EnableException
