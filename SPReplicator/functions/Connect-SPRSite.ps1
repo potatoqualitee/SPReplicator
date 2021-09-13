@@ -99,63 +99,71 @@
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         Write-PSFMessage -Level Verbose -Message "Site is set as $Location"
         try {
-            if ($AuthenticationMode -eq "WebLogin") {
-                try {
-                    $script:spsite = (Connect-PnPOnline -ReturnConnection -LaunchBrowser -PnPManagementShell -Url $Site).Context
-                    $script:spsite.Load($script:spsite.Web)
-                    $script:spsite.ExecuteQuery()
-                } catch {
-                    Stop-PSFFunction -Message "Could not connect to the site collection at $Site" -ErrorRecord $_
-                    return
+            switch ($AuthenticationMode) {
+                "WebLogin" {
+                    Write-PSFMessage -Level Verbose -Message "Proceeding with WebLogin mode"
+                    try {
+                        $script:spsite = (Connect-PnPOnline -ReturnConnection -LaunchBrowser -PnPManagementShell -Url $Site).Context
+                        $script:spsite.Load($script:spsite.Web)
+                        $script:spsite.ExecuteQuery()
+                    } catch {
+                        Stop-PSFFunction -Message "Could not connect to the site collection at $Site" -ErrorRecord $_
+                        return
+                    }
                 }
-            } elseif ($AuthenticationMode -eq "AppOnly") {
-                try {
-                    $script:spsite = (Connect-PnPOnline -ReturnConnection -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName -Url $Site -WarningAction Ignore).Context
-                    $script:spsite.Load($script:spsite.Web)
-                    $script:spsite.ExecuteQuery()
-                } catch {
-                    Stop-PSFFunction -Message "Could not connect to the site collection at $Site. Please check that you've followed all the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs" -ErrorRecord $_
-                    return
+
+                "AppOnly" {
+                    Write-PSFMessage -Level Verbose -Message "Proceeding with AppOnly mode"
+                    try {
+                        $script:spsite = (Connect-PnPOnline -ReturnConnection -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName -Url $Site -WarningAction Ignore).Context
+                        $script:spsite.Load($script:spsite.Web)
+                        $script:spsite.ExecuteQuery()
+                    } catch {
+                        Stop-PSFFunction -Message "Could not connect to the site collection at $Site. Please check that you've followed all the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs" -ErrorRecord $_
+                        return
+                    }
                 }
-            } else {
-                #Setup Authentication Manager
-                if ($Credential) {
-                    if ($Location -eq "Onprem") {
-                        $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site -TransformationOnPrem).Context
-                        if ($script:spsite.Credentials) {
-                            Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+
+                default {
+                    #Setup Authentication Manager
+                    
+                    Write-PSFMessage -Level Verbose -Message "Proceeding with default login mode"
+                    if ($Credential) {
+                        Write-PSFMessage -Level Verbose -Message "Credential detected"
+                        if ($Location -eq "Onprem") {
+                            Write-PSFMessage -Level Verbose -Message "Connecting to OnPrem"
+                            $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site -TransformationOnPrem).Context
+                            if ($script:spsite.Credentials) {
+                                Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+                            }
+                        } else {
+                            Write-PSFMessage -Level Verbose -Message "Connecting to SharePoint online"
+                            $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site).Context
+                            if ($script:spsite.Credentials) {
+                                Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+                            }
                         }
                     } else {
-                        $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site).Context
-                        if ($script:spsite.Credentials) {
-                            Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
-                        }
-                    }
-                } else {
-                    $script:spsite = (Connect-PnPOnline -ReturnConnection -TransformationOnPrem -CurrentCredential -Url $Site -WarningAction Ignore).Context
-                    if ($PSVersionTable.PSEdition -eq "Core") {
-                        if (-not $script:spsite.ExecuteQuery) {
-                            # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
-                            Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
-                                if ($script:spsite.HasPendingRequest) {
-                                    $script:spsite.ExecuteQueryAsync().Wait()
-                                }
-                            } -Force
+                        if ($PSVersionTable.PSEdition -eq "Core") {
+                            Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using PS Core"
+                            $script:spsite = (Connect-PnPOnline -ReturnConnection -TransformationOnPrem -CurrentCredential -Url $Site -WarningAction Ignore).Context
+                            if (-not $script:spsite.ExecuteQuery) {
+                                # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
+                                Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
+                                    if ($script:spsite.HasPendingRequest) {
+                                        $script:spsite.ExecuteQueryAsync().Wait()
+                                    }
+                                } -Force
+                            }
+                        } else {
+                            # This is required for non-core ¯\_(ツ)_/¯
+                            Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using Windows PowerShell"
+                            $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
                         }
                     }
                 }
             }
-
-            if ($PSVersionTable.PSEdition -ne "Core") {
-                $script:spsite.add_ExecutingWebRequest( {
-                        param($Source, $EventArgs)
-                        $request = $EventArgs.WebRequestExecutor.WebRequest
-                        if (($request | Get-Member UserAgent)) {
-                            $request.UserAgent = "SPReplicator PowerShell module"
-                        }
-                    })
-                $script:spsite.ExecuteQuery()
-            }
+                        
             Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
 
             if (-not $script:spsite.ExecuteQuery) {
@@ -168,7 +176,6 @@
             }
 
             $script:spweb = $script:spsite.Web
-
             Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
 
             $script:spsite.Load($script:spweb.CurrentUser)
