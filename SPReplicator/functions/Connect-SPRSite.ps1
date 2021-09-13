@@ -126,7 +126,7 @@
                             Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
                         }
                     } else {
-                        $script:spsite = (Connect-PnPOnline -ReturnConnection TransformationOnPrem  $Credential -Url $Site).Context
+                        $script:spsite = (Connect-PnPOnline -ReturnConnection -TransformationOnPrem  $Credential -Url $Site).Context
                         if ($script:spsite.Credentials) {
                             Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
                         }
@@ -142,8 +142,6 @@
                                 }
                             } -Force
                         }
-                    } else {
-                        $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
                     }
                 }
             }
