@@ -130,8 +130,8 @@
                         }
                     }
                 } else {
+                    $script:spsite = (Connect-PnPOnline -ReturnConnection -TransformationOnPrem -CurrentCredential -Url $Site -WarningAction Ignore).Context
                     if ($PSVersionTable.PSEdition -eq "Core") {
-                        $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
                         if (-not $script:spsite.ExecuteQuery) {
                             # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
                             Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
