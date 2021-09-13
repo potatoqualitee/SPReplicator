@@ -16,7 +16,7 @@ jobs:
         id: psmodulecache
         uses: potatoqualitee/psmodulecache@v3.5
         with:
-          modules-to-cache: PSFramework, Pester:4.10.1
+          modules-to-cache: PSFramework, Pester:4.10.1, PnP.PowerShell:1.7.0
       - name: Run module cacher action
         id: cacher
         uses: actions/cache@v2
