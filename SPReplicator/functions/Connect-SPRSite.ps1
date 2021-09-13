@@ -120,7 +120,7 @@
                 #Setup Authentication Manager
                 if ($Credential) {
                     if ($Location -eq "Onprem") {
-                        $script:spsite = (Connect-PnPOnline -TransformationOnPrem -ReturnConnection -Credential $Credential -Url $Site).Context
+                        $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site -TransformationOnPrem).Context
                         if ($script:spsite.Credentials) {
                             Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
                         }
