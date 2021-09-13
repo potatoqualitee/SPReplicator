@@ -97,7 +97,7 @@
     }
     process {
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
-        Write-PSFMessage -Level Warning -Message "Site is set as $Location"
+        Write-PSFMessage -Level Verbose -Message "Site is set as $Location"
         try {
             if ($AuthenticationMode -eq "WebLogin") {
                 try {
