@@ -66,7 +66,7 @@
         [string]$Site,
         [PSCredential]$Credential,
         [PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
-        [string]$Location = (Get-SPRConfig -Name location).Value,
+        [string]$Location = (Get-PSFConfigValue -FullName SPReplicator.Location),
         [ValidateSet("Default", "WebLogin", "AppOnly")]
         [string]$AuthenticationMode = "Default",
         [switch]$EnableException
@@ -97,6 +97,7 @@
     }
     process {
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
+        Write-PSFMessage -Level Warning -Message "Site is set as $Location"
         try {
             if ($AuthenticationMode -eq "WebLogin") {
                 try {
