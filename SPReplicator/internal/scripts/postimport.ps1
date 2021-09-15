@@ -1,8 +1,5 @@
 ﻿# Add all things you want to run after importing the main code
 
-# Load libraries
-. Import-ModuleFile -Path (Join-SprPath $ModuleRoot bin library-import.ps1)
-
 # Load Configurations
 foreach ($file in (Get-ChildItem "$ModuleRoot\internal\configurations\*.ps1" -ErrorAction Ignore)) {
     . Import-ModuleFile -Path $file.FullName

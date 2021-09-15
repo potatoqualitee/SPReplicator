@@ -37,7 +37,10 @@
     # ProcessorArchitecture = ''
 
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules   = @(@{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.25.107' })
+    RequiredModules   = @(
+        @{ ModuleName = 'PSFramework'; ModuleVersion = '0.9.25.107' },
+        @{ ModuleName = 'PnP.PowerShell'; ModuleVersion = '1.7.0' }
+    )
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
