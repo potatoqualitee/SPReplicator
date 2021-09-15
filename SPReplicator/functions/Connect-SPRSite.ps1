@@ -1,86 +1,118 @@
 ﻿Function Connect-SPRSite {
     <#
-.SYNOPSIS
-    Creates a reusable SharePoint Client Context object that lets you use and
-    manage the site collection in Windows PowerShell.
+    .SYNOPSIS
+        Creates a reusable SharePoint Client Context object that lets you use and
+        manage the site collection in Windows PowerShell.
 
-.DESCRIPTION
-    Creates a reusable SharePoint Client Context object that lets you use
-    and manage the site collection in Windows PowerShell.
+    .DESCRIPTION
+        Creates a reusable SharePoint Client Context object that lets you use
+        and manage the site collection in Windows PowerShell.
 
-    If you Connect-SPRSite, you no longer need to specify -Site and -Credential.
+        If you Connect-SPRSite, you no longer need to specify -Site and -Credential.
 
-.PARAMETER Site
-    The address to the site collection. You can also pass a hostname and it'll figure it out.
+    .PARAMETER Site
+        The address to the site collection. You can also pass a hostname and it'll figure it out.
 
-.PARAMETER Credential
-    Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
+    .PARAMETER Credential
+        Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
-.PARAMETER AuthenticationMode
-    Specifies the authentication mode. Default is "Default". Other options are WebLogin and AppOnly
+    .PARAMETER AuthenticationMode
+        Specifies the authentication mode. Options include Default, WebLogin (pops up a browser), AppOnly, ManagedIdentity and AccessToken
 
-.PARAMETER Location
-    Onprem or Online, this only needs to be set once, then it's cached. See Get-SPRConfig for more information.
+        For AppOnly authentication, please ensure you've followed all of the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs
 
-.PARAMETER AccessToken
-    This method assumes you have acquired a valid OAuth2 access token from Azure AD with the correct audience and permissions set. Using this method PnP PowerShell will not acquire tokens dynamically and if the token expires (typically after 1 hour) cmdlets will fail to work using this method.
+    .PARAMETER Location
+        Onprem or Online, this only needs to be set once, then it's cached. See Get-SPRConfig for more information.
 
-.PARAMETER Tenant
-    The Azure AD Tenant name, For example mycompany.onmicrosoft.com
+        If you don't specify Location, SPReplicator will try to determine it based on the Site URL.
 
-.PARAMETER Thumbprint
-    The thumbprint of the certificate containing the private key registered with the application in Azure Active Directory.
+    .PARAMETER AccessToken
+        This method assumes you have acquired a valid OAuth2 access token from Azure AD with the correct audience and permissions set. Using this method PnP PowerShell will not acquire tokens dynamically and if the token expires (typically after 1 hour), commands will fail to work using this method.
 
-    Connects to SharePoint using app-only tokens via an app's declared permission scopes. Ensure you have imported the private key certificate, typically the .pfx file, into the Windows Certificate Store for the certificate with the provided thumbprint.
+    .PARAMETER Tenant
+        The Azure AD Tenant name, For example mycompany.onmicrosoft.com
 
-.PARAMETER ClientId
-    The Client ID of the Azure AD Application. Required when Thumbprint is used.
+    .PARAMETER Thumbprint
+        The thumbprint of the certificate containing the private key registered with the application in Azure Active Directory.
 
-.PARAMETER CertificateBase64Encoded
-    Switch that specifies whether the credential password is a certificate in Base64 encoded format.
+        Connects to SharePoint using app-only tokens via an app's declared permission scopes. Ensure you have imported the private key certificate, typically the .pfx file, into the Windows Certificate Store for the certificate with the provided thumbprint.
 
-    See examples for usage
+    .PARAMETER ClientId
+        The Client ID of the Azure AD Application. Required when Thumbprint is used.
 
-.PARAMETER AzureEnvironment
-    The Azure environment to use for authentication. Options include Production, PPE, China, Germany, USGovernment, USGovernmentHigh, and USGovernmentDoD
+    .PARAMETER CertificateBase64Encoded
+        Switch that specifies whether the credential password is a certificate in Base64 encoded format.
 
-.PARAMETER EnableException
-    By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
-    This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
-    Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+        See examples for usage
 
-.EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local
+    .PARAMETER AzureEnvironment
+        The Azure environment to use for authentication. Options include Production, PPE, China, Germany, USGovernment, USGovernmentHigh, and USGovernmentDoD
 
-    Creates a web service object for intranet.ad.local. Figures out the wsdl address automatically.
+    .PARAMETER EnableException
+        By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+        This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+        Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
-.EXAMPLE
-    Connect-SPRSite -Site https://intranet.ad.local/
+    .EXAMPLE
+        Connect-SPRSite -Site intranet.ad.local
 
-    Creates a web service object for intranet.ad.local using the formal and complete address.
+        Creates a web service object for intranet.ad.local. Figures out the wsdl address automatically.
 
-.EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local -Credential ad\user
+    .EXAMPLE
+        Connect-SPRSite -Site https://intranet.ad.local/
 
-    Creates a web service object and logs into the webapp as ad\user.
+        Creates a web service object for intranet.ad.local using the formal and complete address.
 
-.EXAMPLE
-    Connect-SPRSite -Site intranet.ad.local -Credential me@mycorp.onmicrosoft.com -Location Online
+    .EXAMPLE
+        Connect-SPRSite -Site intranet.ad.local -Credential ad\user
 
-    Creates a connection to SharePoint Online using the credential me@mycorp.onmicrosoft.com
+        Creates a web service object and logs into the webapp as ad\user.
 
-    By default, this module is set to On-Premises. To change this use: Set-SPRConfig -Name Location -Value Online
+    .EXAMPLE
+        Connect-SPRSite -Site contoso.sharepoint.com -Credential me@mycorp.onmicrosoft.com
 
-.EXAMPLE
-    Connect-SPRSite -Site https://corp.sharepoint.com -AuthenticationMode WebLogin
+        Creates a connection to SharePoint Online using the credential me@mycorp.onmicrosoft.com
 
-    Pops open a browser and logs into SharePoint Online using a token that you paste into the browser
+    .EXAMPLE
+        Connect-SPRSite -Site https://corp.sharepoint.com -AuthenticationMode WebLogin
 
-.EXAMPLE
-    Connect-SPRSite -Site https://corp.sharepoint.com -AuthenticationMode AppOnly -Credential 1e36c5cc-5281-4235-a84f-c94dc2de8800
+        Pops open a browser and logs into SharePoint Online using a token that you paste into the browser. This enables MFA, including smartcards.
 
-    Logs into SharePoint Online using the AppOnly token. Please ensure you've followed all of the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs
+    .EXAMPLE
+        Connect-SPRSite -Site https://corp.sharepoint.com -AuthenticationMode AppOnly -Credential 1e36c5cc-5281-4235-a84f-c94dc2de8800
 
+        Logs into SharePoint Online using the AppOnly token -- use your client secret as the credential password.
+
+    .EXAMPLE
+        Connect-SPRSite -Site "https://contoso.sharepoint.de" -AuthenticationMode AppOnly -Credential 344b8aab-389c-4e4a-8fa1-4c1ae2c0a60d
+
+        This will authenticate you to contoso.sharepoint.de using Legacy ACS authentication. Your client secret is the credential password.
+
+    .EXAMPLE
+        $cred = Get-Credential usernamedoesntmatter
+        Connect-SPRSite -Site https://contoso.sharepoint.de -ClientId 344b8aab-389c-4e4a-8fa1-4c1ae2c0a60d -Credential $cred
+
+        This will authenticate you to contoso.sharepoint.de using Legacy ACS authentication. Use the client secret for the credential password. As suggested, the credential username is not used.
+
+    .EXAMPLE
+        Connect-SPRSite -Site https://contoso.sharepoint.com -Credential 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -CertificatePath /tmp/mycertificate.pfx  -Tenant contoso.onmicrosoft.com
+
+        Connects using an Azure Active Directory registered application using a locally available certificate containing a private key. Use the certificate secret as the credential password.
+
+    .EXAMPLE
+        Connect-SPRSite -Site https://contoso.sharepoint.com -ClientId 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -CertificateBase64Encoded -Tenant contoso.onmicrosoft.com
+
+        Connects using an Azure Active Directory registered application using a certificate with a private key that has been base64 encoded. Use the base64 encoded certificate as the credential password.
+
+    .EXAMPLE
+        Connect-SPRSite -Site https://contoso.sharepoint.com -ClientId 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -Tenant contoso.onmicrosoft.com -Thumbprint 34CFAA860E5FB8C44335A38A097C1E41EEA206AA
+
+        Connects to SharePoint using app-only tokens via an app's declared permission scopes. Ensure you have imported the private key certificate, typically the .pfx file, into the Windows Certificate Store for the certificate with the provided thumbprint.
+
+    .EXAMPLE
+        Connect-SPRSite -Site "https://contoso.sharepoint.de" -AuthenticationMode ManagedIdentity
+
+        Using this way of connecting only works with environments that support managed identies: Azure Functions and the Azure Cloud Shell.
 #>
     [CmdletBinding()]
     param (
@@ -112,6 +144,8 @@
 
         if ($Tenant) {
             $PSDefaultParameterValues['Connect-PnPOnline:Tenant'] = $Tenant
+        } else {
+
         }
 
         if ($Thumbprint -or $ClientId -or $CertificatePath) {
@@ -134,7 +168,7 @@
 
         if (-not $Location) {
             $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
-            if ($AzureEnvironment -or $Tenant -or $AuthenticationMode -in "AppOnly", "ManagedIdentity", "AccessToken") {
+            if ($AzureEnvironment -or $Tenant -or $AuthenticationMode -in "AppOnly", "ManagedIdentity", "AccessToken" -or $Site -match "\.sharepoint\.") {
                 $Location = "Online"
             } elseif ($hash[$hostname]) {
                 $Location = $hash[$hostname]
