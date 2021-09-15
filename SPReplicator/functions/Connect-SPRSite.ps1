@@ -23,7 +23,7 @@
     Onprem or Online, this only needs to be set once, then it's cached. See Get-SPRConfig for more information.
 
 .PARAMETER AccessToken
-    The access token used when AuthenticationMode is AccessToken.
+    This method assumes you have acquired a valid OAuth2 access token from Azure AD with the correct audience and permissions set. Using this method PnP PowerShell will not acquire tokens dynamically and if the token expires (typically after 1 hour) cmdlets will fail to work using this method.
 
 .PARAMETER Tenant
     The Azure AD Tenant name, For example mycompany.onmicrosoft.com
@@ -35,6 +35,11 @@
 
 .PARAMETER ClientId
     The Client ID of the Azure AD Application. Required when Thumbprint is used.
+
+.PARAMETER CertificateBase64Encoded
+    Switch that specifies whether the credential password is a certificate in Base64 encoded format.
+
+    See examples for usage
 
 .PARAMETER AzureEnvironment
     The Azure environment to use for authentication. Options include Production, PPE, China, Germany, USGovernment, USGovernmentHigh, and USGovernmentDoD
@@ -92,6 +97,7 @@
         [string]$AccessToken,
         [ValidateSet("Production", "PPE", "China", "Germany", "USGovernment", "USGovernmentHigh", "USGovernmentDoD")]
         [string]$AzureEnvironment,
+        [string]$CertificatePath,
         [switch]$CertificateBase64Encoded,
         [switch]$EnableException
     )
@@ -102,16 +108,25 @@
         if ($AzureEnvironment) {
             $PSDefaultParameterValues['Connect-PnPOnline:AzureEnvironment'] = $AzureEnvironment
         }
+
         if ($Tenant) {
             $PSDefaultParameterValues['Connect-PnPOnline:Tenant'] = $Tenant
         }
-        if ($Thumbprint) {
+
+        if ($Thumbprint -or $ClientId -or $CertificatePath) {
+            Write-PSFMessage -Level Verbose -Message "Setting AuthenticationMode to AppOnly"
             $AuthenticationMode = "AppOnly"
+        }
+
+        if ($AccessToken) {
+            Write-PSFMessage -Level Verbose -Message "Setting AuthenticationMode to AccessToken"
+            $AuthenticationMode = "AccessToken"
         }
 
         if ($Site -notmatch 'http') {
             $Site = "https://$Site"
         }
+
         # handle online vs onprem
         $hostname = ([System.Uri]$Site).Host
         $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
@@ -126,6 +141,7 @@
                 $Location = Get-PSFConfigValue -FullName SPReplicator.Location
             }
         }
+        643
         if ($hash[$hostname]) {
             $hash[$hostname] = $Location
         } else {
@@ -172,19 +188,22 @@
 
                 "AppOnly" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with AppOnly mode"
+                    if (-not $ClientId) {
+                        $ClientId = $Credential.UserName
+                        Write-PSFMessage -Level Verbose -Message "Setting ClientId from Credential username ($ClientId)"
+                    }
 
                     if ($Thumbprint) {
+                        Write-PSFMessage -Level Verbose -Message "Using Thumbprint"
                         $script:spsite = Connect-PnPOnline -ClientId $ClientId -Thumbprint $Thumbprint
+                    } elseif ($CertificateBase64Encoded) {
+                        Write-PSFMessage -Level Verbose -Message "Using CertificateBase64Encoded from Credential password"
+                        $script:spsite = Connect-PnPOnline -ClientId $ClientId -CertificateBase64Encoded $Credential.GetNetworkCredential().Password
+                    } elseif ($CertificatePath) {
+                        Write-PSFMessage -Level Verbose -Message "Using CertificatePassword from Credential password for CertificatePath"
+                        $script:spsite = Connect-PnPOnline -ClientId $ClientId -CertificatePath $CertificatePath -CertificatePassword $Credential.GetNetworkCredential().Password
                     } else {
-                        if ($ClientId) {
-                            if ($CertificateBase64Encoded) {
-                                $script:spsite = Connect-PnPOnline -ClientId $ClientId -CertificateBase64Encoded $Credential.GetNetworkCredential().Password
-                            } else {
-                                $script:spsite = Connect-PnPOnline -ClientId $ClientId -ClientSecret $Credential.GetNetworkCredential().Password
-                            }
-                        } else {
-                            $script:spsite = Connect-PnPOnline -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName
-                        }
+                        $script:spsite = Connect-PnPOnline -ClientId $ClientId -ClientSecret $Credential.GetNetworkCredential().Password
                     }
                 }
 
@@ -207,6 +226,8 @@
                             # This is required for non-core ¯\_(ツ)_/¯
                             Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using Windows PowerShell"
                             $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
+                            # This doesn't really work, but maybe it will at some point
+                            $null = Set-PnPContext -Context $script:spsite
                         }
                     }
                 }
@@ -229,6 +250,7 @@
 
             # Grab web and lists
             try {
+                Write-PSFMessage -Level Verbose -Message "Loading up webs and lists"
                 $script:spsite.Load($script:spsite.Web)
                 $script:spsite.ExecuteQuery()
                 $script:spweb = $script:spsite.Web
@@ -247,6 +269,7 @@
             }
 
             # Make output pretty
+            Write-PSFMessage -Level Verbose -Message "Making output pretty"
             Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
             Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             if ($script:spsite.Credentials) {
@@ -254,11 +277,13 @@
             }
 
             # Grab curent login name
+            Write-PSFMessage -Level Verbose -Message "Getting loginname"
             $script:spsite.Load($script:spweb.CurrentUser)
             $script:spsite.ExecuteQuery()
             $loginname = $script:spweb.CurrentUser.LoginName
 
             # Add glboal connection that persists between module reloads
+            Write-PSFMessage -Level Verbose -Message "Setting globals to global:SPReplicator"
             $global:SPReplicator.Web = $script:spweb
             $global:SPReplicator.Site = $script:spsite
             $global:SPReplicator.LogList = $global:SPReplicator.LogList
@@ -270,23 +295,18 @@
             }
             Register-PSFTeppArgumentCompleter -Command (Get-Command -Module SPReplicator).Name -Parameter List -Name List
 
-            if ($credentials) {
-                $thislocation = "Online"
-            } else {
-                $thislocation = "Onprem"
-            }
-
             # unsure, actually
             $getsite = $script:spsite.get_site()
             $script:spsite.Load($getsite)
             $script:spsite.ExecuteQuery()
             $rootweb = $getsite.get_rootWeb()
+            $script:spsite.ExecuteQuery()
 
             Add-Member -InputObject $rootweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name RootWeb -Value $rootweb -Force
-            Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name Location -Value $thislocation -Force
+            Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name Location -Value $Location -Force
             Add-Member -InputObject $script:spsite -MemberType NoteProperty -Name CurrentUser -Value $loginname -Force
-            $script:spsite | Select-DefaultView -Property Url, ServerVersion, RequestTimeout, RootWeb, CurrentUser
+            $script:spsite | Select-DefaultView -Property Url, ServerVersion, RequestTimeout, RootWeb, CurrentUser, Location
         } catch {
             Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
         }
