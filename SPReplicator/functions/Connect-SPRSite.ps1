@@ -22,6 +22,9 @@
 .PARAMETER Location
     Onprem or Online, this only needs to be set once, then it's cached. See Get-SPRConfig for more information.
 
+.PARAMETER AccessToken
+    The access token used when AuthenticationMode is AccessToken.
+
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -67,8 +70,9 @@
         [PSCredential]$Credential,
         [PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
         [string]$Location = (Get-PSFConfigValue -FullName SPReplicator.Location),
-        [ValidateSet("Default", "WebLogin", "AppOnly")]
+        [ValidateSet("Default", "WebLogin", "AppOnly", "ManagedIdentity", "AccessToken")]
         [string]$AuthenticationMode = "Default",
+        [string]$AccessToken,
         [switch]$EnableException
     )
     begin {
@@ -98,6 +102,12 @@
     process {
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         Write-PSFMessage -Level Verbose -Message "Site is set as $Location"
+
+        if ($AuthenticationMode -eq "AccessToken" -and -not $AccessToken) {
+            Stop-PSFFunction -Message "AccessToken authentication mode requires an AccessToken"
+            return
+        }
+
         try {
             switch ($AuthenticationMode) {
                 "WebLogin" {
@@ -107,7 +117,31 @@
                         $script:spsite.Load($script:spsite.Web)
                         $script:spsite.ExecuteQuery()
                     } catch {
-                        Stop-PSFFunction -Message "Could not connect to the site collection at $Site" -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not connect to $Site" -ErrorRecord $_
+                        return
+                    }
+                }
+
+                "ManagedIdentity" {
+                    Write-PSFMessage -Level Verbose -Message "Proceeding with ManagedIdentity mode"
+                    try {
+                        $script:spsite = (Connect-PnPOnline -ReturnConnection -ManagedIdentity -Url $Site -WarningAction Ignore).Context
+                        $script:spsite.Load($script:spsite.Web)
+                        $script:spsite.ExecuteQuery()
+                    } catch {
+                        Stop-PSFFunction -Message "Could not connect to $Site" -ErrorRecord $_
+                        return
+                    }
+                }
+
+                "AccessToken" {
+                    Write-PSFMessage -Level Verbose -Message "Proceeding with AccessToken mode"
+                    try {
+                        $script:spsite = (Connect-PnPOnline -ReturnConnection -AccessToken $AccessToken -Url $Site).Context
+                        $script:spsite.Load($script:spsite.Web)
+                        $script:spsite.ExecuteQuery()
+                    } catch {
+                        Stop-PSFFunction -Message "Could not connect to $Site" -ErrorRecord $_
                         return
                     }
                 }
@@ -119,14 +153,13 @@
                         $script:spsite.Load($script:spsite.Web)
                         $script:spsite.ExecuteQuery()
                     } catch {
-                        Stop-PSFFunction -Message "Could not connect to the site collection at $Site. Please check that you've followed all the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs" -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not connect to $Site. Please check that you've followed all the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs" -ErrorRecord $_
                         return
                     }
                 }
 
                 default {
                     #Setup Authentication Manager
-                    
                     Write-PSFMessage -Level Verbose -Message "Proceeding with default login mode"
                     if ($Credential) {
                         Write-PSFMessage -Level Verbose -Message "Credential detected"
@@ -163,7 +196,7 @@
                     }
                 }
             }
-                        
+
             Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
 
             if (-not $script:spsite.ExecuteQuery) {
