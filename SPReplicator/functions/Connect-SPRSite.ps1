@@ -26,7 +26,18 @@
     The access token used when AuthenticationMode is AccessToken.
 
 .PARAMETER Tenant
-    The Azure AD Tenant name,e.g. mycompany.onmicrosoft.com
+    The Azure AD Tenant name, For example mycompany.onmicrosoft.com
+
+.PARAMETER Thumbprint
+    The thumbprint of the certificate containing the private key registered with the application in Azure Active Directory.
+
+    Connects to SharePoint using app-only tokens via an app's declared permission scopes. Ensure you have imported the private key certificate, typically the .pfx file, into the Windows Certificate Store for the certificate with the provided thumbprint.
+
+.PARAMETER ClientId
+    The Client ID of the Azure AD Application. Required when Thumbprint is used.
+
+.PARAMETER AzureEnvironment
+    The Azure environment to use for authentication. Options include Production, PPE, China, Germany, USGovernment, USGovernmentHigh, and USGovernmentDoD
 
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -72,20 +83,32 @@
         [string]$Site,
         [PSCredential]$Credential,
         [PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
-        [string]$Location = (Get-PSFConfigValue -FullName SPReplicator.Location),
+        [string]$Location,
         [ValidateSet("Default", "WebLogin", "AppOnly", "ManagedIdentity", "AccessToken")]
         [string]$AuthenticationMode = "Default",
         [string]$Tenant,
+        [string]$Thumbprint,
+        [string]$ClientId,
         [string]$AccessToken,
+        [ValidateSet("Production", "PPE", "China", "Germany", "USGovernment", "USGovernmentHigh", "USGovernmentDoD")]
+        [string]$AzureEnvironment,
+        [switch]$CertificateBase64Encoded,
         [switch]$EnableException
     )
     begin {
         $PSDefaultParameterValues['Connect-PnPOnline:ReturnConnection'] = $true
-        $PSDefaultParameterValues['Connect-PnPOnline:Site'] = $Site
+        $PSDefaultParameterValues['Connect-PnPOnline:Url'] = $Site
 
+        if ($AzureEnvironment) {
+            $PSDefaultParameterValues['Connect-PnPOnline:AzureEnvironment'] = $AzureEnvironment
+        }
         if ($Tenant) {
             $PSDefaultParameterValues['Connect-PnPOnline:Tenant'] = $Tenant
         }
+        if ($Thumbprint) {
+            $AuthenticationMode = "AppOnly"
+        }
+
         if ($Site -notmatch 'http') {
             $Site = "https://$Site"
         }
@@ -95,7 +118,9 @@
 
         if (-not $Location) {
             $hash = Get-PSFConfigValue -FullName SPReplicator.SiteMapper
-            if ($hash[$hostname]) {
+            if ($AzureEnvironment -or $Tenant -or $AuthenticationMode -in "AppOnly", "ManagedIdentity", "AccessToken") {
+                $Location = "Online"
+            } elseif ($hash[$hostname]) {
                 $Location = $hash[$hostname]
             } else {
                 $Location = Get-PSFConfigValue -FullName SPReplicator.Location
@@ -118,78 +143,66 @@
             return
         }
 
+        if ($Thumbprint -and -not $ClientId) {
+            Stop-PSFFunction -Message "Thumbprint requires a corresponding ClientId"
+            return
+        }
+
+        if ($Thumbprint -and ($IsLinux -or $IsMacOS)) {
+            Stop-PSFFunction -Message "Thumbprint is only supported on Windows. Use CertificateBase64Encoded instead."
+            return
+        }
+
         try {
             switch ($AuthenticationMode) {
                 "WebLogin" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with WebLogin mode"
-                    try {
-                        $script:spsite = (Connect-PnPOnline -LaunchBrowser -PnPManagementShell).Context
-                        $script:spsite.Load($script:spsite.Web)
-                        $script:spsite.ExecuteQuery()
-                    } catch {
-                        Stop-PSFFunction -Message "Could not connect to $Site" -ErrorRecord $_
-                        return
-                    }
+                    $script:spsite = Connect-PnPOnline -LaunchBrowser -PnPManagementShell
                 }
 
                 "ManagedIdentity" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with ManagedIdentity mode"
-                    try {
-                        $script:spsite = (Connect-PnPOnline -ManagedIdentity -WarningAction Ignore).Context
-                        $script:spsite.Load($script:spsite.Web)
-                        $script:spsite.ExecuteQuery()
-                    } catch {
-                        Stop-PSFFunction -Message "Could not connect to $Site" -ErrorRecord $_
-                        return
-                    }
+                    $script:spsite = Connect-PnPOnline -ManagedIdentity
                 }
 
                 "AccessToken" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with AccessToken mode"
-                    try {
-                        $script:spsite = (Connect-PnPOnline -AccessToken $AccessToken).Context
-                        $script:spsite.Load($script:spsite.Web)
-                        $script:spsite.ExecuteQuery()
-                    } catch {
-                        Stop-PSFFunction -Message "Could not connect to $Site" -ErrorRecord $_
-                        return
-                    }
+                    $script:spsite = Connect-PnPOnline -AccessToken $AccessToken
                 }
 
                 "AppOnly" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with AppOnly mode"
-                    try {
-                        $script:spsite = (Connect-PnPOnline -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName -WarningAction Ignore).Context
-                        $script:spsite.Load($script:spsite.Web)
-                        $script:spsite.ExecuteQuery()
-                    } catch {
-                        Stop-PSFFunction -Message "Could not connect to $Site. Please check that you've followed all the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs" -ErrorRecord $_
-                        return
+
+                    if ($Thumbprint) {
+                        $script:spsite = Connect-PnPOnline -ClientId $ClientId -Thumbprint $Thumbprint
+                    } else {
+                        if ($ClientId) {
+                            if ($CertificateBase64Encoded) {
+                                $script:spsite = Connect-PnPOnline -ClientId $ClientId -CertificateBase64Encoded $Credential.GetNetworkCredential().Password
+                            } else {
+                                $script:spsite = Connect-PnPOnline -ClientId $ClientId -ClientSecret $Credential.GetNetworkCredential().Password
+                            }
+                        } else {
+                            $script:spsite = Connect-PnPOnline -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName
+                        }
                     }
                 }
 
                 default {
-                    #Setup Authentication Manager
                     Write-PSFMessage -Level Verbose -Message "Proceeding with default login mode"
                     if ($Credential) {
                         Write-PSFMessage -Level Verbose -Message "Credential detected"
                         if ($Location -eq "Onprem") {
                             Write-PSFMessage -Level Verbose -Message "Connecting to OnPrem"
-                            $script:spsite = (Connect-PnPOnline -Credential $Credential -TransformationOnPrem).Context
-                            if ($script:spsite.Credentials) {
-                                Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
-                            }
+                            $script:spsite = Connect-PnPOnline -Credential $Credential -TransformationOnPrem
                         } else {
                             Write-PSFMessage -Level Verbose -Message "Connecting to SharePoint online"
-                            $script:spsite = (Connect-PnPOnline -Credential $Credential).Context
-                            if ($script:spsite.Credentials) {
-                                Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
-                            }
+                            $script:spsite = Connect-PnPOnline -Credential $Credential
                         }
                     } else {
                         if ($PSVersionTable.PSEdition -eq "Core") {
                             Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using PS Core"
-                            $script:spsite = (Connect-PnPOnline -TransformationOnPrem -CurrentCredential -WarningAction Ignore).Context
+                            $script:spsite = Connect-PnPOnline -TransformationOnPrem -CurrentCredential
                         } else {
                             # This is required for non-core ¯\_(ツ)_/¯
                             Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using Windows PowerShell"
@@ -199,8 +212,12 @@
                 }
             }
 
-            Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
+            # Get Context from Connect-PnpOnline
+            if ($script:spsite.Context) {
+                $script:spsite = $script:spsite.Context
+            }
 
+            # Add ExecuteQuery to Core
             if (-not $script:spsite.ExecuteQuery) {
                 # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
                 Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
@@ -210,23 +227,44 @@
                 } -Force
             }
 
-            $script:spweb = $script:spsite.Web
-            Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
+            # Grab web and lists
+            try {
+                $script:spsite.Load($script:spsite.Web)
+                $script:spsite.ExecuteQuery()
+                $script:spweb = $script:spsite.Web
+                $script:spsite.Load($script:spweb)
+                $script:spsite.ExecuteQuery()
+                $script:spsite.Load($script:spweb.Lists)
+                $script:spsite.ExecuteQuery()
+            } catch {
+                if ($AuthenticationMode -eq "AppOnly") {
+                    $msg = "Could not connect to $Site. Please check that you've followed all the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs"
+                } else {
+                    $msg = "Could not connect to $Site"
+                }
+                Stop-PSFFunction -Message $msg -ErrorRecord $_
+                return
+            }
 
+            # Make output pretty
+            Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ToString -Value { $this.Url } -Force
+            Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
+            if ($script:spsite.Credentials) {
+                Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
+            }
+
+            # Grab curent login name
             $script:spsite.Load($script:spweb.CurrentUser)
             $script:spsite.ExecuteQuery()
             $loginname = $script:spweb.CurrentUser.LoginName
 
-            $script:spsite.Load($script:spweb)
-            $script:spsite.ExecuteQuery()
-            $script:spsite.Load($script:spweb.Lists)
-            $script:spsite.ExecuteQuery()
-
+            # Add glboal connection that persists between module reloads
             $global:SPReplicator.Web = $script:spweb
             $global:SPReplicator.Site = $script:spsite
             $global:SPReplicator.LogList = $global:SPReplicator.LogList
             $global:SPReplicator.ListNames = $script:spweb.Lists.Title
 
+            # auto-populate list names!
             Register-PSFTeppScriptblock -Name List -ScriptBlock {
                 $global:SPReplicator.ListNames
             }
@@ -238,6 +276,7 @@
                 $thislocation = "Onprem"
             }
 
+            # unsure, actually
             $getsite = $script:spsite.get_site()
             $script:spsite.Load($getsite)
             $script:spsite.ExecuteQuery()
