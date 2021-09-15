@@ -104,6 +104,7 @@
     begin {
         $PSDefaultParameterValues['Connect-PnPOnline:ReturnConnection'] = $true
         $PSDefaultParameterValues['Connect-PnPOnline:Url'] = $Site
+        $PSDefaultParameterValues['Connect-PnPOnline:WarningAction'] = "Ignore"
 
         if ($AzureEnvironment) {
             $PSDefaultParameterValues['Connect-PnPOnline:AzureEnvironment'] = $AzureEnvironment
@@ -141,7 +142,7 @@
                 $Location = Get-PSFConfigValue -FullName SPReplicator.Location
             }
         }
-        643
+
         if ($hash[$hostname]) {
             $hash[$hostname] = $Location
         } else {
