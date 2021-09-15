@@ -25,6 +25,9 @@
 .PARAMETER AccessToken
     The access token used when AuthenticationMode is AccessToken.
 
+.PARAMETER Tenant
+    The Azure AD Tenant name,e.g. mycompany.onmicrosoft.com
+
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -72,10 +75,17 @@
         [string]$Location = (Get-PSFConfigValue -FullName SPReplicator.Location),
         [ValidateSet("Default", "WebLogin", "AppOnly", "ManagedIdentity", "AccessToken")]
         [string]$AuthenticationMode = "Default",
+        [string]$Tenant,
         [string]$AccessToken,
         [switch]$EnableException
     )
     begin {
+        $PSDefaultParameterValues['Connect-PnPOnline:ReturnConnection'] = $true
+        $PSDefaultParameterValues['Connect-PnPOnline:Site'] = $Site
+
+        if ($Tenant) {
+            $PSDefaultParameterValues['Connect-PnPOnline:Tenant'] = $Tenant
+        }
         if ($Site -notmatch 'http') {
             $Site = "https://$Site"
         }
@@ -113,7 +123,7 @@
                 "WebLogin" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with WebLogin mode"
                     try {
-                        $script:spsite = (Connect-PnPOnline -ReturnConnection -LaunchBrowser -PnPManagementShell -Url $Site).Context
+                        $script:spsite = (Connect-PnPOnline -LaunchBrowser -PnPManagementShell).Context
                         $script:spsite.Load($script:spsite.Web)
                         $script:spsite.ExecuteQuery()
                     } catch {
@@ -125,7 +135,7 @@
                 "ManagedIdentity" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with ManagedIdentity mode"
                     try {
-                        $script:spsite = (Connect-PnPOnline -ReturnConnection -ManagedIdentity -Url $Site -WarningAction Ignore).Context
+                        $script:spsite = (Connect-PnPOnline -ManagedIdentity -WarningAction Ignore).Context
                         $script:spsite.Load($script:spsite.Web)
                         $script:spsite.ExecuteQuery()
                     } catch {
@@ -137,7 +147,7 @@
                 "AccessToken" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with AccessToken mode"
                     try {
-                        $script:spsite = (Connect-PnPOnline -ReturnConnection -AccessToken $AccessToken -Url $Site).Context
+                        $script:spsite = (Connect-PnPOnline -AccessToken $AccessToken).Context
                         $script:spsite.Load($script:spsite.Web)
                         $script:spsite.ExecuteQuery()
                     } catch {
@@ -149,7 +159,7 @@
                 "AppOnly" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with AppOnly mode"
                     try {
-                        $script:spsite = (Connect-PnPOnline -ReturnConnection -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName -Url $Site -WarningAction Ignore).Context
+                        $script:spsite = (Connect-PnPOnline -ClientSecret $Credential.GetNetworkCredential().Password -ClientId $Credential.UserName -WarningAction Ignore).Context
                         $script:spsite.Load($script:spsite.Web)
                         $script:spsite.ExecuteQuery()
                     } catch {
@@ -165,13 +175,13 @@
                         Write-PSFMessage -Level Verbose -Message "Credential detected"
                         if ($Location -eq "Onprem") {
                             Write-PSFMessage -Level Verbose -Message "Connecting to OnPrem"
-                            $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site -TransformationOnPrem).Context
+                            $script:spsite = (Connect-PnPOnline -Credential $Credential -TransformationOnPrem).Context
                             if ($script:spsite.Credentials) {
                                 Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
                             }
                         } else {
                             Write-PSFMessage -Level Verbose -Message "Connecting to SharePoint online"
-                            $script:spsite = (Connect-PnPOnline -ReturnConnection -Credential $Credential -Url $Site).Context
+                            $script:spsite = (Connect-PnPOnline -Credential $Credential).Context
                             if ($script:spsite.Credentials) {
                                 Add-Member -InputObject $script:spsite.Credentials -MemberType ScriptMethod -Name ToString -Value { $this.UserName } -Force
                             }
@@ -179,15 +189,7 @@
                     } else {
                         if ($PSVersionTable.PSEdition -eq "Core") {
                             Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using PS Core"
-                            $script:spsite = (Connect-PnPOnline -ReturnConnection -TransformationOnPrem -CurrentCredential -Url $Site -WarningAction Ignore).Context
-                            if (-not $script:spsite.ExecuteQuery) {
-                                # ty https://rajujoseph.com/getting-net-core-and-sharepoint-csom-play-nice/
-                                Add-Member -InputObject $script:spsite -MemberType ScriptMethod -Name ExecuteQuery -Value {
-                                    if ($script:spsite.HasPendingRequest) {
-                                        $script:spsite.ExecuteQueryAsync().Wait()
-                                    }
-                                } -Force
-                            }
+                            $script:spsite = (Connect-PnPOnline -TransformationOnPrem -CurrentCredential -WarningAction Ignore).Context
                         } else {
                             # This is required for non-core ¯\_(ツ)_/¯
                             Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using Windows PowerShell"
