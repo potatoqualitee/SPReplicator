@@ -153,12 +153,13 @@
     )
     begin {
         $PSDefaultParameterValues["Connect-PnPOnline:WarningAction"] = "Ignore"
-        $PSDefaultParameterValues["Connect-PnPOnline:ReturnConnection"] = $true
 
         if ($AuthenticationMode -ne "ManagedIdentity") {
             $PSDefaultParameterValues["Connect-PnPOnline:Url"] = $Site
+            $PSDefaultParameterValues["Connect-PnPOnline:ReturnConnection"] = $true
         } else {
             $null = $PSDefaultParameterValues.Remove("Connect-PnPOnline:Url")
+            $null = $PSDefaultParameterValues.Remove("Connect-PnPOnline:ReturnConnection")
         }
 
         if ($AzureEnvironment) {
@@ -247,7 +248,10 @@
 
                 "ManagedIdentity" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with ManagedIdentity mode"
-                    $script:spsite = Connect-PnPOnline -ManagedIdentity
+                    $null = Connect-PnPOnline -ManagedIdentity
+                    $token = Get-PnPAccessToken
+                    # Url was not set in PSBoundParameters earlier because it's incompatible with ManagedIdentity, so we need to set it here
+                    $script:spsite = Connect-PnPOnline -Url $Site -AccessToken $token -ReturnConnection
                 }
 
                 "AccessToken" {
