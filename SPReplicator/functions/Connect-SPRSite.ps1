@@ -152,9 +152,11 @@
         [switch]$EnableException
     )
     begin {
-        $PSDefaultParameterValues['Connect-PnPOnline:ReturnConnection'] = $true
-        $PSDefaultParameterValues['Connect-PnPOnline:Url'] = $Site
         $PSDefaultParameterValues['Connect-PnPOnline:WarningAction'] = "Ignore"
+        $PSDefaultParameterValues['Connect-PnPOnline:ReturnConnection'] = $true
+        if ($AuthenticationMode -ne 'ManagedIdentity') {
+            $PSDefaultParameterValues['Connect-PnPOnline:Url'] = $Site
+        }
 
         if ($AzureEnvironment) {
             $PSDefaultParameterValues['Connect-PnPOnline:AzureEnvironment'] = $AzureEnvironment
