@@ -4,10 +4,7 @@
         Connects to a SharePoint site which allows you to run other commands
 
     .DESCRIPTION
-        Creates a reusable SharePoint Client Context object that lets you use
-        and manage the site collection in Windows PowerShell.
-
-        If you Connect-SPRSite, you no longer need to specify -Site and -Credential.
+        Connects to a SharePoint site which allows you to run other commands
 
     .PARAMETER Site
         The address to the site collection. You can also pass a hostname and it'll figure it out.
@@ -16,20 +13,38 @@
         Provide alternative credentials to the site collection. Otherwise, it will use default credentials.
 
     .PARAMETER AuthenticationMode
-        Specifies the authentication mode. Options include Default, WebLogin (pops up a browser), AppOnly, ManagedIdentity and AccessToken
+        Specifies the authentication mode. Options include WebLogin (pops up a browser), AppOnly and ManagedIdentity
 
+        * AppOnly
         For AppOnly authentication, please ensure you've followed all of the steps at https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azureacs
+
+        * WebLogin
+        Log in using the Device Code flow. By default it will use the PnP Management Shell multi-tenant Azure AD application registration. You will be asked to consent to:
+
+            Read and write managed metadata
+            Have full control of all site collections
+            Read user profiles
+            Invite guest users to the organization
+            Read and write all groups
+            Read and write directory data
+            Read and write identity providers
+            Access the directory as you
+
+        * ManagedIdentity
+        For use with Azure Functions (if configured to use a managed identity) or Azure Cloud Shell. This method will acquire a token using the built-in endpoints in Azure.
 
     .PARAMETER Location
         Onprem or Online, this only needs to be set once, then it's cached. See Get-SPRConfig for more information.
 
-        If you don't specify Location, SPReplicator will try to determine it based on the Site URL.
+        If you don't specify Location, SPReplicator will try to determine it based on the Site URL or authentication method.
 
     .PARAMETER AccessToken
-        This method assumes you have acquired a valid OAuth2 access token from Azure AD with the correct audience and permissions set. Using this method PnP PowerShell will not acquire tokens dynamically and if the token expires (typically after 1 hour), commands will fail to work using this method.
+        Using this parameter you can provide your own access token. Notice that it is recommend to use one of the other connection methods as this will limits the offered functionality on PnP PowerShell. For instance if the token expires (typically after 1 hour) will not be able to acquire a new valid token, which the other connection methods do allow. You are fully responsible for providing your own valid token, for the correct audience, with the correct permissions scopes.
+
+        This method assumes you have acquired a valid OAuth2 access token from Azure AD with the correct audience and permissions set. Using this method, SPReplicator will not acquire tokens dynamically and if the token expires (typically after 1 hour), commands will fail to work using this method.
 
     .PARAMETER Tenant
-        The Azure AD Tenant name, For example mycompany.onmicrosoft.com
+        The optional Azure AD Tenant name, for example mycompany.onmicrosoft.com
 
     .PARAMETER Thumbprint
         The thumbprint of the certificate containing the private key registered with the application in Azure Active Directory.
@@ -47,6 +62,9 @@
     .PARAMETER AzureEnvironment
         The Azure environment to use for authentication. Options include Production, PPE, China, Germany, USGovernment, USGovernmentHigh, and USGovernmentDoD
 
+    .PARAMETER Realm
+        Authentication realm. If not specified will be resolved from the url specified.
+
     .PARAMETER EnableException
         By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
         This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -55,17 +73,17 @@
     .EXAMPLE
         Connect-SPRSite -Site intranet.ad.local
 
-        Creates a web service object for intranet.ad.local. Figures out the wsdl address automatically.
+        Connects to the site collection at https://intranet.ad.local using default credentials
 
     .EXAMPLE
         Connect-SPRSite -Site https://intranet.ad.local/
 
-        Creates a web service object for intranet.ad.local using the formal and complete address.
+        Connects to the site collection at https://intranet.ad.local using default credentials
 
     .EXAMPLE
         Connect-SPRSite -Site intranet.ad.local -Credential ad\user
 
-        Creates a web service object and logs into the webapp as ad\user.
+        Connects to the site collection at https://intranet.ad.local as ad\user.
 
     .EXAMPLE
         Connect-SPRSite -Site contoso.sharepoint.com -Credential me@mycorp.onmicrosoft.com
@@ -94,9 +112,9 @@
         This will authenticate you to contoso.sharepoint.de using Legacy ACS authentication. Use the client secret for the credential password. As suggested, the credential username is not used.
 
     .EXAMPLE
-        Connect-SPRSite -Site https://contoso.sharepoint.com -Credential 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -CertificatePath /tmp/mycertificate.pfx  -Tenant contoso.onmicrosoft.com
+        Connect-SPRSite -Site https://contoso.sharepoint.com -Credential 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -CertificatePath /tmp/mycertificate.pfx -Tenant contoso.onmicrosoft.com
 
-        Connects using an Azure Active Directory registered application using a locally available certificate containing a private key. Use the certificate secret as the credential password.
+        Connects using an Azure Active Directory registered application using a locally available certificate containing a private key. Use the certificate secret as the certificate password.
 
     .EXAMPLE
         Connect-SPRSite -Site https://contoso.sharepoint.com -ClientId 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -CertificateBase64Encoded -Tenant contoso.onmicrosoft.com
@@ -118,10 +136,8 @@
         [Parameter(Mandatory, HelpMessage = "SharePoint Site Collection")]
         [string]$Site,
         [PSCredential]$Credential,
-        [PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
-        [string]$Location,
-        [ValidateSet("Default", "WebLogin", "AppOnly", "ManagedIdentity", "AccessToken")]
-        [string]$AuthenticationMode = "Default",
+        [ValidateSet("WebLogin", "AppOnly", "ManagedIdentity", "AccessToken")]
+        [string]$AuthenticationMode,
         [string]$Tenant,
         [string]$Thumbprint,
         [string]$ClientId,
@@ -130,6 +146,9 @@
         [string]$AzureEnvironment,
         [string]$CertificatePath,
         [switch]$CertificateBase64Encoded,
+        [string]$Realm,
+        [PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
+        [string]$Location,
         [switch]$EnableException
     )
     begin {
@@ -139,12 +158,20 @@
 
         if ($AzureEnvironment) {
             $PSDefaultParameterValues['Connect-PnPOnline:AzureEnvironment'] = $AzureEnvironment
+        } else {
+            $null = $PSDefaultParameterValues.Remove('Connect-PnPOnline:AzureEnvironment')
+        }
+
+        if ($Realm) {
+            $PSDefaultParameterValues['Connect-PnPOnline:Realm'] = $Realm
+        } else {
+            $null = $PSDefaultParameterValues.Remove('Connect-PnPOnline:Realm')
         }
 
         if ($Tenant) {
             $PSDefaultParameterValues['Connect-PnPOnline:Tenant'] = $Tenant
         } else {
-
+            $null = $PSDefaultParameterValues.Remove('Connect-PnPOnline:Tenant')
         }
 
         if ($Thumbprint -or $ClientId -or $CertificatePath) {
@@ -188,18 +215,13 @@
         Write-PSFMessage -Level Verbose -Message "Connecting to the SharePoint service at $Site"
         Write-PSFMessage -Level Verbose -Message "Site is set as $Location"
 
-        if ($AuthenticationMode -eq "AccessToken" -and -not $AccessToken) {
-            Stop-PSFFunction -Message "AccessToken authentication mode requires an AccessToken"
-            return
-        }
-
         if ($Thumbprint -and -not $ClientId) {
             Stop-PSFFunction -Message "Thumbprint requires a corresponding ClientId"
             return
         }
 
         if ($Thumbprint -and ($IsLinux -or $IsMacOS)) {
-            Stop-PSFFunction -Message "Thumbprint is only supported on Windows. Use CertificateBase64Encoded instead."
+            Stop-PSFFunction -Message "Thumbprint is only supported on Windows. Use the CertificateBase64Encoded switch instead."
             return
         }
 
@@ -207,7 +229,15 @@
             switch ($AuthenticationMode) {
                 "WebLogin" {
                     Write-PSFMessage -Level Verbose -Message "Proceeding with WebLogin mode"
-                    $script:spsite = Connect-PnPOnline -LaunchBrowser -PnPManagementShell
+
+                    if ($isLinux -or $IsMacOS) {
+                        Write-PSFMessage -Level Warning -Message "When prompted: 'Are you trying to sign in to PnP Management Shell?', click Continue"
+                        $script:spsite = Connect-PnPOnline -LaunchBrowser -DeviceLogin
+                    } else {
+                        Write-PSFMessage -Level Warning -Message "A new PowerShell window has been opened. Check your taskbar."
+                        Write-PSFMessage -Level Warning -Message "When prompted: 'Are you trying to sign in to PnP Management Shell?', click Continue"
+                        $script:spsite = Connect-PnPOnline -Interactive
+                    }
                 }
 
                 "ManagedIdentity" {
@@ -235,7 +265,7 @@
                         $script:spsite = Connect-PnPOnline -ClientId $ClientId -CertificateBase64Encoded $Credential.GetNetworkCredential().Password
                     } elseif ($CertificatePath) {
                         Write-PSFMessage -Level Verbose -Message "Using CertificatePassword from Credential password for CertificatePath"
-                        $script:spsite = Connect-PnPOnline -ClientId $ClientId -CertificatePath $CertificatePath -CertificatePassword $Credential.GetNetworkCredential().Password
+                        $script:spsite = Connect-PnPOnline -ClientId $ClientId -CertificatePath $CertificatePath -CertificatePassword $Credential.Password
                     } else {
                         $script:spsite = Connect-PnPOnline -ClientId $ClientId -ClientSecret $Credential.GetNetworkCredential().Password
                     }
