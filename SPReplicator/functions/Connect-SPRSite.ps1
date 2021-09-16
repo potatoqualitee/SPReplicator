@@ -147,33 +147,33 @@
         [string]$CertificatePath,
         [switch]$CertificateBase64Encoded,
         [string]$Realm,
-        [PsfValidateSet(TabCompletion = 'SPReplicator-Location')]
+        [PsfValidateSet(TabCompletion = "SPReplicator-Location")]
         [string]$Location,
         [switch]$EnableException
     )
     begin {
-        $PSDefaultParameterValues['Connect-PnPOnline:WarningAction'] = "Ignore"
-        $PSDefaultParameterValues['Connect-PnPOnline:ReturnConnection'] = $true
-        if ($AuthenticationMode -ne 'ManagedIdentity') {
-            $PSDefaultParameterValues['Connect-PnPOnline:Url'] = $Site
+        $PSDefaultParameterValues["Connect-PnPOnline:WarningAction"] = "Ignore"
+        $PSDefaultParameterValues["Connect-PnPOnline:ReturnConnection"] = $true
+        if ($AuthenticationMode -ne "ManagedIdentity") {
+            $PSDefaultParameterValues["Connect-PnPOnline:Url"] = $Site
         }
 
         if ($AzureEnvironment) {
-            $PSDefaultParameterValues['Connect-PnPOnline:AzureEnvironment'] = $AzureEnvironment
+            $PSDefaultParameterValues["Connect-PnPOnline:AzureEnvironment"] = $AzureEnvironment
         } else {
-            $null = $PSDefaultParameterValues.Remove('Connect-PnPOnline:AzureEnvironment')
+            $null = $PSDefaultParameterValues.Remove("Connect-PnPOnline:AzureEnvironment")
         }
 
         if ($Realm) {
-            $PSDefaultParameterValues['Connect-PnPOnline:Realm'] = $Realm
+            $PSDefaultParameterValues["Connect-PnPOnline:Realm"] = $Realm
         } else {
-            $null = $PSDefaultParameterValues.Remove('Connect-PnPOnline:Realm')
+            $null = $PSDefaultParameterValues.Remove("Connect-PnPOnline:Realm")
         }
 
         if ($Tenant) {
-            $PSDefaultParameterValues['Connect-PnPOnline:Tenant'] = $Tenant
+            $PSDefaultParameterValues["Connect-PnPOnline:Tenant"] = $Tenant
         } else {
-            $null = $PSDefaultParameterValues.Remove('Connect-PnPOnline:Tenant')
+            $null = $PSDefaultParameterValues.Remove("Connect-PnPOnline:Tenant")
         }
 
         if ($Thumbprint -or $ClientId -or $CertificatePath) {
@@ -186,7 +186,7 @@
             $AuthenticationMode = "AccessToken"
         }
 
-        if ($Site -notmatch 'http') {
+        if ($Site -notmatch "http") {
             $Site = "https://$Site"
         }
 
