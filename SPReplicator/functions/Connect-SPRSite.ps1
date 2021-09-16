@@ -1,8 +1,7 @@
 ﻿Function Connect-SPRSite {
     <#
     .SYNOPSIS
-        Creates a reusable SharePoint Client Context object that lets you use and
-        manage the site collection in Windows PowerShell.
+        Connects to a SharePoint site which allows you to run other commands
 
     .DESCRIPTION
         Creates a reusable SharePoint Client Context object that lets you use
