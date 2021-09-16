@@ -154,7 +154,10 @@
     begin {
         $PSDefaultParameterValues["Connect-PnPOnline:WarningAction"] = "Ignore"
         $PSDefaultParameterValues["Connect-PnPOnline:ReturnConnection"] = $true
+
         if ($AuthenticationMode -ne "ManagedIdentity") {
+            $null = $PSDefaultParameterValues.Remove("Connect-PnPOnline:Url")
+        } else {
             $PSDefaultParameterValues["Connect-PnPOnline:Url"] = $Site
         }
 
