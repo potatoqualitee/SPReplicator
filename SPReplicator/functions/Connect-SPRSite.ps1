@@ -299,8 +299,6 @@
                             # This is required for non-core ¯\_(ツ)_/¯
                             Write-PSFMessage -Level Verbose -Message "No credential detected, connecting using Windows PowerShell"
                             $script:spsite = New-Object Microsoft.SharePoint.Client.ClientContext($Site)
-                            # This doesn't really work, but maybe it will at some point
-                            $null = Set-PnPContext -Context $script:spsite
                         }
                     }
                 }
