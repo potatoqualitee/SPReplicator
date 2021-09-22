@@ -117,7 +117,7 @@
         Connects using an Azure Active Directory registered application using a locally available certificate containing a private key. Use the certificate secret as the certificate password.
 
     .EXAMPLE
-        Connect-SPRSite -Site https://contoso.sharepoint.com -ClientId 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -CertificateBase64Encoded -Tenant contoso.onmicrosoft.com
+        Connect-SPRSite -Site https://contoso.sharepoint.com -Credential 6c5c98c7-e05a-4a0f-bcfa-0cfc65aa1f28 -CertificateBase64Encoded -Tenant contoso.onmicrosoft.com
 
         Connects using an Azure Active Directory registered application using a certificate with a private key that has been base64 encoded. Use the base64 encoded certificate as the credential password.
 
