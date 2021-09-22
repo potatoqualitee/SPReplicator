@@ -1,5 +1,5 @@
 ﻿Function Get-SPRUser {
-<#
+    <#
 .SYNOPSIS
     Returns a SharePoint user object.
 
@@ -19,8 +19,8 @@
     The human readable user name. So 'Jon Deaux' as opposed to 'JonDeaux', unless you named it JonDeaux.
 
 .PARAMETER EnsureUser
-    Use the EnsureUser method of finding a user account. 
-    
+    Use the EnsureUser method of finding a user account.
+
     "EnsureUser checks whether the specified login name belongs to a valid user of the Web site, and if the login name does not already exist, adds it to the Web site directly."
 
 .PARAMETER InputObject
@@ -28,7 +28,7 @@
 
 .PARAMETER Force
     Repopulates the user cache, otherwise, it'll use the cache
-    
+
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -66,19 +66,16 @@
                 $script:spsite.Load($getsite)
                 $script:spsite.ExecuteQuery()
                 $InputObject = $getsite.get_rootWeb()
-            }
-            elseif ($script:spweb) {
+            } elseif ($script:spweb) {
                 $getsite = $script:spweb.Context.get_site()
                 $script:spweb.Context.Load($getsite)
                 $script:spweb.Context.ExecuteQuery()
                 $InputObject = $getsite.get_rootWeb()
-            }
-            else {
+            } else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
                 return
             }
-        }
-        else {
+        } else {
             if ($InputObject[0] -is [Microsoft.SharePoint.Client.User]) {
                 $Identity = $InputObject.LoginName
                 $getsite = $script:spweb.Context.get_site()
@@ -87,38 +84,32 @@
                 $InputObject = $getsite.get_rootWeb()
             }
         }
-        
+
         foreach ($web in $InputObject) {
             $script:spsite.Load($web)
             $script:spsite.ExecuteQuery()
             $webid = $web.Id
-            
+
             if (-not $Identity) {
                 try {
                     $users = $web.SiteUsers
                     $script:spsite.Load($users)
                     $script:spsite.ExecuteQuery()
                     # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
-                    if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                        $users = $users | Select-DefaultView -ExcludeProperty Alerts
-                    }
                     $users | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
-                }
-                catch {
+                } catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
-            }
-            else {
+            } else {
                 if (-not $global:SPReplicator.UserCache[$webid] -or $Force) {
                     $users = $web.SiteUsers
                     $script:spsite.Load($users)
                     $script:spsite.ExecuteQuery()
                     $global:SPReplicator.UserCache[$webid] = $users
-                }
-                else {
+                } else {
                     $users = $global:SPReplicator.UserCache[$webid]
                 }
-                
+
                 foreach ($user in $Identity) {
                     try {
                         Write-PSFMessage -Level Verbose -Message "Getting $user from $($script:spsite.Url)"
@@ -127,8 +118,7 @@
                             $spuser = $script:spweb.EnsureUser($user)
                             $script:spsite.Load($spuser)
                             $script:spsite.ExecuteQuery()
-                        }
-                        else {
+                        } else {
                             $spuser = $users | Where-Object { $psitem.LoginName -eq $user }
                             if (-not $spuser) {
                                 $spuser = $users | Where-Object { $psitem.LoginName.EndsWith($user) }
@@ -146,15 +136,9 @@
                             Add-Member -InputObject $spuser -MemberType ScriptMethod -Name ToString -Value { $this.LoginName } -Force
                             Add-Member -InputObject $spuser -MemberType NoteProperty -Name FormattedLogin -Value $("{0};#{1}" -f $spuser.Id, $spuser.LoginName) -Force
                             # exclude: Groups, AadObjectId, IsEmailAuthenticationGuestUser, IsHiddenInUI, IsShareByEmailGuestUser, Path, ObjectVersion, ServerObjectIsNull, UserId, TypedObject, Tag
-                            if ((Get-PSFConfigValue -FullName SPReplicator.Location) -eq "Online") {
-                                $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType -ExcludeProperty Alerts
-                            }
-                            else {
-                                $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
-                            }
+                            $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
                         }
-                    }
-                    catch {
+                    } catch {
                         Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                     }
                 }

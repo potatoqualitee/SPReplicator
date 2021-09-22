@@ -1,5 +1,5 @@
 ﻿Function Add-SPRUser {
-<#
+    <#
 .SYNOPSIS
     Adds a SharePoint user.
 
@@ -20,7 +20,7 @@
 
 .PARAMETER InputObject
     Allows piping from Connect-SPRsite
-    
+
 .PARAMETER EnableException
     By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
     This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
@@ -49,20 +49,18 @@
             if ($Site) {
                 $siteobject = Connect-SPRSite -Site $Site -Credential $Credential
                 $InputObject = $siteobject.RootWeb
-            }
-            elseif ($script:spweb) {
+            } elseif ($script:spweb) {
                 $InputObject = $script:spweb.Context.RootWeb
-            }
-            else {
+            } else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
                 return
             }
         }
-        
+
         if ($InputObject -is [Microsoft.SharePoint.Client.Site]) {
             $InputObject = $InputObject.RootWeb
         }
-        
+
         foreach ($web in $InputObject) {
             if ($web -isnot [Microsoft.SharePoint.Client.Web]) {
                 Stop-PSFFunction -EnableException:$EnableException -Message "Invalid inputobject"
@@ -70,23 +68,17 @@
             }
             $script:spsite.Load($web)
             $script:spsite.ExecuteQuery()
-            
+
             foreach ($user in $Identity) {
                 try {
                     $spuser = $web.EnsureUser($user)
                     $web.Context.Load($spuser)
                     $web.Context.ExecuteQuery()
-                }
-                catch {
+                } catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_ -Continue
                 }
-                
-                if ($web.Context -eq "Online") {
-                    $spuser | Select-Object -ExcludeProperty Alerts | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
-                }
-                else {
-                    $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
-                }
+
+                $spuser | Select-DefaultView -Property Id, Title, LoginName, Email, IsSiteAdmin, PrincipalType
             }
         }
     }

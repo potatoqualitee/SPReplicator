@@ -1,5 +1,5 @@
 ﻿Function Get-SPRWeb {
-<#
+    <#
 .SYNOPSIS
     Returns a SharePoint web object.
 
@@ -56,34 +56,28 @@
         if (-not $InputObject) {
             if ($Site) {
                 $InputObject = Connect-SPRSite -Site $Site -Credential $Credential
-            }
-            elseif ($script:spsite) {
+            } elseif ($script:spsite) {
                 $InputObject = $script:spsite
-            }
-            else {
+            } else {
                 Stop-PSFFunction -EnableException:$EnableException -Message "You must specify Site or run Connect-SPRSite"
                 return
             }
         }
-        
+
         foreach ($server in $InputObject) {
             if (-not $Web) {
                 try {
                     $script:spweb = $server.Web
                     $server.Load($script:spweb)
                     $server.ExecuteQuery()
-                    if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                        $script:spweb = $script:spweb | Select-Object -ExcludeProperty Alerts
-                    }
+
                     $script:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
                     Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
                     $global:SPReplicator.Web = $script:spweb
-                }
-                catch {
+                } catch {
                     Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                 }
-            }
-            else {
+            } else {
                 foreach ($currentweb in $Web) {
                     try {
                         $web = $server.Web | Where-Object Title -eq $currentweb
@@ -92,14 +86,10 @@
                             $server.Load($script:spweb)
                             $server.ExecuteQuery()
                             Add-Member -InputObject $script:spweb -MemberType ScriptMethod -Name ToString -Value { $this.Title } -Force
-                            
-                            if ((Get-PSFConfigValue -FullName SPReplicator.Location) -ne "Online") {
-                                $script:spweb = $script:spweb | Select-Object -ExcludeProperty Alerts
-                            }
+
                             $script:spweb | Select-DefaultView -Property Context, Title, Description, Url, MasterUrl, RecycleBinEnabled, WebTemplate, Created, LastItemModifiedDate
                         }
-                    }
-                    catch {
+                    } catch {
                         Stop-PSFFunction -EnableException:$EnableException -Message "Failure" -ErrorRecord $_
                     }
                 }
