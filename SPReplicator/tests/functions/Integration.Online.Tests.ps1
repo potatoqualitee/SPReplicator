@@ -17,6 +17,9 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $script:onlinecred = New-Object System.Management.Automation.PSCredential ($env:CLIENTID, $secpasswd)
             $PSDefaultParameterValues["Connect-SPRSite:AuthenticationMode"] = "AppOnly"
             Import-Module /home/runner/work/SPReplicator/SPReplicator/SPReplicator/SPReplicator.psd1
+            $null = [io.file]::WriteAllBytes("/tmp/cert.pfx", [System.Convert]::FromBase64CharArray($env:APPCERT, 0, $env:APPCERT.Length))
+            $certpasswd = ConvertTo-SecureString $env:APPCERTSECRET -AsPlainText -Force
+            $script:certcred = New-Object System.Management.Automation.PSCredential ($env:APPCLIENTID, $certpasswd)
         }
         $oldconfig = Get-SPRConfig -Name location
         $null = Set-SPRConfig -Name location -Value Online
@@ -528,5 +531,9 @@ if (-not $IsLinux) {
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "SPReplicator $ENV:USER" -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
+    }
+
+    if ($env:APPCERTTENANT) {
+        Connect-SPRSite -Site $script:onlinesite -Credential $script:certcred -CertificatePath /tmp/cert.pfx -Tenant $env:APPCERTTENANT -EnableException | Should -not throw
     }
 }

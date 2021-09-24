@@ -31,6 +31,10 @@ jobs:
         env:
           CLIENTID: ${{secrets.CLIENTID}}
           CLIENTSECRET: ${{secrets.CLIENTSECRET}}
+          APPCERT: ${{secrets.APPCERT}}
+          APPCERTSECRET: ${{secrets.APPCERTSECRET}}
+          APPCERTTENANT: ${{secrets.APPCERTTENANT}}
+          APPCLIENTID: ${{secrets.APPCLIENTID}}
         run: |
           Import-Module -Name Pester -RequiredVersion 4.10.1
           $results = Invoke-Pester ./SPReplicator/tests/functions/Integration.Online.Tests.ps1 -PassThru
