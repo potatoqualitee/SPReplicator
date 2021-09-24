@@ -44,6 +44,12 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.Url | Should -match sharepoint.com
             $results.RequestTimeout | Should -Be 180000
         }
+
+        if ($env:APPCERTTENANT) {
+            It "Connects to a site using a cert" {
+                Connect-SPRSite -Site $script:onlinesite -Credential $script:certcred -CertificatePath /tmp/cert.pfx -Tenant $env:APPCERTTENANT -EnableException | Should -not throw
+            }
+        }
     }
 
     if ($erz -or $warn) {
@@ -531,9 +537,5 @@ if (-not $IsLinux) {
         $thislist = Get-SPRList -Site $script:onlinesite -Credential $script:onlinecred -List $script:mylist, "SPReplicator $ENV:USER" -WarningAction SilentlyContinue 3> $null
         $null = $thislist | Remove-SPRList -Confirm:$false -WarningAction SilentlyContinue 3> $null
         Remove-Item -Path $script:filename -ErrorAction SilentlyContinue
-    }
-
-    if ($env:APPCERTTENANT) {
-        Connect-SPRSite -Site $script:onlinesite -Credential $script:certcred -CertificatePath /tmp/cert.pfx -Tenant $env:APPCERTTENANT -EnableException | Should -not throw
     }
 }
