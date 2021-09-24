@@ -45,7 +45,7 @@ Describe "Online Integration Tests" -Tag "IntegrationTests" {
             $results.RequestTimeout | Should -Be 180000
         }
 
-        if ($env:APPCERTTENANT) {
+        if ($env:APPCERTTENANT1) {
             It "Connects to a site using a cert" {
                 Connect-SPRSite -Site $script:onlinesite -Credential $script:certcred -CertificatePath /tmp/cert.pfx -Tenant $env:APPCERTTENANT -EnableException | Should -not throw
             }
